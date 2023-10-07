@@ -1,0 +1,8 @@
+/.vscode
+/**build**/
+.cache/
+todo.txt
+*tags*
+devscripts/
+install
+ignore/
