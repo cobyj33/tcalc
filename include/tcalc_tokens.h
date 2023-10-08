@@ -36,20 +36,35 @@ Valid Examples:
 ["(", "54", "+", "23", ")", "*", "34"]
 
 "2^(3+3.5)/3"
-
 */
+typedef enum {
+  TCALC_RIGHT_ASSOCIATIVE,
+  TCALC_LEFT_ASSOCIATIVE,
+} tcalc_associativity_t;
+
+typedef struct {
+  char* name;
+  int nb_inputs;
+} tcalc_func_def_t;
+
+typedef struct {
+  char* name;
+  int priority;
+  tcalc_associativity_t associativity;
+} tcalc_operator_def_t;
 
 typedef enum {
-  NUMBER,
-  OPERATOR,
-  GROUP_START,
-  GROUP_END
+  TCALC_NUMBER,
+  TCALC_OPERATOR,
+  TCALC_FUNCTION, // all variables are functions. Some are just constant functions
+  TCALC_GROUP_START,
+  TCALC_GROUP_END
 } tcalc_token_type_t;
 
 typedef struct {
   tcalc_token_type_t type;
   char* value;
-} tcalc_token_t
+} tcalc_token_t;
 
 
 tcalc_error_t tcalc_tokenize(const char* expr, char*** out, size_t* returned_size);

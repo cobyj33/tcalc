@@ -34,13 +34,7 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* r
     CLEAN_ERROR(tcalc_darray_push(strings, &substr))
   }
 
-  *out = (char**)malloc(sizeof(char*) * tcalc_darray_size(strings));
-  CLEAN_RETURN(*out == NULL, TCALC_BAD_ALLOC)
-
-  for (size_t i = 0; i < tcalc_darray_size(strings); i++) {
-    CLEAN_ERROR(tcalc_darray_at(strings, (void*)(&(*out)[i]), i));
-  }
-
+  CLEAN_ERROR(tcalc_darray_extract(strings, (void**)out))
   *return_size = tcalc_darray_size(strings);
   tcalc_darray_free(strings); // do not free individual strings in cb, as they are now passed to the caller
   return TCALC_OK;

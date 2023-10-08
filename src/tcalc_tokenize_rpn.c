@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 tcalc_error_t tcalc_tokenize_rpn(const char* expr, char*** out, size_t* returned_size) {
+  *returned_size = 0;
   tcalc_error_t err = tcalc_strsplit(expr, ' ', out, returned_size); // very simple :)
   if (err) return err;
 

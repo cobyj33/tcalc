@@ -8,10 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum {
-  TCALC_RIGHT_ASSOCIATIVE,
-  TCALC_LEFT_ASSOCIATIVE,
-} tcalc_associativity_t;
+
 
 typedef struct {
   const char* token;

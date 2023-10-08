@@ -64,6 +64,17 @@ char* tcalc_strcombine(const char *first, const char *second) {
   return out;
 }
 
+tcalc_error_t tcalc_strsubstr(const char* src, size_t start, size_t end, char** out) {
+  size_t len = end - start;
+  *out = (char*)malloc(sizeof(char) * (len + 1));
+  if (*out == NULL) {
+    return TCALC_BAD_ALLOC;
+  }
+
+  tcalc_strlcpy(*out, src + start, len + 1);
+  return TCALC_OK;
+}
+
 tcalc_error_t find_in_strarr(const char** list, size_t list_len, const char* search, size_t* out) {
   for (size_t i = 0; i < list_len; i++) {
     if (strcmp(list[i], search) == 0) {
@@ -117,11 +128,10 @@ tcalc_error_t tcalc_strtodouble(const char* str, double* out)
     if (str[i] == '.') {
       if (foundDecimal) return TCALC_INVALID_ARG;
       foundDecimal = 1;
-    }
-    else if (*out >= (DBL_MAX - 9) / 10) {
-      return sign == -1 ? TCALC_UNDERFLOW : TCALC_OVERFLOW;
-    }
-    else if (isdigit(str[i])) {
+    } else if (isdigit(str[i])) {
+      if (*out >= (DBL_MAX - 9) / 10) {
+        return sign == -1 ? TCALC_UNDERFLOW : TCALC_OVERFLOW;
+      }
       
       if (foundDecimal) {
         *out = *out + (str[i] - '0') * decimalMultiplier;
@@ -131,8 +141,7 @@ tcalc_error_t tcalc_strtodouble(const char* str, double* out)
         *out = *out * 10.0 + (str[i] - '0'); 
       }
 
-    }
-    else {
+    } else {
       return TCALC_INVALID_ARG;
     }
   }
@@ -171,13 +180,3 @@ tcalc_error_t tcalc_strtoint(const char* str, int* out)
   return TCALC_OK;
 }
 
-tcalc_error_t tcalc_strsubstr(const char* src, size_t start, size_t end, char** out) {
-  size_t len = end - start;
-  *out = (char*)malloc(sizeof(char) * (len + 1));
-  if (*out == NULL) {
-    return TCALC_BAD_ALLOC;
-  }
-
-  tcalc_strlcpy(*out, src + start, len + 1);
-  return TCALC_OK;
-}
