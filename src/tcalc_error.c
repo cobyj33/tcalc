@@ -24,5 +24,7 @@ const char* tcalc_strerrcode(tcalc_error_t err) {
     case TCALC_UNDERFLOW: return "underflow";
     case TCALC_STOP_ITER: return "stop iteration";
     case TCALC_NOT_FOUND: return "not found";
+    case TCALC_DIVISION_BY_ZERO: return "division by zero";
+    case TCALC_NOT_IN_DOMAIN: return "not in domain";
   }
 }

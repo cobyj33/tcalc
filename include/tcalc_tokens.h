@@ -55,8 +55,9 @@ typedef struct {
 
 typedef enum {
   TCALC_NUMBER,
-  TCALC_OPERATOR,
-  TCALC_FUNCTION, // all variables are functions. Some are just constant functions
+  TCALC_UNARY_OPERATOR,
+  TCALC_BINARY_OPERATOR,
+  TCALC_FUNCTION,
   TCALC_GROUP_START,
   TCALC_GROUP_END
 } tcalc_token_type_t;

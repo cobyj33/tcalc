@@ -9,6 +9,7 @@ set(TCALC_SRC_FILES
 ./src/tcalc_darray.c
 ./src/tcalc_string.c
 ./src/tcalc_dstring.c
+./src/tcalc_func.c
 ./src/tcalc_eval.c
 ./src/tcalc_eval_rpn.c
 ./src/tcalc_infix_to_rpn.c

@@ -11,6 +11,7 @@ typedef struct {
   size_t nb_children;
 } tcalc_expression_t;
 
-tcalc_error_t tcalc_eval_expression_tree(tcalc_expression_t* expr, double* out);
+tcalc_error_t tcalc_valdate_exprtree(tcalc_expression_t* expr);
+tcalc_error_t tcalc_eval_exprtree(tcalc_expression_t* expr, double* out);
 
 #endif

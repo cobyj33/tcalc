@@ -30,7 +30,7 @@ tcalc_error_t tcalc_strsplit(const char*, char, char***, size_t* return_size);
  * @param src
  * @param start (inclusive)
  * @param end (exclusive)
- * @param out (exclusive)
+ * @param out 
 */
 tcalc_error_t tcalc_strsubstr(const char*, size_t, size_t, char**);
 #endif

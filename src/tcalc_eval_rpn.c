@@ -4,28 +4,14 @@
 #include "tcalc_tokens.h"
 #include "tcalc_string.h"
 #include "tcalc_mem.h"
+#include "tcalc_func.h"
 
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <error.h>
+#include <float.h>
 
-double tcalc_add(double a, double b) {
-  return a + b;
-}
 
-double tcalc_subtract(double a, double b) {
-  return a - b;
-}
-
-double tcalc_multiply(double a, double b) {
-  return a * b;
-}
-
-double tcalc_divide(double a, double b) {
-  return a / b;
-}
-
-typedef double (*BinaryOperationFunction)(double, double);
 
 #define SUPPORTED_BINARY_OPERATIONS 5
 
@@ -42,14 +28,14 @@ tcalc_error_t tcalc_eval_rpn(const char* rpn, double* out) {
   }
 
   const char* operations[SUPPORTED_BINARY_OPERATIONS] = {"+", "-", "*", "/", "^"};
-  BinaryOperationFunction operationFunctions[SUPPORTED_BINARY_OPERATIONS] = {tcalc_add, tcalc_subtract, tcalc_multiply, tcalc_divide, pow};
+  tcalc_binary_op_func operationFunctions[SUPPORTED_BINARY_OPERATIONS] = {tcalc_add, tcalc_subtract, tcalc_multiply, tcalc_divide, tcalc_pow};
 
   for (size_t i = 0; i < nb_tokens; i++) {
 
     size_t matching_operation;
-    tcalc_error_t err = find_in_strarr(operations, SUPPORTED_BINARY_OPERATIONS, tokens[i], &matching_operation);
+    tcalc_error_t could_find_binary_op = find_in_strarr(operations, SUPPORTED_BINARY_OPERATIONS, tokens[i], &matching_operation);
 
-    if (err == TCALC_OK) {
+    if (could_find_binary_op == TCALC_OK) {
 
       if (tcalc_darray_size(num_stack) < 2) {
         tcalc_free_arr((void**)tokens, nb_tokens, free);
@@ -57,10 +43,17 @@ tcalc_error_t tcalc_eval_rpn(const char* rpn, double* out) {
         return TCALC_INVALID_ARG;
       }
 
-      double first, second;
+      double first, second, res;
       tcalc_darray_pop(num_stack, &second);
       tcalc_darray_pop(num_stack, &first);
-      double res = operationFunctions[matching_operation](first, second);
+      tcalc_error_t operator_err = operationFunctions[matching_operation](first, second, &res);
+
+      if (operator_err) {
+        tcalc_free_arr((void**)tokens, nb_tokens, free);
+        tcalc_darray_free(num_stack);
+        return operator_err;
+      }
+
       tcalc_darray_push(num_stack, &res);
 
     } else if (tcalc_strisdouble(tokens[i])) {
