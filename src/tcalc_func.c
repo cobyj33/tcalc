@@ -31,6 +31,7 @@ tcalc_error_t tcalc_multiply(double a, double b, double* out) {
 
 tcalc_error_t tcalc_divide(double a, double b, double* out) {
   if (b == 0) return TCALC_DIVISION_BY_ZERO;
+  // TODO: Possibly more overflow and underflow?
 
   *out =  a / b;
   return TCALC_OK;

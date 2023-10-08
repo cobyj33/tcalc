@@ -67,9 +67,7 @@ char* tcalc_strcombine(const char *first, const char *second) {
 tcalc_error_t tcalc_strsubstr(const char* src, size_t start, size_t end, char** out) {
   size_t len = end - start;
   *out = (char*)malloc(sizeof(char) * (len + 1));
-  if (*out == NULL) {
-    return TCALC_BAD_ALLOC;
-  }
+  if (*out == NULL) return TCALC_BAD_ALLOC;
 
   tcalc_strlcpy(*out, src + start, len + 1);
   return TCALC_OK;

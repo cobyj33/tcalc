@@ -7,7 +7,7 @@
 #include <malloc.h>
 
 int is_valid_tcalc_char(char ch);
-tcalc_error_t tcalc_next_math_token(const char* expr, tcalc_dstring* out, size_t offset, size_t* new_offset);
+tcalc_error_t tcalc_next_math_token(const char* expr, char** out, size_t offset, size_t* new_offset);
 
 const char* ALLOWED_CHARS = "0123456789. ()+-*/^%%";
 const char* SINGLE_TOKENS = "()+-*/^%%";
@@ -16,29 +16,19 @@ tcalc_error_t tcalc_tokenize(const char* expr, char*** out, size_t* returned_siz
   tcalc_error_t err;
   *returned_size = 0;
   tcalc_darray* token_buffer = tcalc_darray_alloc(sizeof(char*)); // char**
-  if (token_buffer == NULL) {
-    return TCALC_BAD_ALLOC;
-  }
-
-  tcalc_dstring* current_token_dstring = tcalc_dstring_alloc();
-  if (current_token_dstring == NULL) {
-    tcalc_darray_free(token_buffer);
-    return TCALC_BAD_ALLOC;
-  }
+  if (token_buffer == NULL) return TCALC_BAD_ALLOC;
 
   #define CLEAN_EARLY_RETURN(pred, tcalc_error) if (pred) { \
                                             tcalc_darray_free_cb(token_buffer, free); \
-                                            tcalc_dstring_free(current_token_dstring); \
                                             return tcalc_error; \
                                           }
   #define CLEAN_ERROR(tcalc_error_t_function) CLEAN_EARLY_RETURN((err = tcalc_error_t_function) != TCALC_OK, err)
 
   tcalc_error_t next_math_token_err = TCALC_OK;
   size_t offset = 0;
+  char* current_token;
 
-  while ((next_math_token_err = tcalc_next_math_token(expr, current_token_dstring, offset, &offset)) == TCALC_OK) {
-    char* current_token;
-    CLEAN_ERROR(tcalc_dstring_cstrdup(current_token_dstring, &current_token));
+  while ((next_math_token_err = tcalc_next_math_token(expr, &current_token, offset, &offset)) == TCALC_OK) {
     CLEAN_ERROR(tcalc_darray_push(token_buffer, (void*)&current_token));
   }
 
@@ -47,16 +37,14 @@ tcalc_error_t tcalc_tokenize(const char* expr, char*** out, size_t* returned_siz
   CLEAN_ERROR(tcalc_darray_extract(token_buffer, (void**)out));
   *returned_size = tcalc_darray_size(token_buffer);
   tcalc_darray_free(token_buffer); // don't free with callback, as caller will have tokenized strings now
-  tcalc_dstring_free(current_token_dstring);
   return TCALC_OK;
 
   #undef CLEAN_EARLY_RETURN
   #undef CLEAN_ERROR
 }
 
-tcalc_error_t tcalc_next_math_token(const char* expr, tcalc_dstring* out, size_t start, size_t* new_offset) {
+tcalc_error_t tcalc_next_math_token(const char* expr, char** out, size_t start, size_t* new_offset) {
   tcalc_error_t err;
-  tcalc_dstring_clear(out);
   size_t offset = start;
 
 	while (expr[offset] == ' ') // consume all spaces
@@ -69,11 +57,9 @@ tcalc_error_t tcalc_next_math_token(const char* expr, tcalc_dstring* out, size_t
 
 	for (int s = 0; SINGLE_TOKENS[s] != '\0'; s++) { // note that unary plus and minus will not work yet
 		if (expr[offset] == SINGLE_TOKENS[s]) {
-      if ((err = tcalc_dstring_set_csubstr(out, expr, offset, offset + 1)) == TCALC_OK) {
-        *new_offset = offset + 1;
-        return TCALC_OK;
-      }
-      return err;
+      if ((err = tcalc_strsubstr(expr, offset, offset + 1, out)) != TCALC_OK) return err;
+      *new_offset = offset + 1;
+      return TCALC_OK;
 		}
 	}
 
@@ -94,11 +80,9 @@ tcalc_error_t tcalc_next_math_token(const char* expr, tcalc_dstring* out, size_t
       offset++;
 		}
 		
-    if ((err = tcalc_dstring_set_csubstr(out, expr, numstart, offset))  == TCALC_OK) {
-      *new_offset = offset;
-      return TCALC_OK;
-    }
-		return err;
+    if ((err = tcalc_strsubstr(expr, numstart, offset, out))  != TCALC_OK) return err; 
+    *new_offset = offset;
+    return TCALC_OK;
 	}
 	
 	return TCALC_STOP_ITER;
