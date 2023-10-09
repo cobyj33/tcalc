@@ -16,6 +16,7 @@ set(TCALC_SRC_FILES
 ./src/tcalc_eval_rpn.c
 ./src/tcalc_infix_to_rpn.c
 ./src/tcalc_tokens.c
+./src/tcalc_exprtree.c
 ./src/tcalc_mem.c
 ./src/tcalc_stradv.c
 )

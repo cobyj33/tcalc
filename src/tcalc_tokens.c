@@ -53,6 +53,7 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t** out, size_t
     token.value = str_tokens[i];
 
     if (strcmp(token.value, "+")  == 0 || strcmp(token.value, "-") == 0) {
+      
       if (i == 0) { // + and - are unary if they are the first token in an expression
         token.type = TCALC_UNARY_OPERATOR;
       } else if ((*out)[i - 1].type == TCALC_GROUP_START) { // + and - are unary if they are the first token in a grouping symbol
@@ -61,11 +62,12 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t** out, size_t
         token.type = TCALC_UNARY_OPERATOR;
       } else if ((*out)[i - 1].type == TCALC_UNARY_OPERATOR) { // + and - are unary if they follow another binary operator
         token.type = TCALC_UNARY_OPERATOR;
-      }else if (i != nb_tokens + 1 && strcmp(str_tokens[i + 1], "(") == 0) {
+      }else if (i != nb_tokens + 1 && strcmp(str_tokens[i + 1], "(") == 0) { // if a grouping symbol is in front
         token.type = TCALC_UNARY_OPERATOR;
       } else { // in any other case, + and - are binary
         token.type = TCALC_BINARY_OPERATOR;
       }
+
     } else if (strcmp(token.value, "*") == 0 || strcmp(token.value, "/") == 0 || strcmp(token.value, "^") == 0) {
       token.type = TCALC_BINARY_OPERATOR;
     } else if (strcmp(token.value, "(") == 0) {
