@@ -62,15 +62,16 @@ typedef enum {
   TCALC_GROUP_END
 } tcalc_token_type_t;
 
+const char* tcalc_token_type_get_string(tcalc_token_type_t token_type);
+
 typedef struct {
   tcalc_token_type_t type;
   char* value;
 } tcalc_token_t;
 
 
-tcalc_error_t tcalc_tokenize(const char* expr, char*** out, size_t* returned_size);
-tcalc_error_t tcalc_tokenize_infix(const char* expr, char*** out, size_t* returned_size);
-tcalc_error_t tcalc_tokenize_rpn(const char* expr, char*** out, size_t* returned_size);
-int tcalc_is_valid_token(const char* token);
+tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t** out, size_t* returned_size);
+tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t** out, size_t* returned_size);
+int tcalc_is_valid_token_str(const char* token);
 
 #endif

@@ -4,6 +4,8 @@ project(tcalc VERSION 0.0 LANGUAGES C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
+option(TCALC_BUILD_TESTS "Build tcalc tests" OFF)
+
 set(TCALC_SRC_FILES
 ./src/tcalc_error.c
 ./src/tcalc_darray.c
@@ -14,10 +16,8 @@ set(TCALC_SRC_FILES
 ./src/tcalc_eval_rpn.c
 ./src/tcalc_infix_to_rpn.c
 ./src/tcalc_tokens.c
-./src/tcalc_tokenize_infix.c
 ./src/tcalc_mem.c
 ./src/tcalc_stradv.c
-./src/tcalc_tokenize_rpn.c
 )
 
 set(TEST_SRC_FILES
@@ -35,12 +35,18 @@ target_link_libraries(tcalc PUBLIC m)
 add_library(cutest SHARED ./lib/cutest-1.5/CuTest.c)
 target_include_directories(cutest PUBLIC ./lib/cutest-1.5)
 
-add_executable(tcalc_tests ./tests/src/test_run_all_tests.c ${TEST_SRC_FILES} )
-target_include_directories(tcalc_tests PRIVATE ./tests/include)
-target_link_libraries(tcalc_tests PRIVATE cutest tcalc)
+if (TCALC_BUILD_TESTS)
+  add_executable(tcalc_tests ./tests/src/test_run_all_tests.c ${TEST_SRC_FILES} )
+  target_include_directories(tcalc_tests PRIVATE ./tests/include)
+  target_link_libraries(tcalc_tests PRIVATE cutest tcalc)
+endif()
 
-add_executable(tokenizer ./cli/tokenizer.c)
-target_link_libraries(tokenizer PRIVATE tcalc)
+
+add_executable(rpn_tokenizer ./cli/rpn_tokenizer.c)
+target_link_libraries(rpn_tokenizer PRIVATE tcalc)
+
+add_executable(infix_tokenizer ./cli/infix_tokenizer.c)
+target_link_libraries(infix_tokenizer PRIVATE tcalc)
 
 add_executable(rpn ./cli/rpn.c)
 target_link_libraries(rpn PRIVATE tcalc)

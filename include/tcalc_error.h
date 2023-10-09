@@ -18,6 +18,10 @@ typedef enum {
   TCALC_NOT_FOUND = -8,
   TCALC_DIVISION_BY_ZERO = -9,
   TCALC_NOT_IN_DOMAIN = -10,
+
+  TCALC_UNBALANCED_GROUPING_SYMBOLS = -11,
+
+
 } tcalc_error_t;
 
 const char* tcalc_strerrcode(tcalc_error_t err);
