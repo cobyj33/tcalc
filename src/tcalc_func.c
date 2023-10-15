@@ -6,24 +6,34 @@
 #include <errno.h>
 #include <float.h>
 
+tcalc_error_t tcalc_unary_plus(double a, double* out) {
+  *out = a;
+  return TCALC_OK;
+}
+
+tcalc_error_t tcalc_unary_minus(double a, double* out) {
+  *out = -a;
+  return TCALC_OK;
+}
+
 tcalc_error_t tcalc_add(double a, double b, double* out) {
-  if (DBL_MAX - b <= a) return TCALC_OVERFLOW;
+  // if (DBL_MAX - b <= a) return TCALC_OVERFLOW;
   *out = a + b;
   return TCALC_OK;
 }
 
 tcalc_error_t tcalc_subtract(double a, double b, double* out) {
-  if (DBL_MIN + b <= a) return TCALC_OVERFLOW;
+  // if (DBL_MIN + b <= a) return TCALC_OVERFLOW;
   *out = a - b;
   return TCALC_OK;
 }
 
 tcalc_error_t tcalc_multiply(double a, double b, double* out) {
-  if (b < 0) { // b is negative
-    if (a <= DBL_MAX / b) return TCALC_OVERFLOW;
-  } else { // b > 0
-    if (a >= DBL_MAX / b) return TCALC_OVERFLOW;
-  }
+  // if (b < 0) { // b is negative
+  //   if (a <= DBL_MAX / b) return TCALC_OVERFLOW;
+  // } else { // b > 0
+  //   if (a >= DBL_MAX / b) return TCALC_OVERFLOW;
+  // }
 
   *out = a * b;
   return TCALC_OK;

@@ -49,19 +49,19 @@ size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize)
     return(src - osrc - 1); /* count does not include NUL */
 }
 
-char* tcalc_strdup(const char *src) {
-    char *dst = (char*)malloc(sizeof(char) * (strlen(src) + 1));  // Space for length plus nul
-    if (dst == NULL) return NULL;          // No memory
-    strcpy(dst, src);                      // Copy the characters
-    return dst;                            // Return the new string
+tcalc_error_t tcalc_strdup(const char *src, char** out) {
+    *out = (char*)malloc(sizeof(char) * (strlen(src) + 1));  // Space for length plus nul
+    if (*out == NULL) return TCALC_BAD_ALLOC;          // No memory
+    strcpy(*out, src);                      // Copy the characters
+    return TCALC_OK;                            // Return the new string
 }
 
-char* tcalc_strcombine(const char *first, const char *second) {
-  char* out = (char*)malloc(sizeof(char) * (strlen(first) + strlen(second) + 1));
-  if (out == NULL) return NULL;
-  strcpy(out, first);
-  strcat(out, second);
-  return out;
+tcalc_error_t tcalc_strcombine(const char *first, const char *second, char** out) {
+  *out = (char*)calloc((strlen(first) + strlen(second) + 1), sizeof(char));
+  if (*out == NULL) return TCALC_BAD_ALLOC;
+  strcpy(*out, first);
+  strcat(*out, second);
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_strsubstr(const char* src, size_t start, size_t end, char** out) {

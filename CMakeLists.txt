@@ -55,6 +55,10 @@ target_link_libraries(rpn PRIVATE tcalc)
 add_executable(infix_to_rpn ./cli/infix_to_rpn.c)
 target_link_libraries(infix_to_rpn PRIVATE tcalc)
 
+add_executable(exprtree ./cli/exprtree.c)
+target_link_libraries(exprtree PRIVATE tcalc)
+
+
 add_executable(tcalc_cli ./cli/tcalc.c)
 set_property(TARGET tcalc_cli PROPERTY OUTPUT_NAME tcalc)
 target_link_libraries(tcalc_cli PRIVATE tcalc)

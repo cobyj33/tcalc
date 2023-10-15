@@ -69,9 +69,27 @@ typedef struct {
   char* value;
 } tcalc_token_t;
 
+/**
+ * 
+ * Since tokens get passed around so much, it would be difficult to determine
+ * which struct has ownership of a specific token to free its strings for example.
+ * For that reason, all tokens should be allocated through the allocator and free
+ * functions for tcalc_token_t types, so each time a token is used, we know it can
+ * be freed safely
+*/
 
-tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t** out, size_t* returned_size);
-tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t** out, size_t* returned_size);
+/**
+ * Because of the different contexts in which different operators can have in
+ * different contexts and input formats (such as the ambiguous unary - + and binary - +),
+ * we don't have a way to pass in a operator or number to allocation and automatically getting
+ * a configured token.
+*/
+tcalc_error_t tcalc_token_alloc(tcalc_token_type_t type, char* value, tcalc_token_t** out);
+tcalc_error_t tcalc_token_copy(tcalc_token_t* src, tcalc_token_t** out);
+void tcalc_token_free(void* token);
+
+tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_t* out_size);
+tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t* out_size);
 int tcalc_is_valid_token_str(const char* token);
 
 #endif

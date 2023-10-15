@@ -11,8 +11,8 @@
  * Returns strlen(src); if retval >= dsize, truncation occurred.
 */
 size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize);
-char* tcalc_strdup(const char *src);
-char* tcalc_strcombine(const char *first, const char *second);
+tcalc_error_t tcalc_strdup(const char *src, char** out);
+tcalc_error_t tcalc_strcombine(const char *first, const char *second, char** out);
 
 int tcalc_strisint(const char*);
 tcalc_error_t tcalc_strtoint(const char*, int*);

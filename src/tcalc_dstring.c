@@ -57,13 +57,7 @@ tcalc_error_t tcalc_dstring_strlcpy_get(tcalc_dstring* str, char* dest, size_t d
 }
 
 tcalc_error_t tcalc_dstring_cstrdup(tcalc_dstring* str, char** out) {
-  char* dup = tcalc_strdup(str->buffer);
-  if (dup == NULL) {
-    return TCALC_BAD_ALLOC;
-  }
-  
-  *out = dup;
-  return TCALC_OK;
+  return tcalc_strdup(str->buffer, out);
 }
 
 int tcalc_dstring_strcmp(tcalc_dstring* str, const char* other) {

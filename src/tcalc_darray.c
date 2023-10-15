@@ -74,10 +74,8 @@ tcalc_error_t tcalc_darray_peek(tcalc_darray* darray, void* out) {
 }
 
 tcalc_error_t tcalc_darray_pop(tcalc_darray* darray, void* out) {
-  if (out != NULL) {
-    tcalc_error_t err = tcalc_darray_peek(darray, out);
-    if (err) return err;
-  } 
+  tcalc_error_t err = tcalc_darray_peek(darray, out);
+  if (err) return err;
 
   darray->size--;
   return TCALC_OK;

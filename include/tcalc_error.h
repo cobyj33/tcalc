@@ -21,6 +21,7 @@ typedef enum {
 
   TCALC_UNBALANCED_GROUPING_SYMBOLS = -11,
 
+  TCALC_UNIMPLEMENTED = -12,
 
 } tcalc_error_t;
 
