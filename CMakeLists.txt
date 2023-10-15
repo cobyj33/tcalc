@@ -27,6 +27,7 @@ set(TEST_SRC_FILES
 ./tests/src/test_tcalc_tokenize.c
 ./tests/src/test_tcalc_dstring.c
 ./tests/src/test_tcalc_string.c
+./tests/src/test_tcalc_eval.c
 )
 
 add_library(tcalc ${TCALC_SRC_FILES})
