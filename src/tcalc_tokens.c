@@ -278,7 +278,7 @@ typedef struct {
   tcalc_associativity_t associativity;
 } tcalc_op_precedence_t;
 
-tcalc_error_t tcalc_index_of_op_prec_data(const tcalc_op_precedence_t* operations, size_t nb_operations, tcalc_token_t* token, tcalc_op_precedence_t* out) {
+tcalc_error_t tcalc_get_prec_data(const tcalc_op_precedence_t* operations, size_t nb_operations, tcalc_token_t* token, tcalc_op_precedence_t* out) {
   for (int i = 0; i < nb_operations; i++) {
     if (token->type == operations[i].token.type && strcmp(token->value, operations[i].token.value) == 0) {
       *out = operations[i];
@@ -343,6 +343,7 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
           if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
           rpn_tokens_size++;
           operator_stack_size--;
+          
           if (operator_stack_size == 0) {
             err = TCALC_INVALID_OP;
             goto cleanup;
@@ -355,16 +356,16 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
       case TCALC_UNARY_OPERATOR:
       case TCALC_BINARY_OPERATOR: {
         tcalc_op_precedence_t current_optdef, stack_optdef;
-        if ((err = tcalc_index_of_op_prec_data(OP_PRECEDENCE_DEFS, OP_PRECEDENCE_DEF_COUNT, infix_tokens[i], &current_optdef)) != TCALC_OK) goto cleanup;
+        if ((err = tcalc_get_prec_data(OP_PRECEDENCE_DEFS, OP_PRECEDENCE_DEF_COUNT, infix_tokens[i], &current_optdef)) != TCALC_OK) goto cleanup;
 
-        if (operator_stack_size > 0) {
-          while (operator_stack_size > 0 && tcalc_index_of_op_prec_data(OP_PRECEDENCE_DEFS, OP_PRECEDENCE_DEF_COUNT, operator_stack[operator_stack_size - 1], &stack_optdef) == TCALC_OK) {
-            if (stack_optdef.priority > current_optdef.priority || (stack_optdef.priority == current_optdef.priority && current_optdef.associativity == TCALC_LEFT_ASSOCIATIVE)) {
-              if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
-              rpn_tokens_size++;
-              operator_stack_size--;
-            } else { break; }
-          }
+        while (operator_stack_size > 0) {
+          if (tcalc_get_prec_data(OP_PRECEDENCE_DEFS, OP_PRECEDENCE_DEF_COUNT, operator_stack[operator_stack_size - 1], &stack_optdef) != TCALC_OK) break;
+          if (current_optdef.priority > stack_optdef.priority) break;
+          if (current_optdef.priority == stack_optdef.priority && current_optdef.associativity == TCALC_RIGHT_ASSOCIATIVE) break;
+
+          if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
+          rpn_tokens_size++;
+          operator_stack_size--;
         }
 
         operator_stack[operator_stack_size++] = infix_tokens[i];
@@ -384,7 +385,6 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
   }
 
   free(operator_stack);
-
   *out = rpn_tokens;
   *out_size = rpn_tokens_size;
   return TCALC_OK;
@@ -394,8 +394,6 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
     tcalc_free_arr((void**)rpn_tokens, rpn_tokens_size, tcalc_token_freev);
     *out_size = 0;
     return err;
-
-
   #undef OP_PRECEDENCE_DEF_COUNT
 }
 
