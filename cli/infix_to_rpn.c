@@ -1,8 +1,10 @@
+#include "tcalc_mem.h"
+#include "tcalc_tokens.h"
+
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "tcalc_tokens.h"
 
 int main(int argc, char** argv) {
   if (argc < 2) {

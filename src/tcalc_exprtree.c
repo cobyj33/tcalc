@@ -190,7 +190,7 @@ tcalc_error_t tcalc_exprtree_alloc(tcalc_token_t* token, size_t nb_children, tca
   tcalc_exprtree_t* node = (tcalc_exprtree_t*)malloc(sizeof(tcalc_exprtree_t));
   if (node == NULL) return TCALC_BAD_ALLOC;
   
-  if ((err = tcalc_token_copy(token, &node->token)) != TCALC_OK) {
+  if ((err = tcalc_token_clone(token, &node->token)) != TCALC_OK) {
     free(node);
     return err;
   }

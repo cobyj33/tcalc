@@ -44,11 +44,6 @@ typedef enum {
 
 typedef struct {
   char* name;
-  int nb_inputs;
-} tcalc_func_def_t;
-
-typedef struct {
-  char* name;
   int priority;
   tcalc_associativity_t associativity;
 } tcalc_operator_def_t;
@@ -85,7 +80,7 @@ typedef struct {
  * a configured token.
 */
 tcalc_error_t tcalc_token_alloc(tcalc_token_type_t type, char* value, tcalc_token_t** out);
-tcalc_error_t tcalc_token_copy(tcalc_token_t* src, tcalc_token_t** out);
+tcalc_error_t tcalc_token_clone(tcalc_token_t* src, tcalc_token_t** out);
 void tcalc_token_free(tcalc_token_t* token);
 void tcalc_token_freev(void* token);
 

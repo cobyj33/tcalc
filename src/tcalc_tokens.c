@@ -56,7 +56,7 @@ void tcalc_token_freev(void* token) {
   tcalc_token_free((tcalc_token_t*)token);
 }
 
-tcalc_error_t tcalc_token_copy(tcalc_token_t* src, tcalc_token_t** out) {
+tcalc_error_t tcalc_token_clone(tcalc_token_t* src, tcalc_token_t** out) {
   return tcalc_token_alloc(src->type, src->value, out);
 }
 
@@ -325,7 +325,7 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
     switch (infix_tokens[i]->type) {
       case TCALC_NUMBER: {
         tcalc_token_t* copy;
-        if ((err = tcalc_token_copy(infix_tokens[i], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
+        if ((err = tcalc_token_clone(infix_tokens[i], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
         rpn_tokens_size++;
         break;
       }
@@ -340,7 +340,7 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
         }
 
         while (strcmp(operator_stack[operator_stack_size - 1]->value, "(") != 0) { // keep popping onto output until the opening parenthesis is found
-          if ((err = tcalc_token_copy(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
+          if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
           rpn_tokens_size++;
           operator_stack_size--;
           if (operator_stack_size == 0) {
@@ -360,7 +360,7 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
         if (operator_stack_size > 0) {
           while (operator_stack_size > 0 && tcalc_index_of_op_prec_data(OP_PRECEDENCE_DEFS, OP_PRECEDENCE_DEF_COUNT, operator_stack[operator_stack_size - 1], &stack_optdef) == TCALC_OK) {
             if (stack_optdef.priority > current_optdef.priority || (stack_optdef.priority == current_optdef.priority && current_optdef.associativity == TCALC_LEFT_ASSOCIATIVE)) {
-              if ((err = tcalc_token_copy(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
+              if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
               rpn_tokens_size++;
               operator_stack_size--;
             } else { break; }
@@ -378,7 +378,7 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
   }
 
   while (operator_stack_size > 0) {
-    if ((err = tcalc_token_copy(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
+    if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
     rpn_tokens_size++;
     operator_stack_size--;
   }
