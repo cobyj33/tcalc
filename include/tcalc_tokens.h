@@ -43,10 +43,19 @@ typedef enum {
 } tcalc_associativity_t;
 
 typedef struct {
-  char* name;
   int priority;
   tcalc_associativity_t associativity;
-} tcalc_operator_def_t;
+} tcalc_precedence_t;
+
+typedef struct {
+  tcalc_precedence_t precedence;
+} tcalc_binary_op_def_t;
+
+typedef struct {
+  
+} tcalc_unary_op_def_t;
+
+
 
 typedef enum {
   TCALC_NUMBER,
