@@ -20,7 +20,7 @@ tcalc_dstring* tcalc_dstring_alloc() {
   if (str == NULL) {
     return NULL;
   }
-  str->buffer = (char*)malloc(sizeof(char) * TCALC_DSTRING_GROWTH_FACTOR);
+  str->buffer = (char*)malloc(sizeof(char) * TCALC_DSTRING_INITIAL_SIZE);
   if (str->buffer == NULL) {
     free(str);
     return NULL;
@@ -28,7 +28,7 @@ tcalc_dstring* tcalc_dstring_alloc() {
 
   str->buffer[0] = '\0';
   str->size = 0;
-  str->capacity = TCALC_DSTRING_GROWTH_FACTOR;
+  str->capacity = TCALC_DSTRING_INITIAL_SIZE;
   return str;
 }
 

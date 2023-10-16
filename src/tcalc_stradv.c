@@ -9,10 +9,6 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* r
   tcalc_darray* strings = tcalc_darray_alloc(sizeof(char*)); // char** array
   if (strings == NULL) { return TCALC_BAD_ALLOC; }
 
-  #define CLEAN_RETURN(predicate, tcalc_error) if (predicate) { tcalc_darray_free_cb(strings, free); \
-                                                                return tcalc_error; }
-  #define CLEAN_ERROR(tcalc_error_t_func_call) CLEAN_RETURN((err = tcalc_error_t_func_call) != TCALC_OK, err)
-
   size_t start = 0;
   size_t end = 0;
   while (str[end] != '\0') {
@@ -20,8 +16,8 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* r
       end++;
     
     char* substr;
-    CLEAN_ERROR(tcalc_strsubstr(str, start, end, &substr))
-    CLEAN_ERROR(tcalc_darray_push(strings, &substr))
+    if ((err =  tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
+    if ((err = tcalc_darray_push(strings, &substr)) != TCALC_OK) goto cleanup;
 
     while (str[end] == split && str[end] != '\0')
       end++;
@@ -30,15 +26,16 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* r
 
   if (str[start] != '\0') {
     char* substr;
-    CLEAN_ERROR(tcalc_strsubstr(str, start, end, &substr))
-    CLEAN_ERROR(tcalc_darray_push(strings, &substr))
+    if (( err = tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
+    if (( err = tcalc_darray_push(strings, &substr)) != TCALC_OK) goto cleanup;
   }
 
-  CLEAN_ERROR(tcalc_darray_extract(strings, (void**)out))
+  if (( err = tcalc_darray_extract(strings, (void**)out)) != TCALC_OK) goto cleanup;
   *return_size = tcalc_darray_size(strings);
   tcalc_darray_free(strings); // do not free individual strings in cb, as they are now passed to the caller
   return TCALC_OK;
-  
-  #undef CLEAN_ERROR
-  #undef CLEAN_RETURN
-} 
+
+  cleanup:
+    tcalc_darray_free_cb(strings, free); \
+    return err;
+}

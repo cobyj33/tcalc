@@ -86,10 +86,13 @@ typedef struct {
 */
 tcalc_error_t tcalc_token_alloc(tcalc_token_type_t type, char* value, tcalc_token_t** out);
 tcalc_error_t tcalc_token_copy(tcalc_token_t* src, tcalc_token_t** out);
-void tcalc_token_free(void* token);
+void tcalc_token_free(tcalc_token_t* token);
+void tcalc_token_freev(void* token);
 
 tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_t* out_size);
 tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t* out_size);
+tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, size_t nb_infix_tokens, tcalc_token_t*** out, size_t* out_size);
+
 int tcalc_is_valid_token_str(const char* token);
 
 #endif

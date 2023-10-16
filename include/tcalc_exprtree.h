@@ -15,8 +15,12 @@ typedef struct tcalc_exprtree_node_t {
 tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, tcalc_exprtree_t** out);
 tcalc_error_t tcalc_create_exprtree_infix(const char* infix, tcalc_exprtree_t** out);
 
+/**
+ * Free a tcalc expression tree **recursively**
+*/
 void tcalc_exprtree_free(tcalc_exprtree_t* head);
-tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, size_t nb_infix_tokens, tcalc_token_t*** out, size_t* out_size);
+
+
 
 tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, double* out);
 
