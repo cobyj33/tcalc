@@ -19,6 +19,7 @@ tcalc_error_t tcalc_unary_minus(double a, double* out) {
 
 tcalc_error_t tcalc_add(double a, double b, double* out) {
   // if (DBL_MAX - b <= a) return TCALC_OVERFLOW;
+
   *out = a + b;
   return TCALC_OK;
 }

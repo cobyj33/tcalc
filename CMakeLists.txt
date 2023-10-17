@@ -13,8 +13,6 @@ set(TCALC_SRC_FILES
 ./src/tcalc_dstring.c
 ./src/tcalc_func.c
 ./src/tcalc_eval.c
-./src/tcalc_eval_rpn.c
-./src/tcalc_infix_to_rpn.c
 ./src/tcalc_tokens.c
 ./src/tcalc_exprtree.c
 ./src/tcalc_mem.c

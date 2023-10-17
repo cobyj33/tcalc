@@ -47,12 +47,16 @@ tcalc_error_t tcalc_token_alloc(tcalc_token_type_t type, char* value, tcalc_toke
   return TCALC_OK;
 }
 
-void tcalc_token_free(void* token) {
-  free(((tcalc_token_t*)token)->value);
-  free((tcalc_token_t*)token);
+void tcalc_token_free(tcalc_token_t* token) {
+  free(token->value);
+  free(token);
 }
 
-tcalc_error_t tcalc_token_copy(tcalc_token_t* src, tcalc_token_t** out) {
+void tcalc_token_freev(void* token) {
+  tcalc_token_free((tcalc_token_t*)token);
+}
+
+tcalc_error_t tcalc_token_clone(tcalc_token_t* src, tcalc_token_t** out) {
   return tcalc_token_alloc(src->type, src->value, out);
 }
 
@@ -71,25 +75,25 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
   tcalc_error_t err = tcalc_tokenize_strtokens(expr, &str_tokens, &nb_str_tokens);
   if (err) return err;
 
-  *out = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_str_tokens);
-  if (*out == NULL) {
+  tcalc_token_t** infix_tokens = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_str_tokens);
+  size_t nb_infix_tokens = 0;
+  if (infix_tokens == NULL) {
     tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
     return TCALC_BAD_ALLOC;
   }
 
   for (size_t i = 0; i < nb_str_tokens; i++) {
     tcalc_token_type_t token_type;
-    char* value;
 
     if (strcmp(str_tokens[i], "+")  == 0 || strcmp(str_tokens[i], "-") == 0) {
       
       if (i == 0) { // + and - are unary if they are the first token in an expression
         token_type = TCALC_UNARY_OPERATOR;
-      } else if ((*out)[i - 1]->type == TCALC_GROUP_START) { // + and - are unary if they are the first token in a grouping symbol
+      } else if (infix_tokens[i - 1]->type == TCALC_GROUP_START) { // + and - are unary if they are the first token in a grouping symbol
         token_type = TCALC_UNARY_OPERATOR;
-      } else if ((*out)[i - 1]->type == TCALC_BINARY_OPERATOR) { // + and - are unary if they follow another binary operator
+      } else if (infix_tokens[i - 1]->type == TCALC_BINARY_OPERATOR) { // + and - are unary if they follow another binary operator
         token_type = TCALC_UNARY_OPERATOR;
-      } else if ((*out)[i - 1]->type == TCALC_UNARY_OPERATOR) { // + and - are unary if they follow another binary operator
+      } else if (infix_tokens[i - 1]->type == TCALC_UNARY_OPERATOR) { // + and - are unary if they follow another binary operator
         token_type = TCALC_UNARY_OPERATOR;
       } else { // in any other case, + and - are binary
         token_type = TCALC_BINARY_OPERATOR;
@@ -104,24 +108,24 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
     } else if (tcalc_strisdouble(str_tokens[i])) {
       token_type = TCALC_NUMBER;
     } else { // could not identify token type, exit
-      tcalc_free_arr(*out, i, tcalc_token_free);
-      tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
-      return TCALC_INVALID_ARG;
+      err = TCALC_INVALID_ARG;
+      goto cleanup;
     }
 
     tcalc_token_t* token;
-    if ((err = tcalc_token_alloc(token_type, str_tokens[i], &token)) != TCALC_OK) {
-      tcalc_free_arr(*out, i, tcalc_token_free);
-      tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
-      return err;
-    }
-
-    (*out)[i] = token;
+    if ((err = tcalc_token_alloc(token_type, str_tokens[i], &token)) != TCALC_OK) goto cleanup;
+    infix_tokens[nb_infix_tokens++] = token;
   }
 
-  *out_size = nb_str_tokens;
+  *out = infix_tokens;
+  *out_size = nb_infix_tokens;
   tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
   return err;
+
+  cleanup:
+    tcalc_free_arr((void**)infix_tokens, nb_infix_tokens, tcalc_token_freev);
+    tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
+    return err;
 }
 
 /**
@@ -261,15 +265,137 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
 
   cleanup:
     tcalc_free_arr((void**)token_strings, nb_str_tokens, free);
-    tcalc_free_arr((void**)*out, *out_size, tcalc_token_free); // strings in tokens are already freed by freeing the initial token strings
+    tcalc_free_arr((void**)*out, *out_size, tcalc_token_freev); // strings in tokens are already freed by freeing the initial token strings
     return TCALC_INVALID_ARG;
 }
 
 
 
 
+typedef struct {
+  tcalc_token_t token;
+  int priority;
+  tcalc_associativity_t associativity;
+} tcalc_op_precedence_t;
 
+tcalc_error_t tcalc_get_prec_data(const tcalc_op_precedence_t* operations, size_t nb_operations, tcalc_token_t* token, tcalc_op_precedence_t* out) {
+  for (int i = 0; i < nb_operations; i++) {
+    if (token->type == operations[i].token.type && strcmp(token->value, operations[i].token.value) == 0) {
+      *out = operations[i];
+      return TCALC_OK;
+    }
+  }
+  return TCALC_NOT_FOUND;
+}
 
+/**
+ * 
+ * Remember that the number of infix tokens and the number of rpn tokens are not
+ * necessarily the same, as rpn doesn't have grouping tokens at all
+ * 
+ * This isn't in tcalc_tokens because it's really just an implementation step for 
+ * creating an expression tree
+*/
+tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, size_t nb_infix_tokens, tcalc_token_t*** out, size_t* out_size) {
+  tcalc_error_t err;
+  #define OP_PRECEDENCE_DEF_COUNT 7
+
+  const tcalc_op_precedence_t OP_PRECEDENCE_DEFS[OP_PRECEDENCE_DEF_COUNT] = {
+    {{TCALC_BINARY_OPERATOR, "+"}, 1, TCALC_LEFT_ASSOCIATIVE},
+    {{TCALC_BINARY_OPERATOR, "-"}, 1, TCALC_LEFT_ASSOCIATIVE},
+    {{TCALC_BINARY_OPERATOR, "*"}, 2, TCALC_LEFT_ASSOCIATIVE},
+    {{TCALC_BINARY_OPERATOR, "/"}, 2, TCALC_LEFT_ASSOCIATIVE},
+    {{TCALC_BINARY_OPERATOR, "^"}, 3, TCALC_RIGHT_ASSOCIATIVE},
+    {{TCALC_UNARY_OPERATOR, "+"}, 4, TCALC_RIGHT_ASSOCIATIVE},
+    {{TCALC_UNARY_OPERATOR, "-"}, 4, TCALC_RIGHT_ASSOCIATIVE},
+  };
+
+  tcalc_token_t** operator_stack = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_infix_tokens);
+  if (operator_stack == NULL) return TCALC_BAD_ALLOC;
+  size_t operator_stack_size = 0;
+
+  tcalc_token_t** rpn_tokens = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_infix_tokens); // tcalc_token_t* array, will be joined
+  size_t rpn_tokens_size = 0;
+  if (rpn_tokens == NULL) {
+    free(operator_stack);
+    return TCALC_BAD_ALLOC;
+  }
+
+  for (size_t i = 0; i < nb_infix_tokens; i++) {
+    switch (infix_tokens[i]->type) {
+      case TCALC_NUMBER: {
+        tcalc_token_t* copy;
+        if ((err = tcalc_token_clone(infix_tokens[i], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
+        rpn_tokens_size++;
+        break;
+      }
+      case TCALC_GROUP_START: { // "("
+        operator_stack[operator_stack_size++] = infix_tokens[i];
+        break;
+      }
+      case TCALC_GROUP_END: { // ")"
+        if (operator_stack_size == 0) {
+          err = TCALC_INVALID_OP;
+          goto cleanup;
+        }
+
+        while (strcmp(operator_stack[operator_stack_size - 1]->value, "(") != 0) { // keep popping onto output until the opening parenthesis is found
+          if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
+          rpn_tokens_size++;
+          operator_stack_size--;
+          
+          if (operator_stack_size == 0) {
+            err = TCALC_INVALID_OP;
+            goto cleanup;
+          }
+        }
+        operator_stack_size--; // pop off opening parenthesis
+
+        break;
+      }
+      case TCALC_UNARY_OPERATOR:
+      case TCALC_BINARY_OPERATOR: {
+        tcalc_op_precedence_t current_optdef, stack_optdef;
+        if ((err = tcalc_get_prec_data(OP_PRECEDENCE_DEFS, OP_PRECEDENCE_DEF_COUNT, infix_tokens[i], &current_optdef)) != TCALC_OK) goto cleanup;
+
+        while (operator_stack_size > 0) {
+          if (tcalc_get_prec_data(OP_PRECEDENCE_DEFS, OP_PRECEDENCE_DEF_COUNT, operator_stack[operator_stack_size - 1], &stack_optdef) != TCALC_OK) break;
+          if (current_optdef.priority > stack_optdef.priority) break;
+          if (current_optdef.priority == stack_optdef.priority && current_optdef.associativity == TCALC_RIGHT_ASSOCIATIVE) break;
+
+          if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
+          rpn_tokens_size++;
+          operator_stack_size--;
+        }
+
+        operator_stack[operator_stack_size++] = infix_tokens[i];
+        break;
+      }
+      default: {
+        err = TCALC_UNIMPLEMENTED;
+        goto cleanup;
+      }
+    }
+  }
+
+  while (operator_stack_size > 0) {
+    if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
+    rpn_tokens_size++;
+    operator_stack_size--;
+  }
+
+  free(operator_stack);
+  *out = rpn_tokens;
+  *out_size = rpn_tokens_size;
+  return TCALC_OK;
+
+  cleanup:
+   free(operator_stack);
+    tcalc_free_arr((void**)rpn_tokens, rpn_tokens_size, tcalc_token_freev);
+    *out_size = 0;
+    return err;
+  #undef OP_PRECEDENCE_DEF_COUNT
+}
 
 
 
