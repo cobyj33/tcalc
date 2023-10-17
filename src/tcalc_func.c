@@ -1,6 +1,7 @@
 #include "tcalc_func.h"
 
 #include "tcalc_error.h"
+#include "tcalc_constants.h"
 
 #include <math.h>
 #include <errno.h>
@@ -85,7 +86,6 @@ tcalc_error_t tcalc_abs(double a, double* out) {
   return TCALC_OK;
 }
 
-
 tcalc_error_t tcalc_sin(double a, double* out) {
   *out = sin(a);
   return TCALC_OK;
@@ -97,18 +97,22 @@ tcalc_error_t tcalc_cos(double a, double* out) {
 }
 
 tcalc_error_t tcalc_tan(double a, double* out) {
-
+  if (fmod(a - M_PI / 2, M_PI) == 0.0) return TCALC_OVERFLOW;
+  *out = tan(a);
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_asin(double a, double* out) {
   if (a < -1.0 || a > 1.0) return TCALC_NOT_IN_DOMAIN;
 
+  *out = asin(a);
   return TCALC_OK;
 }
 
 tcalc_error_t tcalc_acos(double a, double* out) {
   if (a < -1.0 || a > 1.0) return TCALC_NOT_IN_DOMAIN;
 
+  *out = acos(a);
   return TCALC_OK;
 }
 
@@ -117,30 +121,45 @@ tcalc_error_t tcalc_atan(double a, double* out) {
   return TCALC_OK;
 }
 
-
 tcalc_error_t tcalc_sinh(double a, double* out) {
+  errno = 0;
+  *out =  sinh(a);
 
-
+  if (math_errhandling & MATH_ERRNO && errno == ERANGE) return TCALC_OVERFLOW;
+  if (*out == HUGE_VAL) return TCALC_OVERFLOW;
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_cosh(double a, double* out) {
+  errno = 0;
+  *out =  cosh(a);
 
+  if (math_errhandling & MATH_ERRNO && errno == ERANGE) return TCALC_OVERFLOW;
+  if (*out == HUGE_VAL) return TCALC_OVERFLOW;
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_tanh(double a, double* out) {
-
+  *out = tanh(a);
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_asinh(double a, double* out) {
-
+  *out = asin(a);
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_acosh(double a, double* out) {
-
+  if (a < 1) return TCALC_NOT_IN_DOMAIN;
+  *out = acosh(a);
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_atanh(double a, double* out) {
-
+  if (a < -1 || a > 1) return TCALC_NOT_IN_DOMAIN;
+  if (a == -1 || a == 1) return TCALC_OVERFLOW;
+  *out = atanh(a);
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_log(double a, double* out) {
@@ -157,9 +176,9 @@ tcalc_error_t tcalc_sqrt(double a, double* out) {
   return TCALC_OK;
 }
 
-
 tcalc_error_t tcalc_cbrt(double a, double* out) {
-  
+  *out = cbrt(a);
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_ln(double a, double* out) {
@@ -170,4 +189,10 @@ tcalc_error_t tcalc_ln(double a, double* out) {
   return TCALC_OK;
 }
 
-tcalc_error_t tcalc_exp(double a, double* out);
+tcalc_error_t tcalc_exp(double a, double* out) {
+  *out = exp(a);
+
+  if (math_errhandling & MATH_ERRNO && errno == ERANGE) return TCALC_OVERFLOW;
+  if (*out == HUGE_VAL) return TCALC_OVERFLOW;
+  return TCALC_OK;
+}
