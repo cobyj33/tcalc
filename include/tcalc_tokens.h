@@ -37,30 +37,14 @@ Valid Examples:
 
 "2^(3+3.5)/3"
 */
-typedef enum {
-  TCALC_RIGHT_ASSOCIATIVE,
-  TCALC_LEFT_ASSOCIATIVE,
-} tcalc_associativity_t;
-
-typedef struct {
-  int priority;
-  tcalc_associativity_t associativity;
-} tcalc_precedence_t;
-
-typedef struct {
-  tcalc_precedence_t precedence;
-} tcalc_binary_op_def_t;
-
-typedef struct {
-  
-} tcalc_unary_op_def_t;
-
-
 
 typedef enum {
   TCALC_NUMBER,
   TCALC_UNARY_OPERATOR,
   TCALC_BINARY_OPERATOR,
+  TCALC_UNARY_FUNCTION,
+  TCALC_BINARY_FUNCTION,
+  TCALC_VARIABLE,
   TCALC_FUNCTION,
   TCALC_GROUP_START,
   TCALC_GROUP_END
@@ -68,25 +52,27 @@ typedef enum {
 
 const char* tcalc_token_type_get_string(tcalc_token_type_t token_type);
 
+/**
+ * Since tokens get passed around so much, it would be difficult to determine
+ * which struct has ownership of a specific token. This is important in tracking
+ * when to free a tokens string value. For that reason, all tokens should be
+ * allocated through the allocator and free functions for tcalc_token_t types,
+ * so each time a token is used, we know its can be freed safely without some other
+ * token having a pointer to the same string value
+*/
+
 typedef struct {
   tcalc_token_type_t type;
   char* value;
 } tcalc_token_t;
 
-/**
- * 
- * Since tokens get passed around so much, it would be difficult to determine
- * which struct has ownership of a specific token to free its strings for example.
- * For that reason, all tokens should be allocated through the allocator and free
- * functions for tcalc_token_t types, so each time a token is used, we know it can
- * be freed safely
-*/
 
 /**
  * Because of the different contexts in which different operators can have in
  * different contexts and input formats (such as the ambiguous unary - + and binary - +),
  * we don't have a way to pass in a operator or number to allocation and automatically getting
- * a configured token.
+ * a configured token. Tokenizer functions themselves have to determine when a given token has
+ * a specific meaning
 */
 tcalc_error_t tcalc_token_alloc(tcalc_token_type_t type, char* value, tcalc_token_t** out);
 tcalc_error_t tcalc_token_clone(tcalc_token_t* src, tcalc_token_t** out);

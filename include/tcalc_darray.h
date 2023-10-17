@@ -37,12 +37,16 @@ size_t tcalc_darray_size(tcalc_darray*);
  * by copy, I mean the darray will copy the data located AT the pointer, not the
  * pointer itself. This means stack allocated data like integers can be copied into
  * the darray and the data will persist in the darray once the stack allocated data is inevitably freed,
- * since the data has been copied
+ * since the data of the integer has been copied into the darray's buffer. 
 */
 tcalc_error_t tcalc_darray_push(tcalc_darray*, void*);
 
 tcalc_error_t tcalc_darray_at(tcalc_darray*, void*, size_t);
+
+
 tcalc_error_t tcalc_darray_pop(tcalc_darray*, void*);
+
+
 tcalc_error_t tcalc_darray_peek(tcalc_darray* darray, void* out);
 
 

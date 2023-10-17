@@ -1,9 +1,31 @@
 #ifndef TCALC_ERROR_H
 #define TCALC_ERROR_H
 
+/**
+ * tcalc_error.h - Error handling in tcalc
+ * 
+ * Error handling will
+ * 
+ * In tcalc, functions that have any chance to fail should return a tcalc_error_t
+ * enum. 
+ * This results in a lot of *out parameters in the tcalc program, so I hope you
+ * understand your pointers well.
+ * 
+ * If a function does not return tcalc_error_t, that MUST mean that it will
+ * never fail. This even applies to searching for indexes. Please don't return -1
+ * to mean not found, TCALC_NOT_FOUND exists.
+*/
+
 #define TCALC_ERROR_MAX_SIZE 512
 
+/**
+ * 
+*/
 void tcalc_getfullerror(char* out);
+
+/**
+ * 
+*/
 void tcalc_setfullerror(const char* error);
 
 typedef enum {
