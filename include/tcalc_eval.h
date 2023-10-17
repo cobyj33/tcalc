@@ -6,8 +6,8 @@
 /**
  * tcalc_eval.h - the main meat
  * 
- * This is basically all the real application of tcalc is. It's pretty 
- * self-explanatory, at least I hope.
+ * This is basically all the real application of tcalc is. Everything else is to
+ * make these two functions work well. They're quite simple to be honest, they do math.
 */
 
 tcalc_error_t tcalc_eval(const char* infix, double* out);

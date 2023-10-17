@@ -9,9 +9,20 @@
  * Copy string src to buffer dst of size dsize.  At most dsize-1
  * chars will be copied.  Always NUL terminates (unless dsize == 0).
  * Returns strlen(src); if retval >= dsize, truncation occurred.
+ * 
+ * "Note that room for the NUL should be included in [dsize]."
+ *  - FreeBSD Library Functions Manual (https://man.freebsd.org/cgi/man.cgi?query=strlcpy&sektion=3)
+ * 
+ * Doesn't return tcalc_error_t, because it's just gonna sigsev if it
+ * fails. I had to have done something stupid for this to actually fail like pass
+ * a null pointer.
 */
 size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize);
 tcalc_error_t tcalc_strdup(const char *src, char** out);
+
+/**
+ * Note that the combined string will be allocated and assigned to *out.
+*/
 tcalc_error_t tcalc_strcombine(const char *first, const char *second, char** out);
 
 int tcalc_strisint(const char*);

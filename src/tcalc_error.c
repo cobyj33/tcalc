@@ -2,6 +2,8 @@
 #include "tcalc_error.h"
 #include "tcalc_string.h"
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 char tcalc_error_string[TCALC_ERROR_MAX_SIZE] = {'\0'};
 
@@ -11,6 +13,14 @@ void tcalc_getfullerror(char* out) {
 
 void tcalc_setfullerror(const char* error) {
   tcalc_strlcpy(tcalc_error_string, error, TCALC_ERROR_MAX_SIZE);
+}
+
+void tcalc_setfullerrorf(const char* format, ...) {
+  va_list args;
+  va_start(args, format);
+  vsnprintf(tcalc_error_string, TCALC_ERROR_MAX_SIZE, format, args);
+  tcalc_error_string[TCALC_ERROR_MAX_SIZE - 1] = '\0';
+  va_end(args);
 }
 
 const char* tcalc_strerrcode(tcalc_error_t err) {

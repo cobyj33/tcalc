@@ -28,7 +28,7 @@
  * 
  * Every other token type is currently unimplemented :(
  * 
- * There's no way to validate a tree besides evaluating it with tca and checking that
+ * To validate a tree, evaluate it with tcalc_eval_exprtree and checking that
  * it returns TCALC_OK. 
 */
 typedef struct tcalc_exprtree_node_t {

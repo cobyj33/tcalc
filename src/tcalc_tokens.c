@@ -4,6 +4,7 @@
 #include "tcalc_string.h"
 #include "tcalc_tokens.h"
 #include "tcalc_mem.h"
+#include "tcalc_context.h"
 
 #include <stddef.h>
 #include <ctype.h>
