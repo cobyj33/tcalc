@@ -3,12 +3,6 @@
 
 #include "tcalc_error.h"
 
-
-
-
-typedef tcalc_error_t (*tcalc_unary_op_func)(double, double*);
-typedef tcalc_error_t (*tcalc_binary_op_func)(double, double, double*);
-
 tcalc_error_t tcalc_ceil(double a, double* out);
 tcalc_error_t tcalc_floor(double a, double* out);
 tcalc_error_t tcalc_round(double a, double* out);
