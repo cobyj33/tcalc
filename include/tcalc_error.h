@@ -42,7 +42,7 @@ void tcalc_setfullerror(const char* error);
 */
 void tcalc_setfullerrorf(const char* format, ...);
 
-typedef enum {
+typedef enum tcalc_error_t {
   TCALC_OK = 0,
   TCALC_OUT_OF_BOUNDS = -1,
   TCALC_BAD_ALLOC = -2,

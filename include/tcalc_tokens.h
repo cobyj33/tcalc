@@ -61,7 +61,7 @@ const char* tcalc_token_type_get_string(tcalc_token_type_t token_type);
  * token having a pointer to the same string value
 */
 
-typedef struct {
+typedef struct tcalc_token_t {
   tcalc_token_type_t type;
   char* value;
 } tcalc_token_t;

@@ -143,7 +143,7 @@ tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* ou
   size_t offset = 0;
   char* current_token;
   while ((err = tcalc_next_math_strtoken(expr, &current_token, offset, &offset)) == TCALC_OK) {
-    if ((err = tcalc_alloc_grow(&token_buffer, sizeof(char*), tb_size, &tb_capacity)) != TCALC_OK) goto cleanup;
+    if ((err = tcalc_alloc_grow((void**)&token_buffer, sizeof(char*), tb_size, &tb_capacity)) != TCALC_OK) goto cleanup;
     token_buffer[tb_size++] = current_token;
   }
 

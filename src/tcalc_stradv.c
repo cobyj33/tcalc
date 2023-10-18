@@ -19,7 +19,7 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* o
     
     char* substr;
     if ((err =  tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
-    if ((err = tcalc_alloc_grow(&strings, sizeof(char*), strings_size, &strings_capacity)) != TCALC_OK) goto cleanup;
+    if ((err = tcalc_alloc_grow((void**)&strings, sizeof(char*), strings_size, &strings_capacity)) != TCALC_OK) goto cleanup;
     strings[strings_size++] = substr;
 
     while (str[end] == split && str[end] != '\0')
@@ -30,7 +30,7 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* o
   if (str[start] != '\0') {
     char* substr;
     if (( err = tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
-    if ((err = tcalc_alloc_grow(&strings, sizeof(char*), strings_size, &strings_capacity)) != TCALC_OK) goto cleanup;
+    if ((err = tcalc_alloc_grow((void**)&strings, sizeof(char*), strings_size, &strings_capacity)) != TCALC_OK) goto cleanup;
     strings[strings_size++] = substr;
   }
 
@@ -39,6 +39,6 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* o
   return TCALC_OK;
 
   cleanup:
-    tcalc_free_arr(strings, strings_size, free);
+    tcalc_free_arr((void**)strings, strings_size, free);
     return err;
 }
