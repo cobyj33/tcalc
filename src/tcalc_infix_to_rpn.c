@@ -139,7 +139,7 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
           if ((err = tcalc_token_clone(infix_tokens[i], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
           rpn_tokens_size++;
         } else {
-          err = TCALC_INVALID_OP;
+          err = TCALC_UNKNOWN_IDENTIFIER;
           goto cleanup;
         }
 

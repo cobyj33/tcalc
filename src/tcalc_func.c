@@ -146,7 +146,7 @@ tcalc_error_t tcalc_tanh(double a, double* out) {
 }
 
 tcalc_error_t tcalc_asinh(double a, double* out) {
-  *out = asin(a);
+  *out = asinh(a);
   return TCALC_OK;
 }
 

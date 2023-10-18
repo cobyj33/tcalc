@@ -126,7 +126,7 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
         *out = vardef.value;
         return TCALC_OK;
       } else {
-        return TCALC_INVALID_ARG;
+        return TCALC_UNKNOWN_IDENTIFIER;
       }
       
     }
@@ -254,11 +254,6 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
     tcalc_free_arr((void**)tree_stack, tree_stack_size, tcalc_exprtree_node_freev);
     return err;
 }
-
-
-
-
-
 
 tcalc_error_t tcalc_exprtree_node_alloc(tcalc_token_t* token, size_t nb_children, tcalc_exprtree_t** out) {
   tcalc_error_t err;
