@@ -10,12 +10,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char* ALLOWED_CHARS = "0123456789. ()+-*/^%%";
-const char* SINGLE_TOKENS = "()+-*/^%%";
+const char* ALLOWED_CHARS = "0123456789. ()[]+-*/^%%";
+const char* SINGLE_TOKENS = "()[]+-*/^%%";
 
 int is_valid_tcalc_char(char ch);
 tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
-int tcalc_tokens_are_parentheses_balanced(char** tokens, size_t nb_tokens);
+int tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_tokens);
 tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* out_size);
 
 const char* tcalc_token_type_get_string(tcalc_token_type_t token_type) {
@@ -101,9 +101,9 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
 
     } else if (strcmp(str_tokens[i], "*") == 0 || strcmp(str_tokens[i], "/") == 0 || strcmp(str_tokens[i], "^") == 0) {
       token_type = TCALC_BINARY_OPERATOR;
-    } else if (strcmp(str_tokens[i], "(") == 0) {
+    } else if (strcmp(str_tokens[i], "(") == 0 || strcmp(str_tokens[i], "[") == 0) {
       token_type = TCALC_GROUP_START;
-    } else if (strcmp(str_tokens[i], ")") == 0) {
+    } else if (strcmp(str_tokens[i], ")") == 0 || strcmp(str_tokens[i], "]") == 0) {
       token_type = TCALC_GROUP_END;
     } else if (tcalc_strisdouble(str_tokens[i])) {
       token_type = TCALC_NUMBER;
@@ -148,7 +148,7 @@ tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* ou
   }
 
   if (err != TCALC_STOP_ITER) goto cleanup;
-  if ((err = tcalc_tokens_are_parentheses_balanced(token_buffer, tb_size)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_tokens_are_groupsyms_balanced(token_buffer, tb_size)) != TCALC_OK) goto cleanup;
   *out = token_buffer;
   *out_size = tb_size;
   return TCALC_OK;
@@ -411,16 +411,22 @@ int tcalc_is_valid_token_str(const char* token) {
   return 0;
 }
 
-tcalc_error_t tcalc_tokens_are_parentheses_balanced(char** tokens, size_t nb_tokens) {
-  int stack = 0;
+tcalc_error_t tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_tokens) {
+  int parentheses_stack = 0;
+  int braces_stack = 0;
   for (size_t i = 0; i < nb_tokens; i++) {
     if (strcmp(tokens[i], "(") == 0) {
-      stack++;
+      parentheses_stack++;
     } else if (strcmp(tokens[i], ")") == 0) {
-      stack--;
-      if (stack < 0) return TCALC_UNBALANCED_GROUPING_SYMBOLS;
+      parentheses_stack--;
+      if (parentheses_stack < 0) return TCALC_UNBALANCED_GROUPING_SYMBOLS;
+    } else if (strcmp(tokens[i], "[") == 0) {
+      braces_stack++;
+    } else if (strcmp(tokens[i], "]") == 0) {
+      braces_stack--;
+      if (braces_stack < 0) return TCALC_UNBALANCED_GROUPING_SYMBOLS;
     }
   }
 
-  return stack == 0 ? TCALC_OK : TCALC_UNBALANCED_GROUPING_SYMBOLS;
+  return parentheses_stack == 0 && braces_stack == 0 ? TCALC_OK : TCALC_UNBALANCED_GROUPING_SYMBOLS;
 }
