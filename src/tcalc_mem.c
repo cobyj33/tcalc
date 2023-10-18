@@ -10,28 +10,28 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*)) {
 
 #define alloc_nr(x) (((x)+16)*3/2)
 
-tcalc_error_t tcalc_alloc_grow(void** arr, size_t item_size, size_t size, size_t* alloc) {
-  if (*alloc == 0) {
+tcalc_error_t tcalc_alloc_grow(void** arr, size_t item_size, size_t size, size_t* capacity) {
+  if (*capacity == 0) {
     free(*arr);
-    size_t new_alloc_size = 1;
-    *arr = malloc(item_size * new_alloc_size);
+    size_t new_capacity = 1;
+    *arr = malloc(item_size * new_capacity);
     if (*arr == NULL) {
       return TCALC_BAD_ALLOC;
     }
-    *alloc = new_alloc_size;
-  } else if (size > *alloc) {
-    size_t new_alloc_size = *alloc;
-    if (alloc_nr(*alloc) < size) {
-      new_alloc_size = size;
+    *capacity = new_capacity;
+  } else if (size > *capacity) {
+    size_t new_capacity = *capacity;
+    if (alloc_nr(*capacity) < size) {
+      new_capacity = size;
     } else {
-      new_alloc_size = alloc_nr(*alloc);
+      new_capacity = alloc_nr(*capacity);
     }
 
-    void* realloced = realloc(*arr, item_size * new_alloc_size);
+    void* realloced = realloc(*arr, item_size * new_capacity);
     if (realloced == NULL)
       return TCALC_BAD_ALLOC;
     *arr = realloced;
-    *alloc = new_alloc_size
+    *capacity = new_capacity;
   }
 
   return TCALC_OK;

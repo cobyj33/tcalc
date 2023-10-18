@@ -1,13 +1,16 @@
 #include "tcalc_string.h"
 #include "tcalc_darray.h"
 #include "tcalc_error.h"
+
+#include "tcalc_mem.h"
 #include <stddef.h>
 #include <stdlib.h>
 
-tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* return_size) {
+tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_OK;
-  tcalc_darray* strings = tcalc_darray_alloc(sizeof(char*)); // char** array
-  if (strings == NULL) { return TCALC_BAD_ALLOC; }
+  char** strings = NULL;
+  size_t strings_size = 0;
+  size_t strings_capacity = 0;
 
   size_t start = 0;
   size_t end = 0;
@@ -17,7 +20,8 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* r
     
     char* substr;
     if ((err =  tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
-    if ((err = tcalc_darray_push(strings, &substr)) != TCALC_OK) goto cleanup;
+    if ((err = tcalc_alloc_grow(&strings, sizeof(char*), strings_size, &strings_capacity)) != TCALC_OK) goto cleanup;
+    strings[strings_size++] = substr;
 
     while (str[end] == split && str[end] != '\0')
       end++;
@@ -27,15 +31,15 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* r
   if (str[start] != '\0') {
     char* substr;
     if (( err = tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
-    if (( err = tcalc_darray_push(strings, &substr)) != TCALC_OK) goto cleanup;
+    if ((err = tcalc_alloc_grow(&strings, sizeof(char*), strings_size, &strings_capacity)) != TCALC_OK) goto cleanup;
+    strings[strings_size++] = substr;
   }
 
-  if (( err = tcalc_darray_extract(strings, (void**)out)) != TCALC_OK) goto cleanup;
-  *return_size = tcalc_darray_size(strings);
-  tcalc_darray_free(strings); // do not free individual strings in cb, as they are now passed to the caller
+  *out = strings;
+  *out_size = strings_size;
   return TCALC_OK;
 
   cleanup:
-    tcalc_darray_free_cb(strings, free); \
+    tcalc_free_arr(strings, strings_size, free);
     return err;
 }

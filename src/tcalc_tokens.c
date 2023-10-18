@@ -135,39 +135,28 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
  * Checks for balanced parentheses too
 */
 tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* out_size) {
-  tcalc_error_t err;
+  tcalc_error_t err = TCALC_OK;
   *out_size = 0;
-  tcalc_darray* token_buffer = tcalc_darray_alloc(sizeof(char*)); // char**
-  if (token_buffer == NULL) return TCALC_BAD_ALLOC;
+  char** token_buffer = NULL;
+  size_t tb_size = 0;
+  size_t tb_capacity = 0;
 
   size_t offset = 0;
   char* current_token;
   while ((err = tcalc_next_math_strtoken(expr, &current_token, offset, &offset)) == TCALC_OK) {
-    if ((err = tcalc_darray_push(token_buffer, (void*)&current_token)) != TCALC_OK) {
-      tcalc_darray_free_cb(token_buffer, free);
-      return err;
-    }
+    if ((err = tcalc_alloc_grow(&token_buffer, sizeof(char*), tb_size, &tb_capacity)) != TCALC_OK) goto cleanup;
+    token_buffer[tb_size++] = current_token;
   }
 
-  if (err != TCALC_STOP_ITER) {
-    tcalc_darray_free_cb(token_buffer, free);
-    return err;
-  }
-
-  if ((err = tcalc_darray_extract(token_buffer, (void**)out)) != TCALC_OK) {
-    tcalc_darray_free_cb(token_buffer, free);
-    return err;
-  }
-
-  if (!tcalc_tokens_are_parentheses_balanced(*out, tcalc_darray_size(token_buffer))) {
-    tcalc_free_arr((void**)*out, tcalc_darray_size(token_buffer), free);
-    tcalc_darray_free(token_buffer);
-    return TCALC_UNBALANCED_GROUPING_SYMBOLS;
-  }
-
-  *out_size = tcalc_darray_size(token_buffer);
-  tcalc_darray_free(token_buffer); // don't free with callback, as caller will have tokenized strings now
+  if (err != TCALC_STOP_ITER) goto cleanup;
+  if ((err = tcalc_tokens_are_parentheses_balanced(token_buffer, tb_size)) != TCALC_OK) goto cleanup;
+  *out = token_buffer;
+  *out_size = tb_size;
   return TCALC_OK;
+
+  cleanup:
+    tcalc_free_arr((void**)token_buffer, tb_size, free);
+    return err;
 }
 
 tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t start, size_t* new_offset) {
@@ -423,16 +412,16 @@ int tcalc_is_valid_token_str(const char* token) {
   return 0;
 }
 
-int tcalc_tokens_are_parentheses_balanced(char** tokens, size_t nb_tokens) {
+tcalc_error_t tcalc_tokens_are_parentheses_balanced(char** tokens, size_t nb_tokens) {
   int stack = 0;
   for (size_t i = 0; i < nb_tokens; i++) {
     if (strcmp(tokens[i], "(") == 0) {
       stack++;
     } else if (strcmp(tokens[i], ")") == 0) {
       stack--;
-      if (stack < 0) return 0;
+      if (stack < 0) return TCALC_UNBALANCED_GROUPING_SYMBOLS;
     }
   }
 
-  return stack == 0;
+  return stack == 0 ? TCALC_OK : TCALC_UNBALANCED_GROUPING_SYMBOLS;
 }
