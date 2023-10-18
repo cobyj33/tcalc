@@ -38,14 +38,19 @@ typedef struct tcalc_exprtree_node_t {
   size_t nb_children;
 } tcalc_exprtree_t;
 
-
-tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, tcalc_exprtree_t** out);
-tcalc_error_t tcalc_create_exprtree_infix(const char* infix, tcalc_exprtree_t** out);
-
+tcalc_error_t tcalc_exprtree_node_alloc(tcalc_token_t* token, size_t nb_children, tcalc_exprtree_t** out);
+void tcalc_exprtree_node_free(tcalc_exprtree_t* node);
+void tcalc_exprtree_node_freev(void* node);
 /**
  * Free a tcalc expression tree recursively
 */
 void tcalc_exprtree_free(tcalc_exprtree_t* head);
+
+tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, const tcalc_context_t* context, tcalc_exprtree_t** out);
+tcalc_error_t tcalc_create_exprtree_infix(const char* infix, const tcalc_context_t* context, tcalc_exprtree_t** out);
+tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** tokens, size_t nb_tokens, const tcalc_context_t* context, tcalc_token_t*** out, size_t* out_size);
+
+
 
 tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t* context, double* out);
 

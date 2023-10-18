@@ -7,7 +7,7 @@
 
 typedef struct tcalc_variable_def_t {
   const char* identifier;
-  const double value;
+  double value;
 } tcalc_variable_def_t;
 
 typedef enum tcalc_associativity_t{
@@ -79,14 +79,14 @@ typedef struct tcalc_context_t {
   size_t nb_variables;
 } tcalc_context_t;
 
-extern const tcalc_context_t tcalc_global_context;
+extern const tcalc_context_t TCALC_GLOBAL_CONTEXT;
 
 tcalc_error_t tcalc_context_has_unary_func(const tcalc_context_t* context, const char* name);
 tcalc_error_t tcalc_context_has_binary_func(const tcalc_context_t* context, const char* name);
 tcalc_error_t tcalc_context_has_variable(const tcalc_context_t* context, const char* name);
 
-tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const char* name, tcalc_unary_func_def_t** out);
-tcalc_error_t tcalc_context_get_binary_func(const tcalc_context_t* context, const char* name, tcalc_binary_func_def_t** out);
-tcalc_error_t tcalc_context_get_variable(const tcalc_context_t* context, const char* name, tcalc_variable_def_t** out);
+tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const char* name, tcalc_unary_func_def_t* out);
+tcalc_error_t tcalc_context_get_binary_func(const tcalc_context_t* context, const char* name, tcalc_binary_func_def_t* out);
+tcalc_error_t tcalc_context_get_variable(const tcalc_context_t* context, const char* name, tcalc_variable_def_t* out);
 
 #endif

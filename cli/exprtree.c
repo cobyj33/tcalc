@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "tcalc_exprtree.h"
+#include "tcalc_context.h"
 
 #define MAX_STACK_SIZE 500
 
@@ -15,7 +16,7 @@ int main(int argc, char** argv) {
   }
 
   tcalc_exprtree_t* tree;
-  tcalc_error_t err = tcalc_create_exprtree_infix(argv[1], &tree);
+  tcalc_error_t err = tcalc_create_exprtree_infix(argv[1], &TCALC_GLOBAL_CONTEXT, &tree);
   if (err) {
     printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
     return EXIT_FAILURE;

@@ -1,7 +1,10 @@
 
 #ifndef TCALC_TOKENS_H
 #define TCALC_TOKENS_H
+
 #include "tcalc_error.h"
+#include "tcalc_context.h"
+
 #include <stddef.h>
 
 /*
@@ -13,8 +16,9 @@ All Alphanumeric Characters
 " " whitespace (will be ignored)
 
 Tokens will be separated based on:
-- strings of numerical characters
-- 
+- strings of unsigned integers
+- strings of unsigned decimal numbers
+- strings of lowercase letters
 - operators
 - grouping symbols
 
@@ -42,6 +46,7 @@ typedef enum tcalc_token_type_t {
   TCALC_NUMBER, // A parsable number
   TCALC_UNARY_OPERATOR,
   TCALC_BINARY_OPERATOR,
+  TCALC_PARAM_SEPARATOR,
   TCALC_IDENTIFIER, // Any alphabetical word which may denote some sort of function or variable depending on a given tcalc_context
   TCALC_GROUP_START, // Starting token for a grouping symbol
   TCALC_GROUP_END // Ending token for a grouping symbol
@@ -78,8 +83,5 @@ void tcalc_token_freev(void* token);
 
 tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_t* out_size);
 tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t* out_size);
-
-tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, size_t nb_infix_tokens, tcalc_token_t*** out, size_t* out_size);
-
 
 #endif

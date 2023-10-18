@@ -1,5 +1,7 @@
 #include "tcalc_mem.h"
 #include "tcalc_tokens.h"
+#include "tcalc_exprtree.h"
+#include "tcalc_constants.h"
 
 #include <stdio.h>
 #include <stddef.h>
@@ -22,7 +24,7 @@ int main(int argc, char** argv) {
 
   tcalc_token_t** rpn_tokens;
   size_t nb_rpn_tokens;
-  err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, &rpn_tokens, &nb_rpn_tokens);
+  err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, &TCALC_GLOBAL_CONTEXT, &rpn_tokens, &nb_rpn_tokens);
   tcalc_free_arr((void**)infix_tokens, nb_infix_tokens, tcalc_token_freev);
   if (err) {
     printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
