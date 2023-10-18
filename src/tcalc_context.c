@@ -4,21 +4,6 @@
 
 const tcalc_context_t tcalc_global_context = {
   {
-    {'+', {4, TCALC_RIGHT_ASSOCIATIVE}, tcalc_unary_plus},
-    {'-', {4, TCALC_RIGHT_ASSOCIATIVE}, tcalc_unary_minus},
-  },
-  {
-    {'+', {1, TCALC_LEFT_ASSOCIATIVE}, tcalc_add},
-    {'-', {1, TCALC_LEFT_ASSOCIATIVE}, tcalc_subtract},
-    {'*', {2, TCALC_LEFT_ASSOCIATIVE}, tcalc_multiply},
-    {'/', {2, TCALC_LEFT_ASSOCIATIVE}, tcalc_divide},
-    {'%', {2, TCALC_LEFT_ASSOCIATIVE}, tcalc_mod},
-    {'^', {3, TCALC_RIGHT_ASSOCIATIVE}, tcalc_pow},
-  },
-  {
-    {'(', ')'}
-  },
-  {
     {"sin", tcalc_sin},
     {"cos", tcalc_cos},
     {"tan", tcalc_tan},

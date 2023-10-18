@@ -68,12 +68,8 @@ typedef struct tcalc_grouping_symbol_def_t {
  *  can have the same symbol identifiers. This should be taken with salt though, as the tokenizer
  *  will disambiguate itself which + or - are unary and which + or - are binary. 
  *  If I had created math I wouldn't have created it like this.
- * 
 */
 typedef struct tcalc_context_t {
-  tcalc_unary_op_def_t unary_ops[TCALC_CONTEXT_MAX_UNARY_OP_DEFS];
-  tcalc_binary_op_def_t binary_ops[TCALC_CONTEXT_MAX_BINARY_OP_DEFS];
-  tcalc_grouping_symbol_def_t grouping_symbols[TCALC_CONTEXT_MAX_GROUPING_SYMBOL_DEFS];
   tcalc_unary_func_def_t unary_funcs[TCALC_CONTEXT_MAX_UNARY_FUNC_DEFS];
   tcalc_binary_func_def_t binary_funcs[TCALC_CONTEXT_MAX_BINARY_FUNC_DEFS];
   tcalc_variable_def_t variables[TCALC_CONTEXT_MAX_VARIABLE_DEFS];
