@@ -58,6 +58,7 @@ typedef enum tcalc_error_t {
   TCALC_UNBALANCED_GROUPING_SYMBOLS = -11,
 
   TCALC_UNIMPLEMENTED = -12,
+  TCALC_UNKNOWN = -13,
 
 } tcalc_error_t;
 

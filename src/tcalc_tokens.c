@@ -14,6 +14,7 @@ const char* ALLOWED_CHARS = "0123456789. ()[]+-*/^%%";
 const char* SINGLE_TOKENS = "()[]+-*/^%%";
 
 int is_valid_tcalc_char(char ch);
+int tcalc_is_valid_token_str(const char* token);
 tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
 int tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_tokens);
 tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* out_size);
@@ -255,10 +256,8 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
   cleanup:
     tcalc_free_arr((void**)token_strings, nb_str_tokens, free);
     tcalc_free_arr((void**)*out, *out_size, tcalc_token_freev); // strings in tokens are already freed by freeing the initial token strings
-    return TCALC_INVALID_ARG;
+    return err;
 }
-
-
 
 
 typedef struct {
@@ -328,7 +327,17 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
           goto cleanup;
         }
 
-        while (strcmp(operator_stack[operator_stack_size - 1]->value, "(") != 0) { // keep popping onto output until the opening parenthesis is found
+        const char* opener;
+        if (strcmp(infix_tokens[i]->value, ")") == 0) {
+          opener = "(";
+        } else if (strcmp(infix_tokens[i]->value, "]") == 0) {
+          opener = "[";
+        } else {
+          err = TCALC_INVALID_OP;
+          goto cleanup;
+        }
+
+        while (strcmp(operator_stack[operator_stack_size - 1]->value, opener) != 0) { // keep popping onto output until the opening parenthesis is found
           if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
           rpn_tokens_size++;
           operator_stack_size--;
@@ -412,21 +421,69 @@ int tcalc_is_valid_token_str(const char* token) {
 }
 
 tcalc_error_t tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_tokens) {
-  int parentheses_stack = 0;
-  int braces_stack = 0;
+  tcalc_error_t err = TCALC_UNKNOWN;
+  
+  const char** stack = NULL;
+  size_t stack_size = 0;
+  size_t stack_capacity = 0;
+
   for (size_t i = 0; i < nb_tokens; i++) {
     if (strcmp(tokens[i], "(") == 0) {
-      parentheses_stack++;
-    } else if (strcmp(tokens[i], ")") == 0) {
-      parentheses_stack--;
-      if (parentheses_stack < 0) return TCALC_UNBALANCED_GROUPING_SYMBOLS;
+      if ((err = tcalc_alloc_grow((void**)&stack, sizeof(const char*), stack_size, &stack_capacity)) != TCALC_OK) goto cleanup;
+      stack[stack_size++] = "(";
     } else if (strcmp(tokens[i], "[") == 0) {
-      braces_stack++;
+      if ((err = tcalc_alloc_grow((void**)&stack, sizeof(const char*), stack_size, &stack_capacity)) != TCALC_OK) goto cleanup;
+      stack[stack_size++] = "[";
+    } else if (strcmp(tokens[i], ")") == 0) {
+      if (stack_size <= 0) {
+        err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
+        goto cleanup;
+      }
+      if (strcmp(stack[stack_size - 1], "(") != 0) {
+        err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
+        goto cleanup;
+      }
+      
+      stack_size--;
     } else if (strcmp(tokens[i], "]") == 0) {
-      braces_stack--;
-      if (braces_stack < 0) return TCALC_UNBALANCED_GROUPING_SYMBOLS;
+      if (stack_size <= 0) {
+        err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
+        goto cleanup;
+      }
+      if (strcmp(stack[stack_size - 1], "[") != 0) {
+        err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
+        goto cleanup;
+      }
+
+      stack_size--;
+    }
+
+    if (stack_size < 0) {
+      err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
+      goto cleanup; 
     }
   }
 
-  return parentheses_stack == 0 && braces_stack == 0 ? TCALC_OK : TCALC_UNBALANCED_GROUPING_SYMBOLS;
+  free(stack);
+  return stack_size == 0 ? TCALC_OK : TCALC_UNBALANCED_GROUPING_SYMBOLS;
+
+  cleanup:
+    free(stack);
+    return err;
+}
+
+tcalc_error_t tcalc_get_corresponding_groupsym(const char* value, const char** out) {
+  if (strcmp(value, "(") == 0) {
+    *out = ")";
+  } else if (strcmp(value, ")") == 0) {
+    *out = "(";
+  } else if (strcmp(value, "[") == 0) {
+    *out = "]";
+  } else if (strcmp(value, "]") == 0) {
+    *out = "[";
+  } else {
+    return TCALC_NOT_FOUND;
+  }
+
+  return TCALC_OK;
 }
