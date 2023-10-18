@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include "tcalc_tokens.h"
 #include "tcalc_error.h"
+#include "tcalc_context.h"
 
 /**
  * 
@@ -42,12 +43,12 @@ tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, tcalc_exprtree_t** out)
 tcalc_error_t tcalc_create_exprtree_infix(const char* infix, tcalc_exprtree_t** out);
 
 /**
- * Free a tcalc expression tree **recursively**
+ * Free a tcalc expression tree recursively
 */
 void tcalc_exprtree_free(tcalc_exprtree_t* head);
 
+tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t* context, double* out);
 
 
-tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, double* out);
 
 #endif

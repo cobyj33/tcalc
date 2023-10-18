@@ -58,16 +58,14 @@ tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, tcalc_exprtree_t** out)
  * If the token type is a unary operator
  * 
 */
-tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, double* out) {
+tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t* context, double* out) {
   switch (expr->token->type) {
     case TCALC_NUMBER: { 
-      tcalc_error_t err = tcalc_strtodouble(expr->token->value, out);
-      if (err) return err;
-      return TCALC_OK;
+      return tcalc_strtodouble(expr->token->value, out);
     }
     case TCALC_UNARY_OPERATOR: {
       double operand;
-      tcalc_error_t err = tcalc_eval_exprtree(expr->children[0], &operand);
+      tcalc_error_t err = tcalc_eval_exprtree(expr->children[0], context, &operand);
       if (err) return err;
 
       if (strcmp(expr->token->value, "+") == 0) {
@@ -81,9 +79,9 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, double* out) {
     case TCALC_BINARY_OPERATOR: {
       double operand1;
       double operand2;
-      tcalc_error_t err = tcalc_eval_exprtree(expr->children[0], &operand1);
+      tcalc_error_t err = tcalc_eval_exprtree(expr->children[0], context, &operand1);
       if (err) return err;
-      err = tcalc_eval_exprtree(expr->children[1], &operand2);
+      err = tcalc_eval_exprtree(expr->children[1], context, &operand2);
       if (err) return err;
       
       if (strcmp(expr->token->value, "+") == 0) {
@@ -102,6 +100,39 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, double* out) {
         return TCALC_INVALID_ARG;
       }
     }
+    case TCALC_IDENTIFIER: {
+
+      if (tcalc_context_has_unary_func(context, expr->token->value)) {
+        tcalc_unary_func_def_t* unary_func_def;
+        tcalc_context_get_unary_func(context, expr->token->value, &unary_func_def);
+        
+        double operand;
+        tcalc_error_t err = tcalc_eval_exprtree(expr->children[0], context, &operand);
+        if (err) return err;
+
+        return unary_func_def->function(operand, out);
+      } else if (tcalc_context_has_binary_func(context, expr->token->value)) {
+        tcalc_binary_func_def_t* binary_func_def;
+        tcalc_context_get_binary_func(context, expr->token->value, &binary_func_def);
+
+        double operand1;
+        double operand2;
+        tcalc_error_t err = tcalc_eval_exprtree(expr->children[0], context, &operand1);
+        if (err) return err;
+        err = tcalc_eval_exprtree(expr->children[1], context, &operand2);
+        if (err) return err;
+      
+        return binary_func_def->function(operand1, operand2, out);
+      } else if (tcalc_context_has_variable(context, expr->token->value)) {
+        tcalc_variable_def_t* vardef;
+        tcalc_context_get_variable(context, expr->token->value, &vardef);
+
+        return vardef->value;
+      } else {
+        return TCALC_INVALID_ARG;
+      }
+      
+    }
     default: {
       return TCALC_INVALID_ARG;
     }
@@ -117,6 +148,11 @@ void tcalc_exprtree_free(tcalc_exprtree_t* head) {
   free(head);
 }
 
+/**
+ * Fun fact, the rpn representation of a 
+ * 
+ * 
+*/
 tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tokens, tcalc_exprtree_t** out) {
   tcalc_error_t err = TCALC_OK;
 

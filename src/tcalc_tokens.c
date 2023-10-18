@@ -10,21 +10,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char* ALLOWED_CHARS = "0123456789. ()[]+-*/^%";
+const char* ALLOWED_CHARS = "0123456789. abcdefghijklmnopqrstuvwxyz()[]+-*/^%";
 const char* SINGLE_TOKENS = "()[]+-*/^%";
 
 int is_valid_tcalc_char(char ch);
 tcalc_error_t tcalc_valid_token_str(const char* token);
 tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
-int tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_tokens);
+int tcalc_are_groupsyms_balanced(char* expr);
 tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* out_size);
+int tcalc_is_identifier(const char* str);
 
 const char* tcalc_token_type_get_string(tcalc_token_type_t token_type) {
   switch (token_type) {
     case TCALC_NUMBER: return "number";
     case TCALC_UNARY_OPERATOR: return "unary operator";
     case TCALC_BINARY_OPERATOR: return "binary operator";
-    case TCALC_FUNCTION: return "function";
+    case TCALC_IDENTIFIER: return "identifier";
     case TCALC_GROUP_START: return "group start";
     case TCALC_GROUP_END: return "group end";
   }
@@ -64,13 +65,22 @@ tcalc_error_t tcalc_token_clone(tcalc_token_t* src, tcalc_token_t** out) {
 
 
 /**
- * This function mainly serves to identify and resolve unary negative and positive signs
- * before they are processed by an actual parser.
  * 
- * Additionally, this tokenizer will make sure that parentheses are properly balanced
+ * Tokenize infix expression and assign token types to each token.
+ * 
+ * tcalc_tokenize_infix checks for balanced grouping symbols and returns
+ * TCALC_UNBALANCED_GROUPING_SYMBOLS error upon imbalanced grouping symbols.
+ * 
+ * 
+ * tcalc_tokenize_infix serves to identify and resolve unary negative and positive signs
+ * before they are processed.
+ * 
 */
 tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_t* out_size) {
+  tcalc_error_t err = TCALC_UNKNOWN;
   *out_size = 0;
+  if ((err = tcalc_are_groupsyms_balanced(expr)) != TCALC_OK) return err;
+
   char** str_tokens;
   size_t nb_str_tokens;
   tcalc_error_t err = tcalc_tokenize_strtokens(expr, &str_tokens, &nb_str_tokens);
@@ -111,6 +121,8 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
       token_type = TCALC_GROUP_END;
     } else if (tcalc_strisdouble(str_tokens[i])) {
       token_type = TCALC_NUMBER;
+    } else if (tcalc_is_identifier(str_tokens[i])) {
+      token_type = TCALC_IDENTIFIER;  
     } else { // could not identify token type, exit
       err = TCALC_INVALID_ARG;
       goto cleanup;
@@ -133,9 +145,30 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
 }
 
 /**
+ * Call and gather all tokens from subsequent calls to tcalc_next_math_strtoken
+ * and return them in an array to *out. 
  * 
+ * *out will be allocated with a size of *out_size by tcalc_tokenize_strtokens
+ * upon returning TCALC_OK. If TCALC_OK is not returned, then *out has not been
+ * allocated and does not have to be freed.
  * 
- * Checks for balanced parentheses too
+ * This function does NOT check for balanced parenthesis, or any other syntactical
+ * errors in that matter. Some other examples of syntactical errors not checked
+ * are unknown functions or variables. 
+ * 
+ * Lexical errors like miswritten numbers or unknown operators/symbols are seen
+ * as errors, as according to tcalc_next_math_strtoken.
+ * 
+ * Examples:
+ * 
+ * "32+-34*(5 * 101)"
+ * "32", "+", "-", "34", "*", "(", "5", "*", "101", ")"
+ * 
+ * "3+sin(43)"
+ * "3", "+", "sin", "(", "43", ")"
+ * 
+ * "     [45 ^ (3 / 2)] *   +11"
+ * "[", "45", "^", "(", "3", "/", "2", ")", "]", "*", "+", "11"
 */
 tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_OK;
@@ -152,7 +185,6 @@ tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* ou
   }
 
   if (err != TCALC_STOP_ITER) goto cleanup;
-  if ((err = tcalc_tokens_are_groupsyms_balanced(token_buffer, tb_size)) != TCALC_OK) goto cleanup;
   *out = token_buffer;
   *out_size = tb_size;
   return TCALC_OK;
@@ -162,6 +194,35 @@ tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* ou
     return err;
 }
 
+/**
+ * Simple iterable tokenizing function
+ * 
+ * Only the characters in the string "0123456789. abcdefghijklmnopqrstuvwxyz()[]+-*\/^%"
+ * will be recognized (except the backslash ofc). Any other character being present will return an error.
+ * 
+ * All +, -, /, *, ^, %, [, ,], (, ) tokens are immediately read and returned.
+ * This even applies to negative numbers. A "-34" will be returned as two separate
+ * tokens upon subsequent calls: "-" and "34"
+ * 
+ * All strings of alphabetical lowercase letters will be grouped and returned as one.
+ * 
+ * All whitespace is ignored
+ * 
+ * TCALC_STOP_ITER is returned when the end of the expression has been reached.
+ * If TCALC_STOP_ITER is returned, then *out is not allocated.
+ * 
+ * TCALC_OK is returned when a token has been successfully read to *out.
+ * 
+ * Any other error code is an actual lexing error and should be treated as such.
+ * 
+ * This function should really never be called directly, and should be used through
+ * tcalc_tokenize_strtokens instead
+ * 
+ * Examples:
+ * 
+ * "32+-34*(5 * 101)"
+ * "32", "+", "-", "34", "*", "(", "5", "*", "101", ")"
+*/
 tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t start, size_t* new_offset) {
   tcalc_error_t err;
   size_t offset = start;
@@ -174,7 +235,7 @@ tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t star
   if (!is_valid_tcalc_char(expr[offset])) 
     return TCALC_INVALID_ARG;
 
-	for (int s = 0; SINGLE_TOKENS[s] != '\0'; s++) { // note that unary plus and minus will not work yet
+	for (int s = 0; SINGLE_TOKENS[s] != '\0'; s++) { // checking for operator and grouping symbols
 		if (expr[offset] == SINGLE_TOKENS[s]) {
       if ((err = tcalc_strsubstr(expr, offset, offset + 1, out)) != TCALC_OK) return err;
       *new_offset = offset + 1;
@@ -182,13 +243,13 @@ tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t star
 		}
 	}
 
-	if (isdigit(expr[offset]) || expr[offset] == '.') { // number checking
+	if (isdigit(expr[offset]) || expr[offset] == '.') { // number checking.
 		if (expr[offset] == '.'  && !isdigit(expr[offset + 1])) { // lone decimal point
       return TCALC_INVALID_ARG;
 		}
 
 		int decimalCount = 0;
-    size_t numstart = offset;
+    const size_t num_start = offset;
 
 		while (expr[offset] != '\0' && (isdigit(expr[offset]) || expr[offset] == '.')) {
 			if (expr[offset] == '.') {
@@ -199,12 +260,23 @@ tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t star
       offset++;
 		}
 		
-    if ((err = tcalc_strsubstr(expr, numstart, offset, out))  != TCALC_OK) return err; 
+    if ((err = tcalc_strsubstr(expr, num_start, offset, out))  != TCALC_OK) return err; 
     *new_offset = offset;
     return TCALC_OK;
 	}
+
+  if (islower(expr[offset])) { // identifier checking
+    const size_t id_start = offset;
+    while (expr[offset] != '\0' && islower(expr[offset])) {
+      offset++;
+    }
+
+    if ((err = tcalc_strsubstr(expr, id_start, offset, out))  != TCALC_OK) return err; 
+    *new_offset = offset;
+    return TCALC_OK;
+  }
 	
-	return TCALC_STOP_ITER;
+	return TCALC_STOP_ITER; // this SHOULD be unreachable
 }
 
 /**
@@ -240,6 +312,8 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
       token_type = TCALC_BINARY_OPERATOR;
     } else if (tcalc_strisdouble(token_strings[i])) {
       token_type = TCALC_NUMBER;
+    } else if (tcalc_is_identifier(token_strings[i])) {
+      token_type = TCALC_IDENTIFIER;
     } else { // Could not find matching token definition
       goto cleanup;
     }
@@ -281,12 +355,17 @@ tcalc_error_t tcalc_get_prec_data(const tcalc_op_precedence_t* operations, size_
 }
 
 /**
+ * Implementation of the shunting yard algorithm to reorder infix-formatted
+ * tokens into an rpn-style. Used for further processing of tokens and to help
+ * the ease of creating an AST tree from tokens later on.
+ * 
+ * https://en.wikipedia.org/wiki/Shunting_yard_algorithm
  * 
  * Remember that the number of infix tokens and the number of rpn tokens are not
- * necessarily the same, as rpn doesn't have grouping tokens at all
+ * necessarily the same, as rpn doesn't need grouping tokens.
  * 
- * This isn't in tcalc_tokens because it's really just an implementation step for 
- * creating an expression tree
+ * Upon returning TCALC_OK, *out is an allocated array of size *out_size. The caller
+ * is responsible for freeing these tokens.
 */
 tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, size_t nb_infix_tokens, tcalc_token_t*** out, size_t* out_size) {
   tcalc_error_t err;
@@ -400,10 +479,6 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
   #undef OP_PRECEDENCE_DEF_COUNT
 }
 
-
-
-
-
 int is_valid_tcalc_char(char ch) {
 	for (int i = 0; ALLOWED_CHARS[i] != '\0'; i++)
 		if (ALLOWED_CHARS[i] == ch)
@@ -411,6 +486,10 @@ int is_valid_tcalc_char(char ch) {
 	return 0;
 }
 
+/**
+ * 
+ * returns TCALC_OK on success and TCALC_INVALID_ARG on error.
+*/
 tcalc_error_t tcalc_valid_token_str(const char* token) {
   if (token == NULL) return TCALC_INVALID_ARG;
   if (token[0] == '\0') return TCALC_INVALID_ARG; // empty string
@@ -422,45 +501,48 @@ tcalc_error_t tcalc_valid_token_str(const char* token) {
   }
 
   if (tcalc_strisdouble(token)) return TCALC_OK;
+  if (tcalc_is_identifier(token)) return TCALC_OK;
+
   return TCALC_INVALID_ARG;
 }
 
-tcalc_error_t tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_tokens) {
+
+/**
+ * There's probably a better way to implement this but whatever
+*/
+tcalc_error_t tcalc_are_groupsyms_balanced(char* expr) {
   tcalc_error_t err = TCALC_UNKNOWN;
   
-  const char** stack = NULL;
+  char* stack = NULL;
   size_t stack_size = 0;
   size_t stack_capacity = 0;
+  char corresponding[256];
+  corresponding[')'] = '(';
+  corresponding[']'] = '[';
 
-  for (size_t i = 0; i < nb_tokens; i++) {
-    if (strcmp(tokens[i], "(") == 0) {
-      if ((err = tcalc_alloc_grow((void**)&stack, sizeof(const char*), stack_size, &stack_capacity)) != TCALC_OK) goto cleanup;
-      stack[stack_size++] = "(";
-    } else if (strcmp(tokens[i], "[") == 0) {
-      if ((err = tcalc_alloc_grow((void**)&stack, sizeof(const char*), stack_size, &stack_capacity)) != TCALC_OK) goto cleanup;
-      stack[stack_size++] = "[";
-    } else if (strcmp(tokens[i], ")") == 0) {
-      if (stack_size <= 0) {
-        err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
-        goto cleanup;
-      }
-      if (strcmp(stack[stack_size - 1], "(") != 0) {
-        err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
-        goto cleanup;
-      }
-      
-      stack_size--;
-    } else if (strcmp(tokens[i], "]") == 0) {
-      if (stack_size <= 0) {
-        err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
-        goto cleanup;
-      }
-      if (strcmp(stack[stack_size - 1], "[") != 0) {
-        err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
-        goto cleanup;
-      }
+  for (size_t i = 0; expr[i] != '\0'; i++) {
 
-      stack_size--;
+    switch (expr[i]) {
+      case '(':
+      case '[': {
+        if ((err = tcalc_alloc_grow((void**)&stack, sizeof (char), stack_size, &stack_capacity)) != TCALC_OK) goto cleanup;
+        stack[stack_size++] = expr[i];
+        break;
+      }
+      case ')':
+      case ']': {
+        if (stack_size <= 0) {
+          err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
+          goto cleanup;
+        }
+        if (stack[stack_size - 1] != corresponding[expr[i]]) {
+          err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
+          goto cleanup;
+        }
+        
+        stack_size--;
+        break;
+      }
     }
 
     if (stack_size < 0) {
@@ -475,4 +557,16 @@ tcalc_error_t tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_token
   cleanup:
     free(stack);
     return err;
+}
+
+int tcalc_is_identifier(const char* str) {
+  int is_identifier = 1;
+  for (size_t i = 0; str[i] != '\0'; i++) {
+    if (!islower(str[i])) {
+      is_identifier = 0;
+      break;
+    } 
+  }
+
+  return is_identifier;
 }

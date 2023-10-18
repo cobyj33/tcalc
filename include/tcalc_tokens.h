@@ -38,16 +38,13 @@ Valid Examples:
 "2^(3+3.5)/3"
 */
 
-typedef enum {
-  TCALC_NUMBER,
+typedef enum tcalc_token_type_t {
+  TCALC_NUMBER, // A parsable number
   TCALC_UNARY_OPERATOR,
   TCALC_BINARY_OPERATOR,
-  TCALC_UNARY_FUNCTION,
-  TCALC_BINARY_FUNCTION,
-  TCALC_VARIABLE,
-  TCALC_FUNCTION,
-  TCALC_GROUP_START,
-  TCALC_GROUP_END
+  TCALC_IDENTIFIER, // Any alphabetical word which may denote some sort of function or variable depending on a given tcalc_context
+  TCALC_GROUP_START, // Starting token for a grouping symbol
+  TCALC_GROUP_END // Ending token for a grouping symbol
 } tcalc_token_type_t;
 
 const char* tcalc_token_type_get_string(tcalc_token_type_t token_type);
@@ -81,6 +78,7 @@ void tcalc_token_freev(void* token);
 
 tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_t* out_size);
 tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t* out_size);
+
 tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, size_t nb_infix_tokens, tcalc_token_t*** out, size_t* out_size);
 
 

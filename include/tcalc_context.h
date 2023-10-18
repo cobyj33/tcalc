@@ -2,6 +2,7 @@
 #define TCALC_CONTEXT_H
 
 #include "tcalc_func_type.h"
+#include <stddef.h>
 
 
 typedef struct tcalc_variable_def_t {
@@ -71,10 +72,21 @@ typedef struct tcalc_grouping_symbol_def_t {
 */
 typedef struct tcalc_context_t {
   tcalc_unary_func_def_t unary_funcs[TCALC_CONTEXT_MAX_UNARY_FUNC_DEFS];
+  size_t nb_unary_funcs;
   tcalc_binary_func_def_t binary_funcs[TCALC_CONTEXT_MAX_BINARY_FUNC_DEFS];
+  size_t nb_binary_funcs;
   tcalc_variable_def_t variables[TCALC_CONTEXT_MAX_VARIABLE_DEFS];
+  size_t nb_variables;
 } tcalc_context_t;
 
 extern const tcalc_context_t tcalc_global_context;
+
+tcalc_error_t tcalc_context_has_unary_func(const tcalc_context_t* context, const char* name);
+tcalc_error_t tcalc_context_has_binary_func(const tcalc_context_t* context, const char* name);
+tcalc_error_t tcalc_context_has_variable(const tcalc_context_t* context, const char* name);
+
+tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const char* name, tcalc_unary_func_def_t** out);
+tcalc_error_t tcalc_context_get_binary_func(const tcalc_context_t* context, const char* name, tcalc_binary_func_def_t** out);
+tcalc_error_t tcalc_context_get_variable(const tcalc_context_t* context, const char* name, tcalc_variable_def_t** out);
 
 #endif

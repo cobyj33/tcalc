@@ -1,6 +1,11 @@
 #include "tcalc_context.h"
+
 #include "tcalc_constants.h"
 #include "tcalc_func.h"
+
+#include <stddef.h>
+#include <string.h>
+
 
 const tcalc_context_t tcalc_global_context = {
   {
@@ -31,12 +36,54 @@ const tcalc_context_t tcalc_global_context = {
     {"floor", tcalc_floor},
     {"round", tcalc_round},
     {"abs", tcalc_abs},
-  },
+  }, 27,
   {
     {"pow", tcalc_pow},
-  },
+  }, 1,
   {
     {"pi", M_PI},
     {"e", M_E}
-  },
+  }, 2
 };
+
+tcalc_error_t tcalc_context_has_unary_func(const tcalc_context_t* context, const char* name) {
+  return tcalc_context_get_unary_func(context, name, NULL);
+}
+
+tcalc_error_t tcalc_context_has_binary_func(const tcalc_context_t* context, const char* name) {
+  return tcalc_context_get_binary_func(context, name, NULL);
+}
+
+tcalc_error_t tcalc_context_has_variable(const tcalc_context_t* context, const char* name) {
+  return tcalc_context_get_variable(context, name, NULL);
+}
+
+tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const char* name, tcalc_unary_func_def_t** out) {
+  for (size_t i = 0; i < context->nb_unary_funcs; i++) {
+    if (strcmp(context->unary_funcs[i].identifier, name) == 0) {
+      if (out != NULL) *out = &context->unary_funcs;
+      return TCALC_OK;
+    }
+  }
+  return TCALC_NOT_FOUND;
+}
+
+tcalc_error_t tcalc_context_get_binary_func(const tcalc_context_t* context, const char* name, tcalc_binary_func_def_t** out) {
+  for (size_t i = 0; i < context->nb_binary_funcs; i++) {
+    if (strcmp(context->binary_funcs[i].identifier, name) == 0) {
+      if (out != NULL) *out = &context->binary_funcs;
+      return TCALC_OK;
+    }
+  }
+  return TCALC_NOT_FOUND;
+}
+
+tcalc_error_t tcalc_context_get_variable(const tcalc_context_t* context, const char* name, tcalc_variable_def_t** out) {
+  for (size_t i = 0; i < context->nb_variables; i++) {
+    if (strcmp(context->variables[i].identifier, name) == 0) {
+      if (out != NULL) *out = &context->variables;
+      return TCALC_OK;
+    }
+  }
+  return TCALC_NOT_FOUND;
+}
