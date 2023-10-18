@@ -2,7 +2,6 @@
 
 #include "tcalc_string.h"
 #include "tcalc_func.h"
-#include "tcalc_darray.h"
 #include "tcalc_mem.h"
 
 #include "string.h"

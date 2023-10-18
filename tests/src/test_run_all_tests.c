@@ -7,7 +7,6 @@ void RunAllTests() {
     CuString *output = CuStringNew();
     CuSuite* suite = CuSuiteNew();
     
-    CuSuiteAddSuite(suite, TCalcDarrayGetSuite());
     CuSuiteAddSuite(suite, TCalcEvalGetSuite());
     CuSuiteAddSuite(suite, TCalcRPNEvalGetSuite());
     CuSuiteAddSuite(suite, TCalcTokenizeGetSuite());
