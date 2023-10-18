@@ -15,7 +15,6 @@ set(TCALC_SRC_FILES
 ./src/tcalc_tokens.c
 ./src/tcalc_exprtree.c
 ./src/tcalc_mem.c
-./src/tcalc_stradv.c
 ./src/tcalc_context.c
 )
 
