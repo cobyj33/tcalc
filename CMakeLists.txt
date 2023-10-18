@@ -16,6 +16,7 @@ set(TCALC_SRC_FILES
 ./src/tcalc_exprtree.c
 ./src/tcalc_mem.c
 ./src/tcalc_stradv.c
+./src/tcalc_context.c
 )
 
 set(TEST_SRC_FILES

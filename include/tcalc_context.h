@@ -49,11 +49,11 @@ typedef struct tcalc_grouping_symbol_def_t {
 
 // these can be tweaked as they're needed. I just gave them values
 // based on general math symbols.
-#define TCALC_CONTEXT_MAX_UNARY_FUNC_DEFS 4
-#define TCALC_CONTEXT_MAX_BINARY_FUNC_DEFS 8
+#define TCALC_CONTEXT_MAX_UNARY_OP_DEFS 4
+#define TCALC_CONTEXT_MAX_BINARY_OP_DEFS 8
 #define TCALC_CONTEXT_MAX_GROUPING_SYMBOL_DEFS 6
-#define TCALC_CONTEXT_MAX_UNARY_OP_DEFS 16
-#define TCALC_CONTEXT_MAX_BINARY_OP_DEFS 16
+#define TCALC_CONTEXT_MAX_UNARY_FUNC_DEFS 32
+#define TCALC_CONTEXT_MAX_BINARY_FUNC_DEFS 32
 #define TCALC_CONTEXT_MAX_VARIABLE_DEFS 16
 
 /**
