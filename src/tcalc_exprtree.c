@@ -96,9 +96,11 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, double* out) {
         return tcalc_divide(operand1, operand2, out);
       } else if (strcmp(expr->token->value, "^") == 0) {
         return tcalc_pow(operand1, operand2, out);
+      } else if (strcmp(expr->token->value, "%") == 0) {
+        return tcalc_mod(operand1, operand2, out);
       } else {
         return TCALC_INVALID_ARG;
-      } 
+      }
     }
     default: {
       return TCALC_INVALID_ARG;

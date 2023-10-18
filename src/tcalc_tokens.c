@@ -10,11 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char* ALLOWED_CHARS = "0123456789. ()[]+-*/^%%";
-const char* SINGLE_TOKENS = "()[]+-*/^%%";
+const char* ALLOWED_CHARS = "0123456789. ()[]+-*/^%";
+const char* SINGLE_TOKENS = "()[]+-*/^%";
 
 int is_valid_tcalc_char(char ch);
-int tcalc_is_valid_token_str(const char* token);
+tcalc_error_t tcalc_valid_token_str(const char* token);
 tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
 int tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_tokens);
 tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* out_size);
@@ -100,7 +100,10 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
         token_type = TCALC_BINARY_OPERATOR;
       }
 
-    } else if (strcmp(str_tokens[i], "*") == 0 || strcmp(str_tokens[i], "/") == 0 || strcmp(str_tokens[i], "^") == 0) {
+    } else if ( strcmp(str_tokens[i], "*") == 0 ||
+                strcmp(str_tokens[i], "/") == 0 ||
+                strcmp(str_tokens[i], "^") == 0 || 
+                strcmp(str_tokens[i], "%") == 0) {
       token_type = TCALC_BINARY_OPERATOR;
     } else if (strcmp(str_tokens[i], "(") == 0 || strcmp(str_tokens[i], "[") == 0) {
       token_type = TCALC_GROUP_START;
@@ -224,7 +227,7 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
   }
 
   for (int i = 0; i < nb_str_tokens; i++) {
-    if (!tcalc_is_valid_token_str(token_strings[i])) goto cleanup;
+    if ((err = tcalc_valid_token_str(token_strings[i])) != TCALC_OK) goto cleanup;
 
     tcalc_token_type_t token_type;
 
@@ -232,7 +235,8 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
         strcmp(token_strings[i], "+") == 0 || 
         strcmp(token_strings[i], "*") == 0 || 
         strcmp(token_strings[i], "/") == 0 || 
-        strcmp(token_strings[i], "^") == 0) {
+        strcmp(token_strings[i], "^") == 0 ||
+        strcmp(token_strings[i], "%") == 0) {
       token_type = TCALC_BINARY_OPERATOR;
     } else if (tcalc_strisdouble(token_strings[i])) {
       token_type = TCALC_NUMBER;
@@ -286,13 +290,14 @@ tcalc_error_t tcalc_get_prec_data(const tcalc_op_precedence_t* operations, size_
 */
 tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, size_t nb_infix_tokens, tcalc_token_t*** out, size_t* out_size) {
   tcalc_error_t err;
-  #define OP_PRECEDENCE_DEF_COUNT 7
+  #define OP_PRECEDENCE_DEF_COUNT 8
 
   const tcalc_op_precedence_t OP_PRECEDENCE_DEFS[OP_PRECEDENCE_DEF_COUNT] = {
     {{TCALC_BINARY_OPERATOR, "+"}, 1, TCALC_LEFT_ASSOCIATIVE},
     {{TCALC_BINARY_OPERATOR, "-"}, 1, TCALC_LEFT_ASSOCIATIVE},
     {{TCALC_BINARY_OPERATOR, "*"}, 2, TCALC_LEFT_ASSOCIATIVE},
     {{TCALC_BINARY_OPERATOR, "/"}, 2, TCALC_LEFT_ASSOCIATIVE},
+    {{TCALC_BINARY_OPERATOR, "%"}, 2, TCALC_LEFT_ASSOCIATIVE},
     {{TCALC_BINARY_OPERATOR, "^"}, 3, TCALC_RIGHT_ASSOCIATIVE},
     {{TCALC_UNARY_OPERATOR, "+"}, 4, TCALC_RIGHT_ASSOCIATIVE},
     {{TCALC_UNARY_OPERATOR, "-"}, 4, TCALC_RIGHT_ASSOCIATIVE},
@@ -388,7 +393,7 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
   return TCALC_OK;
 
   cleanup:
-   free(operator_stack);
+    free(operator_stack);
     tcalc_free_arr((void**)rpn_tokens, rpn_tokens_size, tcalc_token_freev);
     *out_size = 0;
     return err;
@@ -406,18 +411,18 @@ int is_valid_tcalc_char(char ch) {
 	return 0;
 }
 
-int tcalc_is_valid_token_str(const char* token) {
-  if (token == NULL) return 0;
-  if (token[0] == '\0') return 0; // empty string
+tcalc_error_t tcalc_valid_token_str(const char* token) {
+  if (token == NULL) return TCALC_INVALID_ARG;
+  if (token[0] == '\0') return TCALC_INVALID_ARG; // empty string
 
   if (token[1] == '\0') { // single character string
     for (int i = 0; SINGLE_TOKENS[i] != '\0'; i++) {
-      if (token[0] == SINGLE_TOKENS[i]) return 1;
+      if (token[0] == SINGLE_TOKENS[i]) return TCALC_OK;
     }
   }
 
-  if (tcalc_strisdouble(token)) return 1;
-  return 0;
+  if (tcalc_strisdouble(token)) return TCALC_OK;
+  return TCALC_INVALID_ARG;
 }
 
 tcalc_error_t tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_tokens) {
@@ -470,20 +475,4 @@ tcalc_error_t tcalc_tokens_are_groupsyms_balanced(char** tokens, size_t nb_token
   cleanup:
     free(stack);
     return err;
-}
-
-tcalc_error_t tcalc_get_corresponding_groupsym(const char* value, const char** out) {
-  if (strcmp(value, "(") == 0) {
-    *out = ")";
-  } else if (strcmp(value, ")") == 0) {
-    *out = "(";
-  } else if (strcmp(value, "[") == 0) {
-    *out = "]";
-  } else if (strcmp(value, "]") == 0) {
-    *out = "[";
-  } else {
-    return TCALC_NOT_FOUND;
-  }
-
-  return TCALC_OK;
 }

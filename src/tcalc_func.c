@@ -79,7 +79,7 @@ tcalc_error_t tcalc_round(double a, double* out) {
 tcalc_error_t tcalc_mod(double a, double b, double* out) {
   if (b == 0) return TCALC_NOT_IN_DOMAIN;
   *out = fmod(a, b);
-  return *out;
+  return TCALC_OK;
 }
 
 tcalc_error_t tcalc_abs(double a, double* out) {
