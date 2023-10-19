@@ -191,7 +191,7 @@ tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* ou
   size_t offset = 0;
   char* current_token;
   while ((err = tcalc_next_math_strtoken(expr, &current_token, offset, &offset)) == TCALC_OK) {
-    if ((err = tcalc_alloc_grow((void**)&token_buffer, sizeof(char*), tb_size, &tb_capacity)) != TCALC_OK) goto cleanup;
+    if ((err = tcalc_alloc_grow((void**)&token_buffer, sizeof(char*), tb_size + 1, &tb_capacity)) != TCALC_OK) goto cleanup;
     token_buffer[tb_size++] = current_token;
   }
 
@@ -394,7 +394,7 @@ tcalc_error_t tcalc_are_groupsyms_balanced(const char* expr) {
     switch (expr[i]) {
       case '(':
       case '[': {
-        if ((err = tcalc_alloc_grow((void**)&stack, sizeof (char), stack_size, &stack_capacity)) != TCALC_OK) goto cleanup;
+        if ((err = tcalc_alloc_grow((void**)&stack, sizeof (char), stack_size + 1, &stack_capacity)) != TCALC_OK) goto cleanup;
         stack[stack_size++] = expr[i];
         break;
       }
