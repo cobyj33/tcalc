@@ -48,8 +48,8 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
     {{TCALC_BINARY_OPERATOR, "/"}, 2, TCALC_LEFT_ASSOCIATIVE},
     {{TCALC_BINARY_OPERATOR, "%"}, 2, TCALC_LEFT_ASSOCIATIVE},
     {{TCALC_BINARY_OPERATOR, "^"}, 3, TCALC_RIGHT_ASSOCIATIVE},
-    {{TCALC_UNARY_OPERATOR, "+"}, 4, TCALC_RIGHT_ASSOCIATIVE},
-    {{TCALC_UNARY_OPERATOR, "-"}, 4, TCALC_RIGHT_ASSOCIATIVE},
+    {{TCALC_UNARY_OPERATOR, "+"}, 3, TCALC_RIGHT_ASSOCIATIVE},
+    {{TCALC_UNARY_OPERATOR, "-"}, 3, TCALC_RIGHT_ASSOCIATIVE},
   };
 
   tcalc_token_t** operator_stack = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_infix_tokens);

@@ -7,7 +7,7 @@
 #include <stddef.h>
 //tcalc_error_t tcalc_eval_rpn(const char* rpn, double* out);
 
-double TCALC_EVAL_ASSERT_DELTA = 0.01;
+double TCALC_EVAL_ASSERT_DELTA = 0.0001;
 
 void TestTCalcEvalSuccesses(CuTest *tc) {
   double res = 0.0;
@@ -42,6 +42,14 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
   err = tcalc_eval("(3 * 5 ^ 2 / 5) - (16 - 10)", &res);
   CuAssertTrue(tc, err == TCALC_OK);
   CuAssertDblEquals(tc, res, 9.0, TCALC_EVAL_ASSERT_DELTA);
+
+  err = tcalc_eval("-10 ^ 2", &res);
+  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertDblEquals(tc, res, -100.0, TCALC_EVAL_ASSERT_DELTA);
+
+  err = tcalc_eval("(-10) ^ 2", &res);
+  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertDblEquals(tc, res, 100.0, TCALC_EVAL_ASSERT_DELTA);
 }
 
 void TestTCalcEvalFailures(CuTest *tc) {
