@@ -4,6 +4,10 @@
 #include "tcalc_error.h"
 
 int tcalc_equals(double a, double b);
+int tcalc_lt(double a, double b);
+int tcalc_lteq(double a, double b);
+int tcalc_gt(double a, double b);
+int tcalc_gteq(double a, double b);
 
 tcalc_error_t tcalc_ceil(double a, double* out);
 tcalc_error_t tcalc_floor(double a, double* out);

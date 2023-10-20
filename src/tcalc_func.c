@@ -8,7 +8,23 @@
 #include <float.h>
 
 int tcalc_equals(double a, double b) {
-  return abs(a - b) < 1e-9;
+  return fabs(a - b) < 1e-9;
+}
+
+int tcalc_lt(double a, double b) {
+  return a < b && !tcalc_equals(a, b);
+}
+
+int tcalc_lteq(double a, double b) {
+  return a < b || tcalc_equals(a, b);
+}
+
+int tcalc_gt(double a, double b) {
+  return a > b && !tcalc_equals(a, b);
+}
+
+int tcalc_gteq(double a, double b) {
+  return a > b || tcalc_equals(a, b);
 }
 
 tcalc_error_t tcalc_unary_plus(double a, double* out) {
@@ -46,7 +62,7 @@ tcalc_error_t tcalc_multiply(double a, double b, double* out) {
 }
 
 tcalc_error_t tcalc_divide(double a, double b, double* out) {
-  if (b == 0) return TCALC_DIVISION_BY_ZERO;
+  if (tcalc_equals(b, 0)) return TCALC_DIVISION_BY_ZERO;
   // TODO: Possibly more overflow and underflow?
 
   *out =  a / b;
@@ -54,8 +70,8 @@ tcalc_error_t tcalc_divide(double a, double b, double* out) {
 }
 
 tcalc_error_t tcalc_pow(double a, double b, double* out) {
-  if (a == 0 && b == 0) return TCALC_NOT_IN_DOMAIN;
-  if (a == 0 && b < 0) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_equals(a, 0) && tcalc_equals(b, 0)) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_equals(a, 0) && tcalc_lt(b, 0)) return TCALC_NOT_IN_DOMAIN;
   errno = 0;
   *out =  pow(a, b);
 
@@ -81,7 +97,7 @@ tcalc_error_t tcalc_round(double a, double* out) {
 }
 
 tcalc_error_t tcalc_mod(double a, double b, double* out) {
-  if (b == 0) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_equals(b, 0)) return TCALC_NOT_IN_DOMAIN;
   *out = fmod(a, b);
   return TCALC_OK;
 }
@@ -102,7 +118,7 @@ tcalc_error_t tcalc_cos(double a, double* out) {
 }
 
 tcalc_error_t tcalc_tan(double a, double* out) {
-  if (fmod(a - M_PI / 2, M_PI) == 0.0) return TCALC_OVERFLOW;
+  if (tcalc_equals(fmod(a - M_PI / 2, M_PI), 0.0)) return TCALC_OVERFLOW;
   *out = tan(a);
   return TCALC_OK;
 }
@@ -129,14 +145,14 @@ tcalc_error_t tcalc_cot(double a, double* out) {
 }
 
 tcalc_error_t tcalc_asin(double a, double* out) {
-  if (a < -1.0 || a > 1.0) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_lt(a, -1.0) || tcalc_gt(a, 1.0)) return TCALC_NOT_IN_DOMAIN;
 
   *out = asin(a);
   return TCALC_OK;
 }
 
 tcalc_error_t tcalc_acos(double a, double* out) {
-  if (a < -1.0 || a > 1.0) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_lt(a, -1.0) || tcalc_gt(a, 1.0)) return TCALC_NOT_IN_DOMAIN;
 
   *out = acos(a);
   return TCALC_OK;
@@ -148,22 +164,22 @@ tcalc_error_t tcalc_atan(double a, double* out) {
 }
 
 tcalc_error_t tcalc_asec(double a, double* out) {
-  if (a == 0) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_equals(a, 0.0)) return TCALC_NOT_IN_DOMAIN;
   return tcalc_acos(1/a, out);
 }
 
 tcalc_error_t tcalc_acsc(double a, double* out) {
-  if (a == 0) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_equals(a, 0.0)) return TCALC_NOT_IN_DOMAIN;
   return tcalc_asin(1/a, out);
 }
 
 tcalc_error_t tcalc_acot(double a, double* out) {
-  if (a == 0) {
+  if (tcalc_equals(a, 0.0)) {
     *out = 0.0;
     return TCALC_OK;
   }
 
-  if (a > 0) {
+  if (a > 0.0) {
     return tcalc_atan(1/a, out);
   }
   return tcalc_atan(1/a + M_PI, out);
@@ -198,28 +214,28 @@ tcalc_error_t tcalc_asinh(double a, double* out) {
 }
 
 tcalc_error_t tcalc_acosh(double a, double* out) {
-  if (a < 1) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_lt(a, 1.0)) return TCALC_NOT_IN_DOMAIN;
   *out = acosh(a);
   return TCALC_OK;
 }
 
 tcalc_error_t tcalc_atanh(double a, double* out) {
-  if (a < -1 || a > 1) return TCALC_NOT_IN_DOMAIN;
-  if (a == -1 || a == 1) return TCALC_OVERFLOW;
+  if (tcalc_lt(a, -1.0) || tcalc_gt(a, 1.0)) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_equals(a, -1.0) || tcalc_equals(a, 1.0)) return TCALC_OVERFLOW;
   *out = atanh(a);
   return TCALC_OK;
 }
 
 tcalc_error_t tcalc_log(double a, double* out) {
-  if (a < 0) return TCALC_NOT_IN_DOMAIN;
-  if (a == 0) return TCALC_OVERFLOW;
+  if (tcalc_lt(a, 0.0)) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_equals(a, 0.0)) return TCALC_OVERFLOW;
   
-  *out = log(a) / log(10);
+  *out = log(a) / M_LN10;
   return TCALC_OK;
 }
 
 tcalc_error_t tcalc_sqrt(double a, double* out) {
-  if (a < 0) return TCALC_NOT_IN_DOMAIN;
+  if (tcalc_lt(a, 0.0)) return TCALC_NOT_IN_DOMAIN;
   *out = sqrt(a);
   return TCALC_OK;
 }
@@ -230,8 +246,7 @@ tcalc_error_t tcalc_cbrt(double a, double* out) {
 }
 
 tcalc_error_t tcalc_ln(double a, double* out) {
-  if (a < 0) return TCALC_NOT_IN_DOMAIN;
-  if (a == 0) return TCALC_OVERFLOW;
+  if (tcalc_lt(a, 0.0) || tcalc_equals(a, 0.0)) return TCALC_NOT_IN_DOMAIN;
 
   *out = log(a);
   return TCALC_OK;
