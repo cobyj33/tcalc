@@ -53,7 +53,9 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
 }
 
 void TestTCalcEvalFailures(CuTest *tc) {
-  
+  double res;
+  tcalc_error_t err = tcalc_eval("1 / sin(2 * pi)", &res);
+  CuAssertTrue(tc, err == TCALC_DIVISION_BY_ZERO);
 }
 
 CuSuite* TCalcEvalGetSuite() {

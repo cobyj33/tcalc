@@ -41,4 +41,6 @@ const char* tcalc_strerrcode(tcalc_error_t err) {
     case TCALC_UNKNOWN_IDENTIFIER: return "unknown identifier";
     case TCALC_UNKNOWN: return "unknown";
   }
+
+  return "unknown tcalc error";
 }

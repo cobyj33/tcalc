@@ -10,7 +10,7 @@
 /*
 Allowed TCalc Tokens:
 All Alphanumeric Characters
-"+-/*%^" operators
+"+-/%*^" operators
 "()" Parentheses
 "." decimal point
 " " whitespace (will be ignored)

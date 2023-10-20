@@ -12,7 +12,7 @@
 
 /**
  * ()[] - Grouping symbols
- * +-/*^% - Operators
+ * +-/%*^ - Operators
  * 0123456789 - digits
  * . - decimal point
  * , - parameter separator
@@ -38,6 +38,8 @@ const char* tcalc_token_type_get_string(tcalc_token_type_t token_type) {
     case TCALC_GROUP_START: return "group start";
     case TCALC_GROUP_END: return "group end";
   }
+
+  return "unknown token type";
 }
 
 tcalc_error_t tcalc_token_alloc(tcalc_token_type_t type, char* value, tcalc_token_t** out) {
@@ -309,7 +311,7 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
     return TCALC_BAD_ALLOC;
   }
 
-  for (int i = 0; i < nb_str_tokens; i++) {
+  for (size_t i = 0; i < nb_str_tokens; i++) {
     if ((err = tcalc_valid_token_str(token_strings[i])) != TCALC_OK) goto cleanup;
 
     tcalc_token_type_t token_type;
@@ -383,7 +385,7 @@ tcalc_error_t tcalc_are_groupsyms_balanced(const char* expr) {
   tcalc_error_t err = TCALC_UNKNOWN;
   
   char* stack = NULL;
-  size_t stack_size = 0;
+  long stack_size = 0;
   size_t stack_capacity = 0;
   char corresponding[256];
   corresponding[')'] = '(';
@@ -404,7 +406,7 @@ tcalc_error_t tcalc_are_groupsyms_balanced(const char* expr) {
           err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
           goto cleanup;
         }
-        if (stack[stack_size - 1] != corresponding[expr[i]]) {
+        if (stack[stack_size - 1] != corresponding[(int)expr[i]]) {
           err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
           goto cleanup;
         }

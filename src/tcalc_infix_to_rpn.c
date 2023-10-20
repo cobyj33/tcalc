@@ -15,7 +15,7 @@ typedef struct {
 } tcalc_op_precedence_t;
 
 tcalc_error_t tcalc_get_prec_data(const tcalc_op_precedence_t* operations, size_t nb_operations, tcalc_token_t* token, tcalc_op_precedence_t* out) {
-  for (int i = 0; i < nb_operations; i++) {
+  for (size_t i = 0; i < nb_operations; i++) {
     if (token->type == operations[i].token.type && strcmp(token->value, operations[i].token.value) == 0) {
       *out = operations[i];
       return TCALC_OK;

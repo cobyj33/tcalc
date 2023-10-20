@@ -27,9 +27,15 @@ set(TEST_SRC_FILES
 ./tests/src/test_tcalc_eval.c
 )
 
+set(TCALC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic)
+if (MSVC)
+  set(TCALC_COMPILE_OPTIONS /std:c++17 /W4 /WX)
+endif()
+
 add_library(tcalc ${TCALC_SRC_FILES})
 target_include_directories(tcalc PUBLIC ./include)
 target_link_libraries(tcalc PUBLIC m)
+target_compile_options(tcalc PRIVATE ${TCALC_COMPILE_OPTIONS})
 
 add_library(cutest SHARED ./lib/cutest-1.5/CuTest.c)
 target_include_directories(cutest PUBLIC ./lib/cutest-1.5)
