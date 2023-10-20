@@ -7,6 +7,10 @@
 #include <errno.h>
 #include <float.h>
 
+int tcalc_equals(double a, double b) {
+  return abs(a - b) < 1e-9;
+}
+
 tcalc_error_t tcalc_unary_plus(double a, double* out) {
   *out = a;
   return TCALC_OK;
@@ -103,6 +107,27 @@ tcalc_error_t tcalc_tan(double a, double* out) {
   return TCALC_OK;
 }
 
+tcalc_error_t tcalc_sec(double a, double* out) {
+  tcalc_error_t err = TCALC_OK;
+  double reciprocal_res;
+  if ((err == tcalc_cos(a, &reciprocal_res)) != TCALC_OK) return err;
+  return tcalc_divide(1.0, reciprocal_res, out);
+}
+
+tcalc_error_t tcalc_csc(double a, double* out) {
+  tcalc_error_t err = TCALC_OK;
+  double reciprocal_res;
+  if ((err == tcalc_sin(a, &reciprocal_res)) != TCALC_OK) return err;
+  return tcalc_divide(1.0, reciprocal_res, out);
+}
+
+tcalc_error_t tcalc_cot(double a, double* out) {
+  tcalc_error_t err = TCALC_OK;
+  double reciprocal_res;
+  if ((err == tcalc_tan(a, &reciprocal_res)) != TCALC_OK) return err;
+  return tcalc_divide(1.0, reciprocal_res, out);
+}
+
 tcalc_error_t tcalc_asin(double a, double* out) {
   if (a < -1.0 || a > 1.0) return TCALC_NOT_IN_DOMAIN;
 
@@ -120,6 +145,28 @@ tcalc_error_t tcalc_acos(double a, double* out) {
 tcalc_error_t tcalc_atan(double a, double* out) {
   *out = atan(a);
   return TCALC_OK;
+}
+
+tcalc_error_t tcalc_asec(double a, double* out) {
+  if (a == 0) return TCALC_NOT_IN_DOMAIN;
+  return tcalc_acos(1/a, out);
+}
+
+tcalc_error_t tcalc_acsc(double a, double* out) {
+  if (a == 0) return TCALC_NOT_IN_DOMAIN;
+  return tcalc_asin(1/a, out);
+}
+
+tcalc_error_t tcalc_acot(double a, double* out) {
+  if (a == 0) {
+    *out = 0.0;
+    return TCALC_OK;
+  }
+
+  if (a > 0) {
+    return tcalc_atan(1/a, out);
+  }
+  return tcalc_atan(1/a + M_PI, out);
 }
 
 tcalc_error_t tcalc_sinh(double a, double* out) {
