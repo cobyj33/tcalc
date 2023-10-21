@@ -36,33 +36,32 @@ add_library(tcalc ${TCALC_SRC_FILES})
 target_include_directories(tcalc PUBLIC ./include)
 target_link_libraries(tcalc PUBLIC m)
 target_compile_options(tcalc PRIVATE ${TCALC_COMPILE_OPTIONS})
+set_target_properties(tcalc PROPERTIES C_STANDARD 99)
 
 add_library(cutest SHARED ./lib/cutest-1.5/CuTest.c)
 target_include_directories(cutest PUBLIC ./lib/cutest-1.5)
+
+add_executable(tcalc_cli ./cli/tcalc.c)
+set_property(TARGET tcalc_cli PROPERTY OUTPUT_NAME tcalc)
+target_link_libraries(tcalc_cli PRIVATE tcalc)
 
 if (TCALC_BUILD_TESTS)
   add_executable(tcalc_tests ./tests/src/test_run_all_tests.c ${TEST_SRC_FILES} )
   target_include_directories(tcalc_tests PRIVATE ./tests/include)
   target_link_libraries(tcalc_tests PRIVATE cutest tcalc)
+
+  add_executable(rpn_tokenizer ./cli/rpn_tokenizer.c)
+  target_link_libraries(rpn_tokenizer PRIVATE tcalc)
+  
+  add_executable(infix_tokenizer ./cli/infix_tokenizer.c)
+  target_link_libraries(infix_tokenizer PRIVATE tcalc)
+  
+  add_executable(rpn ./cli/rpn.c)
+  target_link_libraries(rpn PRIVATE tcalc)
+  
+  add_executable(infix_to_rpn ./cli/infix_to_rpn.c)
+  target_link_libraries(infix_to_rpn PRIVATE tcalc)
+  
+  add_executable(exprtree ./cli/exprtree.c)
+  target_link_libraries(exprtree PRIVATE tcalc)
 endif()
-
-
-add_executable(rpn_tokenizer ./cli/rpn_tokenizer.c)
-target_link_libraries(rpn_tokenizer PRIVATE tcalc)
-
-add_executable(infix_tokenizer ./cli/infix_tokenizer.c)
-target_link_libraries(infix_tokenizer PRIVATE tcalc)
-
-add_executable(rpn ./cli/rpn.c)
-target_link_libraries(rpn PRIVATE tcalc)
-
-add_executable(infix_to_rpn ./cli/infix_to_rpn.c)
-target_link_libraries(infix_to_rpn PRIVATE tcalc)
-
-add_executable(exprtree ./cli/exprtree.c)
-target_link_libraries(exprtree PRIVATE tcalc)
-
-
-add_executable(tcalc_cli ./cli/tcalc.c)
-set_property(TARGET tcalc_cli PROPERTY OUTPUT_NAME tcalc)
-target_link_libraries(tcalc_cli PRIVATE tcalc)
