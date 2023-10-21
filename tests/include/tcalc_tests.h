@@ -8,6 +8,5 @@
 CuSuite* TCalcEvalGetSuite();
 CuSuite* TCalcRPNEvalGetSuite();
 CuSuite* TCalcTokenizeGetSuite();
-CuSuite* TCalcDStringSuite();
 
 #endif

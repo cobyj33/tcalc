@@ -6,6 +6,5 @@
 
 #include "tcalc_error.h"
 #include "tcalc_string.h"
-#include "tcalc_dstring.h"
 
 #endif

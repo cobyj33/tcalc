@@ -10,7 +10,6 @@ void RunAllTests() {
     CuSuiteAddSuite(suite, TCalcEvalGetSuite());
     CuSuiteAddSuite(suite, TCalcRPNEvalGetSuite());
     CuSuiteAddSuite(suite, TCalcTokenizeGetSuite());
-    CuSuiteAddSuite(suite, TCalcDStringSuite());
 
     CuSuiteRun(suite);
 

@@ -1,7 +1,6 @@
 #include "CuTest.h"
 #include "tcalc_tests.h"
 #include "tcalc_tokens.h"
-#include "tcalc_dstring.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "tcalc_error.h"

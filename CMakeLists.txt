@@ -9,7 +9,6 @@ option(TCALC_BUILD_TESTS "Build tcalc tests" OFF)
 set(TCALC_SRC_FILES
 ./src/tcalc_error.c
 ./src/tcalc_string.c
-./src/tcalc_dstring.c
 ./src/tcalc_func.c
 ./src/tcalc_eval.c
 ./src/tcalc_tokens.c
@@ -22,7 +21,6 @@ set(TCALC_SRC_FILES
 set(TEST_SRC_FILES
 ./tests/src/test_tcalc_rpn_eval.c
 ./tests/src/test_tcalc_tokenize.c
-./tests/src/test_tcalc_dstring.c
 ./tests/src/test_tcalc_string.c
 ./tests/src/test_tcalc_eval.c
 )
