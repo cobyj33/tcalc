@@ -11,57 +11,53 @@ tcalc "5 + sin(2 * pi)"
 tcalc "23 + arcsin(0.5) * (1 / 4)"
 ```
 
-Accepted Operators:
-a + b
-a - b
-a * b
-a / b
-a % b
--a
-+a
+## Accepted Operators
 
-Accepted Functions:
-sin(a)
-cos(a)
-tan(a)
+- a + b
+- a - b
+- a * b
+- a / b
+- a % b
+- -a
+- +a
 
-sec(a)
-csc(a)
-cot(a)
+## Accepted Functions
 
-asin(a), arcsin(a)
-acos(a), arccos(a)
-atan(a), arctan(a)
+### Trigonometric Functions
 
-asec(a), arcsec(a)
-acsc(a), arccsc(a)
-acot(a), arccot(a)
+- sin(a), cos(a), tan(a)
+- sec(a), csc(a), cot(a)
+- asin(a), arcsin(a), acos(a), arccos(a), atan(a), arctan(a)
+- asec(a), arcsec(a), acsc(a), arccsc(a), acot(a), arccot(a)
 
-sinh(a)
-cosh(a)
-tanh(a)
+### Hyperbolic Functions
 
-asinh(a), arcsinh(a)
-acosh(a), arccosh(a)
-atanh(a), arctanh(a)
+- sinh(a), cosh(a), tanh(a)
+- asinh(a), arcsinh(a), acosh(a), arccosh(a), atanh(a), arctanh(a)
 
-log(a)
-ln(a)
-exp(a)
-sqrt(a)
-cbrt(a)
+### Exponential Functions
 
-ceil(a)
-floor(a)
-round(a)
-abs(a)
+- log(a)
+- ln(a)
+- exp(a)
+- sqrt(a)
+- cbrt(a)
+- pow(a, b)
 
-pow(a, b)
+### Other Functions
 
-Accepted Grouping Symbols:
-(a)
-\[b]
+- ceil(a)
+- floor(a)
+- round(a)
+- abs(a)
 
-Accepted Variables:
-pi
-e
+
+## Accepted Grouping Symbols
+
+- (a)
+- \[b]
+
+## Accepted Variables:
+
+- pi
+- e
