@@ -56,6 +56,18 @@ void tcalc_setfullerror(const char* error);
 */
 void tcalc_setfullerrorf(const char* format, ...);
 
+/**
+ * A note on some error types:
+ * 
+ * TCALC_NOT_FOUND - This should be returned from getter functions when a
+ * value is not found. This shouldn't be returned from "contains" or "has" type
+ * functions when they don't find anything, as a "contains" or "has" function
+ * not finding a value is not an error, but a valid return type of false.
+ * 
+ * TCALC_UNKNOWN - This should only be returned when there is no other way
+ * for the programmer to know what error happened, such as a code block which
+ * was supposed to be unreachable.
+*/
 typedef enum tcalc_error_t {
   TCALC_OK = 0,
   TCALC_OUT_OF_BOUNDS = -43110,
