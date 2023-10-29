@@ -100,7 +100,7 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
     }
     case TCALC_IDENTIFIER: {
 
-      if (tcalc_context_has_unary_func(context, expr->token->value) == TCALC_OK) {
+      if (tcalc_context_has_unary_func(context, expr->token->value)) {
         tcalc_unary_func_def_t unary_func_def;
         tcalc_context_get_unary_func(context, expr->token->value, &unary_func_def);
         
@@ -109,7 +109,7 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
         if (err) return err;
 
         return unary_func_def.function(operand, out);
-      } else if (tcalc_context_has_binary_func(context, expr->token->value) == TCALC_OK) {
+      } else if (tcalc_context_has_binary_func(context, expr->token->value)) {
         tcalc_binary_func_def_t binary_func_def;
         tcalc_context_get_binary_func(context, expr->token->value, &binary_func_def);
 
@@ -121,7 +121,7 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
         if (err) return err;
       
         return binary_func_def.function(operand1, operand2, out);
-      } else if (tcalc_context_has_variable(context, expr->token->value) == TCALC_OK) {
+      } else if (tcalc_context_has_variable(context, expr->token->value)) {
         tcalc_variable_def_t vardef;
         tcalc_context_get_variable(context, expr->token->value, &vardef);
 
@@ -192,13 +192,13 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
       } // TCALC_UNARY_OPERATOR
       case TCALC_IDENTIFIER: {
 
-        if (tcalc_context_has_variable(context, tokens[i]->value) == TCALC_OK) {
+        if (tcalc_context_has_variable(context, tokens[i]->value)) {
 
           tcalc_exprtree_t* tree_node;
           if ((err = tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node)) != TCALC_OK) goto cleanup;
           tree_stack[tree_stack_size++] = tree_node;
 
-        } else if (tcalc_context_has_binary_func(context, tokens[i]->value) == TCALC_OK) {
+        } else if (tcalc_context_has_binary_func(context, tokens[i]->value)) {
           if (tree_stack_size < 2) {
             err = TCALC_INVALID_OP;
             goto cleanup; 
@@ -212,7 +212,7 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
 
           tree_stack[tree_stack_size - 2] = tree_node;
           tree_stack_size--;
-        } else if (tcalc_context_has_unary_func(context, tokens[i]->value) == TCALC_OK) {
+        } else if (tcalc_context_has_unary_func(context, tokens[i]->value)) {
           if (tree_stack_size < 1) {
             err = TCALC_INVALID_OP;
             goto cleanup; 

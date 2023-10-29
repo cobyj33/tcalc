@@ -56,21 +56,21 @@ const tcalc_context_t TCALC_GLOBAL_CONTEXT = {
 };
 
 tcalc_error_t tcalc_context_has_identifier(const tcalc_context_t* context, const char* name) {
-  return tcalc_context_has_variable(context, name) == TCALC_OK ||
-  tcalc_context_has_unary_func(context, name) == TCALC_OK ||
-  tcalc_context_has_binary_func(context, name) == TCALC_OK;
+  return tcalc_context_has_variable(context, name) ||
+  tcalc_context_has_unary_func(context, name) ||
+  tcalc_context_has_binary_func(context, name);
 }
 
 tcalc_error_t tcalc_context_has_unary_func(const tcalc_context_t* context, const char* name) {
-  return tcalc_context_get_unary_func(context, name, NULL);
+  return tcalc_context_get_unary_func(context, name, NULL) == TCALC_OK;
 }
 
 tcalc_error_t tcalc_context_has_binary_func(const tcalc_context_t* context, const char* name) {
-  return tcalc_context_get_binary_func(context, name, NULL);
+  return tcalc_context_get_binary_func(context, name, NULL) == TCALC_OK;
 }
 
 tcalc_error_t tcalc_context_has_variable(const tcalc_context_t* context, const char* name) {
-  return tcalc_context_get_variable(context, name, NULL);
+  return tcalc_context_get_variable(context, name, NULL) == TCALC_OK;
 }
 
 tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const char* name, tcalc_unary_func_def_t* out) {

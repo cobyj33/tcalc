@@ -82,10 +82,10 @@ typedef struct tcalc_context_t {
 extern const tcalc_context_t TCALC_GLOBAL_CONTEXT;
 
 
-tcalc_error_t tcalc_context_has_identifier(const tcalc_context_t* context, const char* name);
-tcalc_error_t tcalc_context_has_unary_func(const tcalc_context_t* context, const char* name);
-tcalc_error_t tcalc_context_has_binary_func(const tcalc_context_t* context, const char* name);
-tcalc_error_t tcalc_context_has_variable(const tcalc_context_t* context, const char* name);
+int tcalc_context_has_identifier(const tcalc_context_t* context, const char* name);
+int tcalc_context_has_unary_func(const tcalc_context_t* context, const char* name);
+int tcalc_context_has_binary_func(const tcalc_context_t* context, const char* name);
+int tcalc_context_has_variable(const tcalc_context_t* context, const char* name);
 
 /**
  * tcalc_context_get_x functions will not return an error whenever the same given

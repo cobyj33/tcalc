@@ -103,8 +103,8 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
         operator_stack_size--; // pop off opening grouping symbol
 
         if (operator_stack_size >= 1) {
-          if (tcalc_context_has_binary_func(context, operator_stack[operator_stack_size - 1]->value) == TCALC_OK ||
-            tcalc_context_has_unary_func(context, operator_stack[operator_stack_size - 1]->value) == TCALC_OK) {
+          if (tcalc_context_has_binary_func(context, operator_stack[operator_stack_size - 1]->value) ||
+            tcalc_context_has_unary_func(context, operator_stack[operator_stack_size - 1]->value)) {
               if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
               rpn_tokens_size++;
               operator_stack_size--;
@@ -132,10 +132,10 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
         break;
       }
       case TCALC_IDENTIFIER: {  
-        if (tcalc_context_has_binary_func(context, infix_tokens[i]->value) == TCALC_OK ||
-            tcalc_context_has_unary_func(context, infix_tokens[i]->value) == TCALC_OK) {
+        if (tcalc_context_has_binary_func(context, infix_tokens[i]->value) ||
+            tcalc_context_has_unary_func(context, infix_tokens[i]->value)) {
           operator_stack[operator_stack_size++] = infix_tokens[i];
-        } else if (tcalc_context_has_variable(context, infix_tokens[i]->value) == TCALC_OK) {
+        } else if (tcalc_context_has_variable(context, infix_tokens[i]->value)) {
           if ((err = tcalc_token_clone(infix_tokens[i], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
           rpn_tokens_size++;
         } else {
