@@ -5,12 +5,14 @@
 #include "tcalc_mem.h"
 
 #include "string.h"
+
 #include <stdlib.h>
+#include <stddef.h>
 
 tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tokens, const tcalc_context_t* context, tcalc_exprtree_t** out);
 
 /**
- * Pipeline:
+ * General Pipeline:
  * 
  * Convert infix expression into infix tokens
  * Convert infix tokens into rpn-formatted tokens
@@ -137,19 +139,12 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
 }
 
 void tcalc_exprtree_free(tcalc_exprtree_t* head) {
-  for (size_t i = 0; i < head->nb_children; i++) {
+  for (size_t i = 0; i < head->nb_children; i++)
     tcalc_exprtree_free(head->children[i]);
-  }
-
   tcalc_token_free(head->token);
   free(head);
 }
 
-/**
- * Fun fact, the rpn representation of a 
- * 
- * 
-*/
 tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tokens, const tcalc_context_t* context, tcalc_exprtree_t** out) {
   tcalc_error_t err = TCALC_UNKNOWN;
 

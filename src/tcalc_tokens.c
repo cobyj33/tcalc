@@ -327,6 +327,7 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
     } else if (tcalc_is_identifier(token_strings[i])) {
       token_type = TCALC_IDENTIFIER;
     } else { // Could not find matching token definition
+      err = TCALC_UNKNOWN_TOKEN;
       goto cleanup;
     }
 
@@ -339,7 +340,6 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
     (*out_size)++;
   }
 
-  *out_size = nb_str_tokens;
   tcalc_free_arr((void**)token_strings, nb_str_tokens, free);
   return TCALC_OK;
 

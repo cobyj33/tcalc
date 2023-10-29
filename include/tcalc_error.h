@@ -6,32 +6,43 @@
  * tcalc_error.h - Error handling in tcalc
  * 
  * In tcalc, functions that have any chance to fail should return a tcalc_error_t
- * enum. 
- * This results in a lot of *out parameters in the tcalc program, so I hope you
- * understand your pointers well.
+ * enum. As a result, many functions really return their data to an *out pointer that
+ * the user must supply. Usually, functions will not check if this is NULL or not, and
+ * passing a NULL to an *out parameter or an *out_size parameter will be undefined unless
+ * otherwise stated so by the given function's documentation
  * 
  * If a function does not return tcalc_error_t, that MUST mean that it will
- * never fail. This applies to EVERYTHING. If the function contains any type of
- * allocation, it should return tcalc_error_t, as an allocation failure is always possible.
+ * never fail. This applies to EVERYTHING.
+ * (There is a gray area with functions that check for the existence of a value
+ * or condition, as they don't technically "fail" in the
+ * sense that they always return a valid boolean value. In this case, they can return int)
  * 
  * 
- * As of right now, the error string setting and get functions are not really used
- * because of constant development. Ideally though, any time an error is thrown,
- * a string will be written that can be obtained with tcalc_getfullerror
+ * As an extra note, if the function contains any type of allocation,
+ * it should return tcalc_error_t, as an allocation failure is always possible.
+ * 
+ * The global error is generally only set when actual lexical, syntactical, or semantical
+ * errors are encountered. This is so code isn't cluttered with reporting error strings
+ * for error code's like TCALC_BAD_ALLOC or TCALC_OUT_OF_BOUNDS, which generally
+ * are more so exceptional than actual errors, as they can't be handled and are
+ * largely independent of invalid input or computational failures. 
 */
 
 #define TCALC_ERROR_MAX_SIZE 512
 
 /**
+ * Get the globally set tcalc error
+ * 
  * The buffer "out" should have a size at least equal to the macro TCALC_ERROR_MAX_SIZE
 */
 void tcalc_getfullerror(char* out);
 
 /**
+ * Errors don't have to be set by every error or exceptional encounter in tcalc,
+ * and setting error strings should not replace returning error codes.
  * 
- * Generally, 
- * 
- * If the given error
+ * If the input string is longer than TCALC_ERROR_MAX_SIZE,
+ * it will be truncated to TCALC_ERROR_MAX_SIZE.
 */
 void tcalc_setfullerror(const char* error);
 
@@ -39,6 +50,9 @@ void tcalc_setfullerror(const char* error);
  * Formatted version of tcalc_setfullerror
  * 
  * Formatting is exactly the same as standard stdio functions like printf
+ * 
+ * If the expanded formatted string is longer than TCALC_ERROR_MAX_SIZE,
+ * it will be truncated to TCALC_ERROR_MAX_SIZE.
 */
 void tcalc_setfullerrorf(const char* format, ...);
 
@@ -56,6 +70,7 @@ typedef enum tcalc_error_t {
   TCALC_NOT_IN_DOMAIN,
   TCALC_UNKNOWN_IDENTIFIER,
   TCALC_UNBALANCED_GROUPING_SYMBOLS,
+  TCALC_UNKNOWN_TOKEN,
   TCALC_UNIMPLEMENTED,
   TCALC_UNKNOWN
 } tcalc_error_t;

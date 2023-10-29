@@ -37,6 +37,7 @@ const char* tcalc_strerrcode(tcalc_error_t err) {
     case TCALC_DIVISION_BY_ZERO: return "division by zero";
     case TCALC_NOT_IN_DOMAIN: return "not in domain";
     case TCALC_UNBALANCED_GROUPING_SYMBOLS: return "unbalanced grouping symbols";
+    case TCALC_UNKNOWN_TOKEN: return "unknown token";
     case TCALC_UNIMPLEMENTED: return "unimplemented";
     case TCALC_UNKNOWN_IDENTIFIER: return "unknown identifier";
     case TCALC_UNKNOWN: return "unknown";

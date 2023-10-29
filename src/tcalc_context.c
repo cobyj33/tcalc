@@ -55,6 +55,12 @@ const tcalc_context_t TCALC_GLOBAL_CONTEXT = {
   }, 2
 };
 
+tcalc_error_t tcalc_context_has_identifier(const tcalc_context_t* context, const char* name) {
+  return tcalc_context_has_variable(context, name) == TCALC_OK ||
+  tcalc_context_has_unary_func(context, name) == TCALC_OK ||
+  tcalc_context_has_binary_func(context, name) == TCALC_OK;
+}
+
 tcalc_error_t tcalc_context_has_unary_func(const tcalc_context_t* context, const char* name) {
   return tcalc_context_get_unary_func(context, name, NULL);
 }
