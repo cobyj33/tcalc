@@ -89,7 +89,7 @@ int tcalc_context_has_variable(const tcalc_context_t* context, const char* name)
 
 /**
  * tcalc_context_get_x functions will not return an error whenever the same given
- * context and name parameters return TCALC_OK from their corresponding tcalc_context_has_x
+ * context and name parameters return truthy from their corresponding tcalc_context_has_x
  * functions 
 */
 
