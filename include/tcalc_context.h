@@ -83,6 +83,7 @@ extern const tcalc_context_t TCALC_GLOBAL_CONTEXT;
 
 
 int tcalc_context_has_identifier(const tcalc_context_t* context, const char* name);
+int tcalc_context_has_func(const tcalc_context_t* context, const char* name);
 int tcalc_context_has_unary_func(const tcalc_context_t* context, const char* name);
 int tcalc_context_has_binary_func(const tcalc_context_t* context, const char* name);
 int tcalc_context_has_variable(const tcalc_context_t* context, const char* name);
