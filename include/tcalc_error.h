@@ -87,6 +87,10 @@ typedef enum tcalc_error_t {
   TCALC_UNKNOWN
 } tcalc_error_t;
 
+/**
+ * The string returned by tcalc_strerrcode does not have to be freed,
+ * as it will always be a string literal.
+*/
 const char* tcalc_strerrcode(tcalc_error_t err);
 
 #endif
