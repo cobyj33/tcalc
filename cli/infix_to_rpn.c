@@ -14,18 +14,29 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  tcalc_token_t** infix_tokens;
-  size_t nb_infix_tokens;
-  tcalc_error_t err = tcalc_tokenize_infix(argv[1], &infix_tokens, &nb_infix_tokens);
+  tcalc_context_t* context;
+  tcalc_error_t err = tcalc_context_alloc_default(&context);
   if (err) {
     printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
     return EXIT_FAILURE;
   }
 
+  tcalc_token_t** infix_tokens;
+  size_t nb_infix_tokens;
+  err = tcalc_tokenize_infix(argv[1], &infix_tokens, &nb_infix_tokens);
+  if (err) {
+    printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
+    tcalc_context_free(context);
+    return EXIT_FAILURE;
+  }
+
+
   tcalc_token_t** rpn_tokens;
   size_t nb_rpn_tokens;
-  err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, &TCALC_GLOBAL_CONTEXT, &rpn_tokens, &nb_rpn_tokens);
+  err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, context, &rpn_tokens, &nb_rpn_tokens);
   tcalc_free_arr((void**)infix_tokens, nb_infix_tokens, tcalc_token_freev);
+  tcalc_context_free(context);
+
   if (err) {
     printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
     return EXIT_FAILURE;

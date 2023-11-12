@@ -14,15 +14,22 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
+  tcalc_context_t* context;
+  tcalc_error_t err = tcalc_context_alloc_default(&context);
+  if (err) {
+    printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
+    return EXIT_FAILURE;
+  }
+
   tcalc_exprtree_t* tree;
-  tcalc_error_t err = tcalc_create_exprtree_infix(argv[1], &TCALC_GLOBAL_CONTEXT, &tree);
+  err = tcalc_create_exprtree_infix(argv[1], context, &tree);
+  tcalc_context_free(context);
   if (err) {
     printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
     return EXIT_FAILURE;
   }
 
   tcalc_exprtree_print(tree, 0);
-
   tcalc_exprtree_free(tree);
   return EXIT_SUCCESS;
 }

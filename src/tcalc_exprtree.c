@@ -101,16 +101,16 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
     case TCALC_IDENTIFIER: {
 
       if (tcalc_context_has_unary_func(context, expr->token->value)) {
-        tcalc_unary_func_def_t unary_func_def;
+        tcalc_unary_func_def_t* unary_func_def;
         tcalc_context_get_unary_func(context, expr->token->value, &unary_func_def);
         
         double operand;
         tcalc_error_t err = tcalc_eval_exprtree(expr->children[0], context, &operand);
         if (err) return err;
 
-        return unary_func_def.function(operand, out);
+        return unary_func_def->function(operand, out);
       } else if (tcalc_context_has_binary_func(context, expr->token->value)) {
-        tcalc_binary_func_def_t binary_func_def;
+        tcalc_binary_func_def_t* binary_func_def;
         tcalc_context_get_binary_func(context, expr->token->value, &binary_func_def);
 
         double operand1;
@@ -120,12 +120,12 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
         err = tcalc_eval_exprtree(expr->children[1], context, &operand2);
         if (err) return err;
       
-        return binary_func_def.function(operand1, operand2, out);
+        return binary_func_def->function(operand1, operand2, out);
       } else if (tcalc_context_has_variable(context, expr->token->value)) {
-        tcalc_variable_def_t vardef;
+        tcalc_variable_def_t* vardef;
         tcalc_context_get_variable(context, expr->token->value, &vardef);
 
-        *out = vardef.value;
+        *out = vardef->value;
         return TCALC_OK;
       } else {
         return TCALC_UNKNOWN_IDENTIFIER;

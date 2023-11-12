@@ -40,13 +40,14 @@ typedef struct tcalc_exprtree_node_t {
 } tcalc_exprtree_t;
 
 typedef struct tcalc_variable_def_t {
-  const char* identifier;
+  char* identifier;
   double value;
 } tcalc_variable_def_t;
 
 typedef struct tcalc_variable_def_expr_t {
   char* name;
   tcalc_exprtree_t* expr;
+  char* dependencies;
 } tcalc_variable_def_expr_t;
 
 typedef enum tcalc_associativity_t{
@@ -72,12 +73,12 @@ typedef struct tcalc_binary_op_def_t {
 } tcalc_binary_op_def_t;
 
 typedef struct tcalc_unary_func_def_t {
-  const char* identifier;
+  char* identifier;
   tcalc_unary_func function;
 } tcalc_unary_func_def_t;
 
 typedef struct tcalc_binary_func_def_t {
-  const char* identifier;
+  char* identifier;
   tcalc_binary_func function;
 } tcalc_binary_func_def_t;
 
@@ -118,15 +119,27 @@ typedef struct tcalc_grouping_symbol_def_t {
 // } tcalc_context_t;
 
 typedef struct tcalc_context_t {
-  tcalc_unary_func_def_t unary_funcs[TCALC_CONTEXT_MAX_UNARY_FUNC_DEFS];
+  tcalc_unary_func_def_t** unary_funcs;
   size_t nb_unary_funcs;
-  tcalc_binary_func_def_t binary_funcs[TCALC_CONTEXT_MAX_BINARY_FUNC_DEFS];
+  size_t unary_funcs_capacity;
+
+  tcalc_binary_func_def_t** binary_funcs;
   size_t nb_binary_funcs;
-  tcalc_variable_def_t variables[TCALC_CONTEXT_MAX_VARIABLE_DEFS];
+  size_t binary_funcs_capacity;
+
+  tcalc_variable_def_t** variables;
   size_t nb_variables;
+  size_t variables_capacity;
 } tcalc_context_t;
 
-extern const tcalc_context_t TCALC_GLOBAL_CONTEXT;
+tcalc_error_t tcalc_context_alloc_empty(tcalc_context_t** out);
+tcalc_error_t tcalc_context_alloc_default(tcalc_context_t** out);
+
+void tcalc_context_free(tcalc_context_t* context);
+
+tcalc_error_t tcalc_context_add_variable(tcalc_context_t* context, char* name, double value);
+tcalc_error_t tcalc_context_add_unary_func(tcalc_context_t* context, char* name, tcalc_unary_func function);
+tcalc_error_t tcalc_context_add_binary_func(tcalc_context_t* context, char* name, tcalc_binary_func function);
 
 int tcalc_context_has_identifier(const tcalc_context_t* context, const char* name);
 int tcalc_context_has_func(const tcalc_context_t* context, const char* name);
@@ -140,9 +153,9 @@ int tcalc_context_has_variable(const tcalc_context_t* context, const char* name)
  * functions 
 */
 
-tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const char* name, tcalc_unary_func_def_t* out);
-tcalc_error_t tcalc_context_get_binary_func(const tcalc_context_t* context, const char* name, tcalc_binary_func_def_t* out);
-tcalc_error_t tcalc_context_get_variable(const tcalc_context_t* context, const char* name, tcalc_variable_def_t* out);
+tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const char* name, tcalc_unary_func_def_t** out);
+tcalc_error_t tcalc_context_get_binary_func(const tcalc_context_t* context, const char* name, tcalc_binary_func_def_t** out);
+tcalc_error_t tcalc_context_get_variable(const tcalc_context_t* context, const char* name, tcalc_variable_def_t** out);
 
 
 
