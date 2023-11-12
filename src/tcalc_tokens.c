@@ -20,9 +20,9 @@
 const char* TCALC_ALLOWED_CHARS = "0123456789. abcdefghijklmnopqrstuvwxyz,()[]+-*/^%";
 const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%";
 
-tcalc_error_t tcalc_token_arr_push_back_new(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_type_t type, char* value);
-tcalc_error_t tcalc_token_arr_push_back(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_t* token);
-tcalc_error_t tcalc_token_arr_push_back_clone(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_t* to_clone);
+tcalc_error_t tcalc_token_darr_push_back_new(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_type_t type, char* value);
+tcalc_error_t tcalc_token_darr_push_back(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_t* token);
+tcalc_error_t tcalc_token_darr_push_back_clone(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_t* to_clone);
 
 int is_valid_tcalc_char(char ch);
 tcalc_error_t tcalc_valid_token_str(const char* token);
@@ -119,14 +119,12 @@ tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size
   size_t final_tokens_capacity = 0;
 
   for (size_t i = 0; i < nb_tokens; i++) {
-    err = tcalc_token_arr_push_back_clone(&final_tokens, &nb_final_tokens, &final_tokens_capacity, tokens[i]);
+    err = tcalc_token_darr_push_back_clone(&final_tokens, &nb_final_tokens, &final_tokens_capacity, tokens[i]);
     if (err) goto cleanup;
 
-    if (tokens[i]->type == TCALC_NUMBER && i != nb_tokens - 1) {
-      if (tokens[i + 1]->type == TCALC_GROUP_START || tokens[i + 1]->type == TCALC_IDENTIFIER) {
-        err = tcalc_token_arr_push_back_new(&final_tokens, &nb_final_tokens, &final_tokens_capacity, TCALC_BINARY_OPERATOR, "*");
-        if (err) goto cleanup;
-      }
+    if (tokens[i]->type == TCALC_NUMBER && i != nb_tokens - 1 && (tokens[i + 1]->type == TCALC_GROUP_START || tokens[i + 1]->type == TCALC_IDENTIFIER)) {
+      err = tcalc_token_darr_push_back_new(&final_tokens, &nb_final_tokens, &final_tokens_capacity, TCALC_BINARY_OPERATOR, "*");
+      if (err) goto cleanup;
     }
   }
 
@@ -494,24 +492,24 @@ int tcalc_is_identifier(const char* str) {
   return is_identifier;
 }
 
-tcalc_error_t tcalc_token_arr_push_back_new(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_type_t type, char* value) {
+tcalc_error_t tcalc_token_darr_push_back_new(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_type_t type, char* value) {
   tcalc_token_t* token;
   tcalc_error_t err = tcalc_token_alloc(type, value, &token);
   if (err) return err;
 
-  err = tcalc_token_arr_push_back(pArr, pSize, pCapacity, token);
+  err = tcalc_token_darr_push_back(pArr, pSize, pCapacity, token);
   if (err) {
     tcalc_token_free(token);
   }
   return err;
 }
 
-tcalc_error_t tcalc_token_arr_push_back_clone(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_t* to_clone) {
+tcalc_error_t tcalc_token_darr_push_back_clone(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_t* to_clone) {
   tcalc_token_t* clone;
   tcalc_error_t err = tcalc_token_clone(to_clone, &clone);
   if (err) return err;
 
-  err = tcalc_token_arr_push_back(pArr, pSize, pCapacity, clone);
+  err = tcalc_token_darr_push_back(pArr, pSize, pCapacity, clone);
   if (err) {
     tcalc_token_free(clone);
   }
@@ -519,7 +517,7 @@ tcalc_error_t tcalc_token_arr_push_back_clone(tcalc_token_t*** pArr, size_t* pSi
   return err;
 }
 
-tcalc_error_t tcalc_token_arr_push_back(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_t* token) {
+tcalc_error_t tcalc_token_darr_push_back(tcalc_token_t*** pArr, size_t* pSize, size_t* pCapacity, tcalc_token_t* token) {
   tcalc_error_t err = TCALC_UNKNOWN;
   if ((err = tcalc_alloc_grow((void**)pArr, sizeof(tcalc_token_t*), *pSize + 1, pCapacity)) != TCALC_OK) return err;
   (*pArr)[*pSize] = token;
