@@ -25,7 +25,8 @@ tcalc_error_t tcalc_valid_token_str(const char* token);
 tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
 int tcalc_are_groupsyms_balanced(const char* expr);
 tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size);
-tcalc_error_t tcalc_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token_t*** out, size_t* out_size);
+tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token_t*** out, size_t* out_size);
+tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size_t nb_tokens, tcalc_token_t*** out, size_t* out_size);
 int tcalc_is_identifier(const char* str);
 
 const char* tcalc_token_type_get_string(tcalc_token_type_t token_type) {
@@ -83,15 +84,65 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
   err = tcalc_tokenize_infix_strtokens(expr, &str_tokens, &nb_str_tokens);
   if (err) return err;
 
-  tcalc_token_t** infix_tokens;
-  size_t nb_infix_tokens;
-  err = tcalc_infix_strtokens_assign_types(str_tokens, nb_str_tokens, &infix_tokens, &nb_infix_tokens);
+  tcalc_token_t** initial_infix_tokens;
+  size_t nb_initial_infix_tokens;
+  err = tcalc_tokenize_infix_strtokens_assign_types(str_tokens, nb_str_tokens, &initial_infix_tokens, &nb_initial_infix_tokens);
   tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
   if (err) return err;
 
-  *out = infix_tokens;
-  *out_size = nb_infix_tokens;
+  tcalc_token_t** resolved_infix_tokens;
+  size_t nb_resolved_infix_tokens;
+  err = tcalc_tokenize_infix_token_insertions(initial_infix_tokens, nb_initial_infix_tokens, &resolved_infix_tokens, &nb_resolved_infix_tokens);
+  tcalc_free_arr((void**)initial_infix_tokens, nb_initial_infix_tokens, tcalc_token_freev);
+  if (err) return err;
+
+  *out = resolved_infix_tokens;
+  *out_size = nb_resolved_infix_tokens;
   return err;
+}
+
+/**
+ * 
+ * 
+ * Responsibilities:
+ * - Insert shorthand multiplication logic
+ *   - Essentially, if a number preceeds an identifier or grouping symbol, append a multiplication token after that number
+*/
+tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size_t nb_tokens, tcalc_token_t*** out, size_t* out_size) {
+  tcalc_error_t err = TCALC_UNKNOWN;
+  tcalc_token_t** final_tokens = NULL;
+  size_t nb_final_tokens = 0;
+  size_t final_tokens_capacity = 0;
+
+  for (size_t i = 0; i < nb_tokens; i++) {
+    if ((err = tcalc_alloc_grow((void**)&final_tokens, sizeof(tcalc_token_t*), nb_final_tokens + 1, &final_tokens_capacity)) != TCALC_OK)
+      goto cleanup;
+
+    tcalc_token_t* clone;
+    if ((err = tcalc_token_clone(tokens[i], &clone)) != TCALC_OK)
+      goto cleanup;
+    
+    final_tokens[nb_final_tokens++] = clone;
+
+    if (tokens[i]->type == TCALC_NUMBER && i != nb_tokens - 1) {
+      if (tokens[i + 1]->type == TCALC_GROUP_START || tokens[i + 1]->type == TCALC_IDENTIFIER) {
+        tcalc_token_t* multiplier;
+        if ((err = tcalc_token_alloc(TCALC_BINARY_OPERATOR, "*", &multiplier)) != TCALC_OK)
+          goto cleanup;
+        if ((err = tcalc_alloc_grow((void**)&final_tokens, sizeof(tcalc_token_t*), nb_final_tokens + 1, &final_tokens_capacity)) != TCALC_OK)
+          goto cleanup;
+        final_tokens[nb_final_tokens++] = multiplier;
+      }
+    }
+  }
+
+  *out = final_tokens;
+  *out_size = nb_final_tokens;
+  return err;
+
+  cleanup:
+    tcalc_free_arr((void**)final_tokens, nb_final_tokens, tcalc_token_freev);
+    return err;
 }
 
 /**
@@ -106,7 +157,7 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
  * before they are processed.
  * 
 */
-tcalc_error_t tcalc_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token_t*** out, size_t* out_size) {
+tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token_t*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_UNKNOWN;
   
   tcalc_token_t** infix_tokens = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_str_tokens);

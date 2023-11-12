@@ -50,6 +50,18 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
   err = tcalc_eval("(-10) ^ 2", &res);
   CuAssertTrue(tc, err == TCALC_OK);
   CuAssertDblEquals(tc, res, 100.0, TCALC_EVAL_ASSERT_DELTA);
+
+  err = tcalc_eval("5ln(e)", &res);
+  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertDblEquals(tc, res, 5.0, TCALC_EVAL_ASSERT_DELTA);
+
+  err = tcalc_eval("2^2ln(e)", &res);
+  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertDblEquals(tc, res, 4.0, TCALC_EVAL_ASSERT_DELTA);
+
+  err = tcalc_eval("2pi", &res);
+  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertDblEquals(tc, res, 6.283185, TCALC_EVAL_ASSERT_DELTA);
 }
 
 void TestTCalcEvalFailures(CuTest *tc) {
