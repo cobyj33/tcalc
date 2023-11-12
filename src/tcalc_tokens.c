@@ -24,7 +24,8 @@ int is_valid_tcalc_char(char ch);
 tcalc_error_t tcalc_valid_token_str(const char* token);
 tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
 int tcalc_are_groupsyms_balanced(const char* expr);
-tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* out_size);
+tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size);
+tcalc_error_t tcalc_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token_t*** out, size_t* out_size);
 int tcalc_is_identifier(const char* str);
 
 const char* tcalc_token_type_get_string(tcalc_token_type_t token_type) {
@@ -72,7 +73,26 @@ tcalc_error_t tcalc_token_clone(tcalc_token_t* src, tcalc_token_t** out) {
   return tcalc_token_alloc(src->type, src->value, out);
 }
 
+tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_t* out_size) {
+  tcalc_error_t err = TCALC_UNKNOWN;
+  *out_size = 0;
+  if ((err = tcalc_are_groupsyms_balanced(expr)) != TCALC_OK) return err;
 
+  char** str_tokens;
+  size_t nb_str_tokens;
+  err = tcalc_tokenize_infix_strtokens(expr, &str_tokens, &nb_str_tokens);
+  if (err) return err;
+
+  tcalc_token_t** infix_tokens;
+  size_t nb_infix_tokens;
+  err = tcalc_infix_strtokens_assign_types(str_tokens, nb_str_tokens, &infix_tokens, &nb_infix_tokens);
+  tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
+  if (err) return err;
+
+  *out = infix_tokens;
+  *out_size = nb_infix_tokens;
+  return err;
+}
 
 /**
  * 
@@ -86,22 +106,12 @@ tcalc_error_t tcalc_token_clone(tcalc_token_t* src, tcalc_token_t** out) {
  * before they are processed.
  * 
 */
-tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_t* out_size) {
+tcalc_error_t tcalc_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token_t*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_UNKNOWN;
-  *out_size = 0;
-  if ((err = tcalc_are_groupsyms_balanced(expr)) != TCALC_OK) return err;
-
-  char** str_tokens;
-  size_t nb_str_tokens;
-  err = tcalc_tokenize_strtokens(expr, &str_tokens, &nb_str_tokens);
-  if (err) return err;
-
+  
   tcalc_token_t** infix_tokens = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_str_tokens);
   size_t nb_infix_tokens = 0;
-  if (infix_tokens == NULL) {
-    tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
-    return TCALC_BAD_ALLOC;
-  }
+  if (infix_tokens == NULL) { return TCALC_BAD_ALLOC; }
 
   for (size_t i = 0; i < nb_str_tokens; i++) {
     tcalc_token_type_t token_type;
@@ -147,12 +157,10 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
 
   *out = infix_tokens;
   *out_size = nb_infix_tokens;
-  tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
   return err;
 
   cleanup:
     tcalc_free_arr((void**)infix_tokens, nb_infix_tokens, tcalc_token_freev);
-    tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
     return err;
 }
 
@@ -160,7 +168,7 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
  * Call and gather all tokens from subsequent calls to tcalc_next_math_strtoken
  * and return them in an array to *out. 
  * 
- * *out will be allocated with a size of *out_size by tcalc_tokenize_strtokens
+ * *out will be allocated with a size of *out_size by tcalc_tokenize_infix_strtokens
  * upon returning TCALC_OK. If TCALC_OK is not returned, then *out has not been
  * allocated and does not have to be freed.
  * 
@@ -182,7 +190,7 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
  * "     [45 ^ (3 / 2)] *   +11"
  * "[", "45", "^", "(", "3", "/", "2", ")", "]", "*", "+", "11"
 */
-tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* out_size) {
+tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_OK;
   *out_size = 0;
   char** token_buffer = NULL;
@@ -228,7 +236,7 @@ tcalc_error_t tcalc_tokenize_strtokens(const char* expr, char*** out, size_t* ou
  * Any other error code is an actual lexing error and should be treated as such.
  * 
  * This function should really never be called directly, and should be used through
- * tcalc_tokenize_strtokens instead
+ * tcalc_tokenize_infix_strtokens instead
  * 
  * Examples:
  * 
