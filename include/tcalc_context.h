@@ -2,13 +2,52 @@
 #define TCALC_CONTEXT_H
 
 #include "tcalc_func_type.h"
+#include "tcalc_tokens.h"
+#include "tcalc_error.h"
+
 #include <stddef.h>
 
+/**
+ * 
+ * The type of token dictates how an expression tree node should be evaluated,
+ * as well as how many
+ * 
+ * TCALC_NUMBER:
+ *  The token simply holds a number in its value string, and it can be evaluated
+ *  by calling tcalc_strtodouble. The expression tree node has no children.
+ * 
+ * TCALC_UNARY_OPERATOR:
+ *  The expression tree node has 1 child which must be evaluated, and then the
+ *  corresponding operator in the token's value is used to determine the unary
+ *  operation to perform on the evaluated child.
+ * 
+ * TCALC_BINARY_OPERATOR:
+ *  The expression tree node has 2 children which must first be evaluated, and then the
+ *  corresponding operator in the token's value is used to determine the binary
+ *  operation to perform on the evaluated children. The evaluated children must
+ *  be called with the binary expression in order, as some binary operations like
+ *  division and subtraction are not associative.
+ * 
+ * Every other token type is currently unimplemented :(
+ * 
+ * To validate a tree, evaluate it with tcalc_eval_exprtree and checking that
+ * it returns TCALC_OK. 
+*/
+typedef struct tcalc_exprtree_node_t {
+  tcalc_token_t* token;
+  struct tcalc_exprtree_node_t** children;
+  size_t nb_children;
+} tcalc_exprtree_t;
 
 typedef struct tcalc_variable_def_t {
   const char* identifier;
   double value;
 } tcalc_variable_def_t;
+
+typedef struct tcalc_variable_def_expr_t {
+  char* name;
+  tcalc_exprtree_t* expr;
+} tcalc_variable_def_expr_t;
 
 typedef enum tcalc_associativity_t{
   TCALC_RIGHT_ASSOCIATIVE,
@@ -47,7 +86,6 @@ typedef struct tcalc_grouping_symbol_def_t {
   char end_symbol;
 } tcalc_grouping_symbol_def_t;
 
-
 // these can be tweaked as they're needed. I just gave them values
 // based on general math symbols.
 #define TCALC_CONTEXT_MAX_UNARY_OP_DEFS 4
@@ -70,6 +108,15 @@ typedef struct tcalc_grouping_symbol_def_t {
  *  will disambiguate itself which + or - are unary and which + or - are binary. 
  *  If I had created math I wouldn't have created it like this.
 */
+// typedef struct tcalc_context_t {
+//   tcalc_unary_func_def_t unary_funcs[TCALC_CONTEXT_MAX_UNARY_FUNC_DEFS];
+//   size_t nb_unary_funcs;
+//   tcalc_binary_func_def_t binary_funcs[TCALC_CONTEXT_MAX_BINARY_FUNC_DEFS];
+//   size_t nb_binary_funcs;
+//   tcalc_variable_def_t variables[TCALC_CONTEXT_MAX_VARIABLE_DEFS];
+//   size_t nb_variables;
+// } tcalc_context_t;
+
 typedef struct tcalc_context_t {
   tcalc_unary_func_def_t unary_funcs[TCALC_CONTEXT_MAX_UNARY_FUNC_DEFS];
   size_t nb_unary_funcs;
@@ -80,7 +127,6 @@ typedef struct tcalc_context_t {
 } tcalc_context_t;
 
 extern const tcalc_context_t TCALC_GLOBAL_CONTEXT;
-
 
 int tcalc_context_has_identifier(const tcalc_context_t* context, const char* name);
 int tcalc_context_has_func(const tcalc_context_t* context, const char* name);
@@ -97,5 +143,26 @@ int tcalc_context_has_variable(const tcalc_context_t* context, const char* name)
 tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const char* name, tcalc_unary_func_def_t* out);
 tcalc_error_t tcalc_context_get_binary_func(const tcalc_context_t* context, const char* name, tcalc_binary_func_def_t* out);
 tcalc_error_t tcalc_context_get_variable(const tcalc_context_t* context, const char* name, tcalc_variable_def_t* out);
+
+
+
+
+
+tcalc_error_t tcalc_exprtree_node_alloc(tcalc_token_t* token, size_t nb_children, tcalc_exprtree_t** out);
+void tcalc_exprtree_node_free(tcalc_exprtree_t* node);
+void tcalc_exprtree_node_freev(void* node);
+
+/**
+ * Free a tcalc expression tree recursively
+*/
+void tcalc_exprtree_free(tcalc_exprtree_t* head);
+
+int tcalc_exprtree_is_vardef(tcalc_exprtree_t* expr);
+
+tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, const tcalc_context_t* context, tcalc_exprtree_t** out);
+tcalc_error_t tcalc_create_exprtree_infix(const char* infix, const tcalc_context_t* context, tcalc_exprtree_t** out);
+tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** tokens, size_t nb_tokens, const tcalc_context_t* context, tcalc_token_t*** out, size_t* out_size);
+
+tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t* context, double* out);
 
 #endif

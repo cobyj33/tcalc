@@ -3,7 +3,6 @@
 #define TCALC_TOKENS_H
 
 #include "tcalc_error.h"
-#include "tcalc_context.h"
 
 #include <stddef.h>
 

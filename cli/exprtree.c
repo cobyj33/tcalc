@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "tcalc_exprtree.h"
 #include "tcalc_context.h"
 
 #define MAX_STACK_SIZE 500
