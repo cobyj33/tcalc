@@ -17,6 +17,45 @@
 */
 void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
 
+#define alloc_nr(x) (((x)+16)*3/2)
+
+#define TCALC_DARR_GROW(arr, size, capacity, err) do { \
+    if (capacity == 0) { \
+      arr = malloc(sizeof(*arr)); \
+      if (arr == NULL) { \
+        err = TCALC_BAD_ALLOC; \
+      } else { \
+        capacity = 1; \
+      } \
+    } else if (size > capacity) { \
+      size_t new_capacity = alloc_nr(capacity) < size ? size : alloc_nr(capacity); \
+      void* realloced = realloc(arr, sizeof(*arr) * new_capacity); \
+      if (realloced == NULL) { \
+        err = TCALC_BAD_ALLOC; \
+      } else { \
+        arr = realloced; \
+        capacity = new_capacity; \
+      } \
+    } \
+  } while (0);
+
+#define TCALC_DARR_PUSH(arr, size, capacity, val, err) do { \
+    TCALC_DARR_GROW(arr, size + 1, capacity, err) \
+    if (err == TCALC_OK) { \
+      arr[size++] = val; \
+    } \
+  } while (0);
+
+#define TCALC_DARR_INSERT(arr, size, capacity, val, index, err) do { \
+    TCALC_DARR_GROW(arr, size, capacity, err) \
+    if (err == TCALC_OK) { \
+      for (size_t i = index + 1; i < size; i++) { \
+        arr[i] = arr[i - 1]; \
+      } \
+      arr[index] = val; \
+    } \
+  } while (0);
+
 /**
  * Inspired from the ALLOC_GROW API In git
  * 

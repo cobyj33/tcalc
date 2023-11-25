@@ -90,8 +90,9 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* o
     
     char* substr;
     if ((err =  tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
-    if ((err = tcalc_alloc_grow((void**)&strings, sizeof(char*), strings_size + 1, &strings_capacity)) != TCALC_OK) goto cleanup;
-    strings[strings_size++] = substr;
+    TCALC_DARR_PUSH(strings, strings_size, strings_capacity, substr, err)
+    if (err) goto cleanup;
+
 
     while (str[end] == split && str[end] != '\0')
       end++;
@@ -101,8 +102,8 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* o
   if (str[start] != '\0') {
     char* substr;
     if (( err = tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
-    if ((err = tcalc_alloc_grow((void**)&strings, sizeof(char*), strings_size + 1, &strings_capacity)) != TCALC_OK) goto cleanup;
-    strings[strings_size++] = substr;
+    TCALC_DARR_PUSH(strings, strings_size, strings_capacity, substr, err)
+    if (err) goto cleanup;
   }
 
   *out = strings;

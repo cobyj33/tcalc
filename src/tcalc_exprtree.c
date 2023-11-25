@@ -146,7 +146,7 @@ void tcalc_exprtree_free(tcalc_exprtree_t* head) {
 }
 
 tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tokens, const tcalc_context_t* context, tcalc_exprtree_t** out) {
-  tcalc_error_t err = TCALC_UNKNOWN;
+  tcalc_error_t err = TCALC_OK;
 
   tcalc_exprtree_t** tree_stack = (tcalc_exprtree_t**)malloc(sizeof(tcalc_exprtree_t*) * nb_tokens);
   if (tree_stack == NULL) return TCALC_BAD_ALLOC;

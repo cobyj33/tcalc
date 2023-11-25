@@ -79,7 +79,7 @@ tcalc_error_t tcalc_token_clone(tcalc_token_t* src, tcalc_token_t** out) {
 }
 
 tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_t* out_size) {
-  tcalc_error_t err = TCALC_UNKNOWN;
+  tcalc_error_t err = TCALC_OK;
   *out_size = 0;
   if ((err = tcalc_are_groupsyms_balanced(expr)) != TCALC_OK) return err;
 
@@ -113,7 +113,7 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
  *   - Essentially, if a number preceeds an identifier or grouping symbol, append a multiplication token after that number
 */
 tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size_t nb_tokens, tcalc_token_t*** out, size_t* out_size) {
-  tcalc_error_t err = TCALC_UNKNOWN;
+  tcalc_error_t err = TCALC_OK;
   tcalc_token_t** final_tokens = NULL;
   size_t nb_final_tokens = 0;
   size_t final_tokens_capacity = 0;
@@ -150,7 +150,7 @@ tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size
  * 
 */
 tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token_t*** out, size_t* out_size) {
-  tcalc_error_t err = TCALC_UNKNOWN;
+  tcalc_error_t err = TCALC_OK;
   
   tcalc_token_t** infix_tokens = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_str_tokens);
   size_t nb_infix_tokens = 0;
@@ -243,8 +243,8 @@ tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size
   size_t offset = 0;
   char* current_token;
   while ((err = tcalc_next_math_strtoken(expr, &current_token, offset, &offset)) == TCALC_OK) {
-    if ((err = tcalc_alloc_grow((void**)&token_buffer, sizeof(char*), tb_size + 1, &tb_capacity)) != TCALC_OK) goto cleanup;
-    token_buffer[tb_size++] = current_token;
+    TCALC_DARR_PUSH(token_buffer, tb_size, tb_capacity, current_token, err)
+    if (err) goto cleanup;
   }
 
   if (err != TCALC_STOP_ITER) goto cleanup;
@@ -432,43 +432,38 @@ tcalc_error_t tcalc_valid_token_str(const char* token) {
  * There's probably a better way to implement this but whatever
 */
 tcalc_error_t tcalc_are_groupsyms_balanced(const char* expr) {
-  tcalc_error_t err = TCALC_UNKNOWN;
+  tcalc_error_t err = TCALC_OK;
   
   char* stack = NULL;
-  long stack_size = 0;
+  size_t stack_size = 0;
   size_t stack_capacity = 0;
   char corresponding[256];
   corresponding[')'] = '(';
   corresponding[']'] = '[';
 
   for (size_t i = 0; expr[i] != '\0'; i++) {
-
     switch (expr[i]) {
       case '(':
       case '[': {
-        if ((err = tcalc_alloc_grow((void**)&stack, sizeof (char), stack_size + 1, &stack_capacity)) != TCALC_OK) goto cleanup;
-        stack[stack_size++] = expr[i];
+        TCALC_DARR_PUSH(stack, stack_size, stack_capacity, expr[i], err)
+        if (err) goto cleanup;
         break;
       }
       case ')':
       case ']': {
-        if (stack_size <= 0) {
+        if (stack_size == 0) {
           err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
           goto cleanup;
         }
+
         if (stack[stack_size - 1] != corresponding[(int)expr[i]]) {
           err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
           goto cleanup;
         }
-        
+
         stack_size--;
         break;
       }
-    }
-
-    if (stack_size < 0) {
-      err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
-      goto cleanup; 
     }
   }
 

@@ -97,9 +97,12 @@ tcalc_error_t tcalc_context_add_variable(tcalc_context_t* context, char* name, d
   tcalc_error_t err = tcalc_variable_def_alloc(name, value, &variable);
   if (err) return err;
 
-  if ((err = tcalc_alloc_grow((void**)&context->variables, sizeof(tcalc_variable_def_t*), context->nb_variables + 1, &context->variables_capacity)) != TCALC_OK)
-    goto cleanup;
-  context->variables[context->nb_variables++] = variable;
+  TCALC_DARR_PUSH(context->variables, context->nb_variables, context->variables_capacity, variable, err)
+  if (err) goto cleanup;
+
+  // if ((err = tcalc_alloc_grow((void**)&context->variables, sizeof(tcalc_variable_def_t*), context->nb_variables + 1, &context->variables_capacity)) != TCALC_OK)
+  //   goto cleanup;
+  // context->variables[context->nb_variables++] = variable;
   
   return err;
 
@@ -113,10 +116,9 @@ tcalc_error_t tcalc_context_add_unary_func(tcalc_context_t* context, char* name,
   tcalc_error_t err = tcalc_unary_func_def_alloc(name, function, &unary_func);
   if (err) return err;
 
-  if ((err = tcalc_alloc_grow((void**)&context->unary_funcs, sizeof(tcalc_unary_func_def_t*), context->nb_unary_funcs + 1, &context->unary_funcs_capacity)) != TCALC_OK)
-    goto cleanup;
-  context->unary_funcs[context->nb_unary_funcs++] = unary_func;
-  
+  TCALC_DARR_PUSH(context->unary_funcs, context->nb_unary_funcs, context->unary_funcs_capacity, unary_func, err)
+  if (err) goto cleanup;
+
   return err;
 
   cleanup:
@@ -129,9 +131,8 @@ tcalc_error_t tcalc_context_add_binary_func(tcalc_context_t* context, char* name
   tcalc_error_t err = tcalc_binary_func_def_alloc(name, function, &binary_func);
   if (err) return err;
 
-  if ((err = tcalc_alloc_grow((void**)&context->binary_funcs, sizeof(tcalc_binary_func_def_t*), context->nb_binary_funcs + 1, &context->binary_funcs_capacity)) != TCALC_OK)
-    goto cleanup;
-  context->binary_funcs[context->nb_binary_funcs++] = binary_func;
+  TCALC_DARR_PUSH(context->binary_funcs, context->nb_binary_funcs, context->binary_funcs_capacity, binary_func, err)
+  if (err) goto cleanup;
 
   return err;
 
