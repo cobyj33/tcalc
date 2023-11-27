@@ -6,21 +6,26 @@
 #include <stdlib.h>
 #include <string.h>
 
+tcalc_error_t tcalc_context_get_token_op_data(const tcalc_context_t* context, tcalc_token_t* token, tcalc_op_data_t* out) {
+  tcalc_error_t err = TCALC_OK;
 
-typedef struct {
-  tcalc_token_t token;
-  int priority;
-  tcalc_associativity_t associativity;
-} tcalc_op_precedence_t;
-
-tcalc_error_t tcalc_get_prec_data(const tcalc_op_precedence_t* operations, size_t nb_operations, tcalc_token_t* token, tcalc_op_precedence_t* out) {
-  for (size_t i = 0; i < nb_operations; i++) {
-    if (token->type == operations[i].token.type && strcmp(token->value, operations[i].token.value) == 0) {
-      *out = operations[i];
+  switch (token->type) {
+    case TCALC_UNARY_OPERATOR: {
+      tcalc_unary_op_def_t* unary_op_def;
+      if ((err = tcalc_context_get_unary_op(context, token->value, &unary_op_def)) != TCALC_OK) return err;
+      *out = tcalc_unary_op_get_data(unary_op_def);
       return TCALC_OK;
     }
+    case TCALC_BINARY_OPERATOR: {
+      tcalc_binary_op_def_t* binary_op_def;
+      if ((err = tcalc_context_get_binary_op(context, token->value, &binary_op_def)) != TCALC_OK) return err;
+      *out = tcalc_binary_op_get_data(binary_op_def);
+      return TCALC_OK;
+    }
+    default: return TCALC_INVALID_ARG;
   }
-  return TCALC_NOT_FOUND;
+
+  return TCALC_INVALID_ARG;
 }
 
 /**
@@ -38,18 +43,6 @@ tcalc_error_t tcalc_get_prec_data(const tcalc_op_precedence_t* operations, size_
 */
 tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, size_t nb_infix_tokens, const tcalc_context_t* context, tcalc_token_t*** out, size_t* out_size) {
   tcalc_error_t err;
-  #define OP_PRECEDENCE_DEF_COUNT 8
-
-  const tcalc_op_precedence_t OP_PRECEDENCE_DEFS[OP_PRECEDENCE_DEF_COUNT] = {
-    {{TCALC_BINARY_OPERATOR, "+"}, 1, TCALC_LEFT_ASSOCIATIVE},
-    {{TCALC_BINARY_OPERATOR, "-"}, 1, TCALC_LEFT_ASSOCIATIVE},
-    {{TCALC_BINARY_OPERATOR, "*"}, 2, TCALC_LEFT_ASSOCIATIVE},
-    {{TCALC_BINARY_OPERATOR, "/"}, 2, TCALC_LEFT_ASSOCIATIVE},
-    {{TCALC_BINARY_OPERATOR, "%"}, 2, TCALC_LEFT_ASSOCIATIVE},
-    {{TCALC_BINARY_OPERATOR, "^"}, 3, TCALC_RIGHT_ASSOCIATIVE},
-    {{TCALC_UNARY_OPERATOR, "+"}, 3, TCALC_RIGHT_ASSOCIATIVE},
-    {{TCALC_UNARY_OPERATOR, "-"}, 3, TCALC_RIGHT_ASSOCIATIVE},
-  };
 
   tcalc_token_t** operator_stack = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_infix_tokens);
   if (operator_stack == NULL) return TCALC_BAD_ALLOC;
@@ -113,13 +106,16 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
       }
       case TCALC_UNARY_OPERATOR:
       case TCALC_BINARY_OPERATOR: {
-        tcalc_op_precedence_t current_optdef, stack_optdef;
-        if ((err = tcalc_get_prec_data(OP_PRECEDENCE_DEFS, OP_PRECEDENCE_DEF_COUNT, infix_tokens[i], &current_optdef)) != TCALC_OK) goto cleanup;
+        tcalc_op_data_t current_optdata, stack_optdata;
+        if ((err = tcalc_context_get_token_op_data(context, infix_tokens[i], &current_optdata))) goto cleanup;
 
         while (operator_stack_size > 0) {
-          if (tcalc_get_prec_data(OP_PRECEDENCE_DEFS, OP_PRECEDENCE_DEF_COUNT, operator_stack[operator_stack_size - 1], &stack_optdef) != TCALC_OK) break;
-          if (current_optdef.priority > stack_optdef.priority) break;
-          if (current_optdef.priority == stack_optdef.priority && current_optdef.associativity == TCALC_RIGHT_ASSOCIATIVE) break;
+          tcalc_token_t* stack_top = operator_stack[operator_stack_size - 1];
+          if (stack_top->type == TCALC_GROUP_START) break;
+
+          if ((err = tcalc_context_get_token_op_data(context, stack_top, &stack_optdata))) goto cleanup;
+          if (current_optdata.precedence > stack_optdata.precedence) break;
+          if (current_optdata.precedence == stack_optdata.precedence && current_optdata.associativity == TCALC_RIGHT_ASSOCIATIVE) break;
 
           if ((err = tcalc_token_clone(operator_stack[operator_stack_size - 1], &rpn_tokens[rpn_tokens_size])) != TCALC_OK) goto cleanup;
           rpn_tokens_size++;
@@ -179,6 +175,5 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_tokens, siz
     tcalc_free_arr((void**)rpn_tokens, rpn_tokens_size, tcalc_token_freev);
     *out_size = 0;
     return err;
-  #undef OP_PRECEDENCE_DEF_COUNT
 }
 

@@ -57,46 +57,26 @@ tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, const tcalc_context_t* 
  * 
 */
 tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t* context, double* out) {
+  tcalc_error_t err = TCALC_OK;
+  
   switch (expr->token->type) {
     case TCALC_NUMBER: { 
       return tcalc_strtodouble(expr->token->value, out);
     }
     case TCALC_UNARY_OPERATOR: {
       double operand;
-      tcalc_error_t err = tcalc_eval_exprtree(expr->children[0], context, &operand);
-      if (err) return err;
-
-      if (strcmp(expr->token->value, "+") == 0) {
-        return tcalc_unary_plus(operand, out);
-      } else if (strcmp(expr->token->value, "-") == 0) {
-        return tcalc_unary_minus(operand, out);
-      } else {
-        return TCALC_INVALID_ARG;
-      } 
+      tcalc_unary_op_def_t* unary_op_def;
+      if ((err = tcalc_context_get_unary_op(context, expr->token->value, &unary_op_def)) != TCALC_OK) return err;
+      if ((err = tcalc_eval_exprtree(expr->children[0], context, &operand)) != TCALC_OK) return err;
+      return unary_op_def->function(operand, out);
     }
     case TCALC_BINARY_OPERATOR: {
-      double operand1;
-      double operand2;
-      tcalc_error_t err = tcalc_eval_exprtree(expr->children[0], context, &operand1);
-      if (err) return err;
-      err = tcalc_eval_exprtree(expr->children[1], context, &operand2);
-      if (err) return err;
-      
-      if (strcmp(expr->token->value, "+") == 0) {
-        return tcalc_add(operand1, operand2, out);
-      } else if (strcmp(expr->token->value, "-") == 0) {
-        return tcalc_subtract(operand1, operand2, out);
-      } else if (strcmp(expr->token->value, "*") == 0) {
-        return tcalc_multiply(operand1, operand2, out);
-      } else if (strcmp(expr->token->value, "/") == 0) {
-        return tcalc_divide(operand1, operand2, out);
-      } else if (strcmp(expr->token->value, "^") == 0) {
-        return tcalc_pow(operand1, operand2, out);
-      } else if (strcmp(expr->token->value, "%") == 0) {
-        return tcalc_mod(operand1, operand2, out);
-      } else {
-        return TCALC_INVALID_ARG;
-      }
+      double operand1, operand2;
+      tcalc_binary_op_def_t* binary_op_def;
+      if ((err = tcalc_context_get_binary_op(context, expr->token->value, &binary_op_def)) != TCALC_OK) return err;
+      if ((err = tcalc_eval_exprtree(expr->children[0], context, &operand1)) != TCALC_OK) return err;
+      if ((err = tcalc_eval_exprtree(expr->children[1], context, &operand2)) != TCALC_OK) return err;
+      return binary_op_def->function(operand1, operand2, out);
     }
     case TCALC_IDENTIFIER: {
 

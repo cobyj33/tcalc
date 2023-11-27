@@ -3,6 +3,9 @@
 
 #include "tcalc_error.h"
 
+typedef tcalc_error_t (*tcalc_unary_func)(double, double*);
+typedef tcalc_error_t (*tcalc_binary_func)(double, double, double*);
+
 int tcalc_equals(double a, double b);
 int tcalc_lt(double a, double b);
 int tcalc_lteq(double a, double b);
