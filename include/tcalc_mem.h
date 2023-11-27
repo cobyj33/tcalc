@@ -19,6 +19,20 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
 
 #define alloc_nr(x) (((x)+16)*3/2)
 
+/**
+ * 
+ * 
+ * arr: The pointer to the array to perform possible growth on
+ * size: The size to which the array should fit into
+ * capacity: The current capacity of the array
+ * err: a tcalc_error_t variable that will be set upon any errors
+ * 
+ * the capacity variable will be updated to the current array's capacity if
+ * reallocated, or will stay the same under no reallocation
+ * 
+ * the arr variable will be altered, if reallocated, to point to the reallocated
+ * data
+*/
 #define TCALC_DARR_GROW(arr, size, capacity, err) do { \
     if (capacity == 0) { \
       arr = malloc(sizeof(*arr)); \
@@ -39,6 +53,13 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
     } \
   } while (0);
 
+/**
+ * arr: The pointer to the array to push val onto
+ * size: The current size of the array
+ * capacity: The current capacity of the array
+ * val: The value to add to the array
+ * err: a tcalc_error_t variable that will be set upon any errors
+*/
 #define TCALC_DARR_PUSH(arr, size, capacity, val, err) do { \
     TCALC_DARR_GROW(arr, size + 1, capacity, err) \
     if (err == TCALC_OK) { \
@@ -46,13 +67,26 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
     } \
   } while (0);
 
+/**
+ * arr: The pointer to the array to perform possible growth on
+ * size: The current size of the array
+ * capacity: The current capacity of the array
+ * val: The value to add to the array
+ * index: The index to insert the value at
+ * err: a tcalc_error_t variable that will be set upon any errors
+*/
 #define TCALC_DARR_INSERT(arr, size, capacity, val, index, err) do { \
-    TCALC_DARR_GROW(arr, size, capacity, err) \
-    if (err == TCALC_OK) { \
-      for (size_t i = index + 1; i < size; i++) { \
-        arr[i] = arr[i - 1]; \
+    if (index > size || index < 0) { \
+      err = TCALC_OUT_OF_BOUNDS; \
+    } else { \
+      TCALC_DARR_GROW(arr, size + 1, capacity, err) \
+      if (err == TCALC_OK) { \
+        size++; \
+        for (size_t i = index + 1; i < size + 1; i++) { \
+          arr[i] = arr[i - 1]; \
+        } \
+        arr[index] = val; \
       } \
-      arr[index] = val; \
     } \
   } while (0);
 
