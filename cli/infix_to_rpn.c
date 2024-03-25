@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
   tcalc_token_t** rpn_tokens;
   size_t nb_rpn_tokens;
   err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, context, &rpn_tokens, &nb_rpn_tokens);
-  tcalc_free_arr((void**)infix_tokens, nb_infix_tokens, tcalc_token_freev);
+  TCALC_ARR_FREE_F(infix_tokens, nb_infix_tokens, tcalc_token_free);
   tcalc_context_free(context);
 
   if (err) {

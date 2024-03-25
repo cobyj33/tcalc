@@ -4,6 +4,7 @@
 #include "tcalc_tokens.h"
 #include "tcalc_error.h"
 #include "tcalc_func.h"
+#include "tcalc_vec.h"
 
 #include <stddef.h>
 
@@ -33,6 +34,7 @@ typedef enum tcalc_associativity_t{
  *  be called with the binary expression in order, as some binary operations like
  *  division and subtraction are not associative.
  * 
+ * 
  * Every other token type is currently unimplemented :(
  * 
  * To validate a tree, evaluate it with tcalc_eval_exprtree and checking that
@@ -43,6 +45,11 @@ typedef struct tcalc_exprtree_node_t {
   struct tcalc_exprtree_node_t** children;
   size_t nb_children;
 } tcalc_exprtree_t;
+
+enum tcalc_exprtree_node_type_t {
+  TCALC_EXPRTREE_TYPE_EXPRESSION,
+  TCALC_EXPRTREE_TYPE_RELATION
+};
 
 typedef struct tcalc_variable_def_t {
   char* identifier;
@@ -67,6 +74,13 @@ typedef struct tcalc_unary_op_def_t {
   tcalc_associativity_t associativity;
   tcalc_unary_func function;
 } tcalc_unary_op_def_t;
+
+typedef struct tcalc_relation_op_def_t {
+  char* identifier;
+  int precedence;
+  tcalc_associativity_t associativity;
+  tcalc_relation_func function;
+} tcalc_relation_op_def_t;
 
 typedef struct tcalc_binary_op_def_t {
   char* identifier;
@@ -115,6 +129,13 @@ tcalc_op_data_t tcalc_unary_op_get_data(tcalc_unary_op_def_t* unary_op_def);
 //   size_t nb_variables;
 // } tcalc_context_t;
 
+TCALC_DECLARE_VEC(tcalc_unary_func_def_t);
+TCALC_DECLARE_VEC(tcalc_binary_func_def_t);
+TCALC_DECLARE_VEC(tcalc_variable_def_t);
+TCALC_DECLARE_VEC(tcalc_unary_op_def_t);
+TCALC_DECLARE_VEC(tcalc_binary_op_def_t);
+TCALC_DECLARE_VEC(tcalc_relation_op_def_t);
+
 typedef struct tcalc_context_t {
   tcalc_unary_func_def_t** unary_funcs;
   size_t nb_unary_funcs;
@@ -135,6 +156,10 @@ typedef struct tcalc_context_t {
   tcalc_binary_op_def_t** binary_ops;
   size_t nb_binary_ops;
   size_t binary_ops_capacity;
+
+  tcalc_relation_op_def_t** relation_ops;
+  size_t nb_relation_ops;
+  size_t relation_ops_capacity;
 } tcalc_context_t;
 
 tcalc_error_t tcalc_context_alloc_empty(tcalc_context_t** out);

@@ -91,6 +91,67 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
   } while (0);
 
 /**
+ * Free the contents of an array with dynamically allocated members with a callback
+ * 
+ * Free the contents of the array with a specific freeing function. The freeing
+ * function should take one pointer which is the same type as that stored in the
+ * array, 
+*/
+#define TCALC_ARR_FREE_CF(arr, len, freefn) do { \
+  for (size_t i = 0; i < len; i++) { \
+    freefn(arr[i]); \
+  } \
+} while (0)
+
+/**
+ * Free the contents of an array with dynamically allocated members with a callback
+ * 
+ * This is different from TCALC_ARR_FREE_CF, since the members will be casted to void*
+ * first when feeding into the free function
+ * 
+ * the signautre of the freeing function takes one void pointer as an argument
+ * and returns null (the same as the C standard free function)
+*/
+#define TCALC_ARR_FREE_CFV(arr, len, freefnv) do { \
+  for (size_t i = 0; i < len; i++) { \
+    freefnv((void*)(arr[i])); \
+  } \
+} while (0)
+
+/**
+ * Free the contents of the array with the default C standard free funcion
+*/
+#define TCALC_ARR_FREE_C(arr, len) TCALC_ARR_FREE_CFV(arr, len, free)
+
+
+/**
+ * Free a dynamically allocated array and all of its contents, all with the C standard free function.
+*/
+#define TCALC_ARR_FREE(arr, len) do { \
+    TCALC_ARR_FREE_C(arr, len); \
+    free(arr); \
+  } while (0)
+
+/**
+ * Free a dynamically allocated array and all of its contents, freeing the contents with a callback.
+*/
+#define TCALC_ARR_FREE_F(arr, len, freefn) do { \
+    TCALC_ARR_FREE_CF(arr, len, freefn); free(arr); \
+    arr = NULL; \
+  } while (0)
+
+/**
+ * Free a dynamically allocated array and all of its contents, freeing the
+ * contents with a callback where each member of the array will first be 
+ * casted to void*.
+*/
+#define TCALC_ARR_FREE_FV(arr, len, freefnv) do { \
+    TCALC_ARR_FREE_CFV(arr, len, freefnv); \
+    free(arr); \
+    arr = NULL; \ 
+  } while (0) 
+
+/**
  * Inspired from the ALLOC_GROW API In git
  * 
  * ALLOC_GROW Documentation: https://github.com/git/git/blob/35f6318d44379452d8d33e880d8df0267b4a0cd0/Documentation/technical/api-allocation-growing.txt#L1-L20
