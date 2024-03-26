@@ -6,18 +6,12 @@
 #include <stddef.h>
 #include <malloc.h>
 
-/**
- * Free an allocated array. Also, free all data within the array with the
- * given callback.
- * 
- * You'll notice that alot of structs have a tcalc_struct_free and a
- * tcalc_struct_freev variant with a void pointer. It's literally just to
- * work with this bad boy.
- * (https://stackoverflow.com/a/559671)
-*/
-void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
-
 #define alloc_nr(x) (((x)+16)*3/2)
+
+void* tcalc_malloc(size_t);
+void* tcalc_calloc(size_t, size_t);
+void* tcalc_realloc(void*, size_t);
+void tcalc_free(void*);
 
 /**
  * 
@@ -51,7 +45,7 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
         capacity = new_capacity; \
       } \
     } \
-  } while (0);
+  } while (0)
 
 /**
  * arr: The pointer to the array to push val onto
@@ -61,11 +55,11 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
  * err: a tcalc_error_t variable that will be set upon any errors
 */
 #define TCALC_DARR_PUSH(arr, size, capacity, val, err) do { \
-    TCALC_DARR_GROW(arr, size + 1, capacity, err) \
+    TCALC_DARR_GROW(arr, size + 1, capacity, err); \
     if (err == TCALC_OK) { \
       arr[size++] = val; \
     } \
-  } while (0);
+  } while (0)
 
 /**
  * arr: The pointer to the array to perform possible growth on
@@ -79,7 +73,7 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
     if (index > size || index < 0) { \
       err = TCALC_OUT_OF_BOUNDS; \
     } else { \
-      TCALC_DARR_GROW(arr, size + 1, capacity, err) \
+      TCALC_DARR_GROW(arr, size + 1, capacity, err); \
       if (err == TCALC_OK) { \
         size++; \
         for (size_t i = index + 1; i < size + 1; i++) { \
@@ -88,7 +82,7 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
         arr[index] = val; \
       } \
     } \
-  } while (0);
+  } while (0)
 
 /**
  * Free the contents of an array with dynamically allocated members with a callback

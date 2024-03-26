@@ -17,16 +17,14 @@
 #define TCALC_VEC_INSERT(vec, item, index, err) TCALC_DARR_INSERT(vec.arr, vec.len, vec.cap, item, index, err)
 #define TCALC_VEC_GROW(vec, res_size, err) TCALC_DARR_GROW(vec.arr, res_size, vec.cap, err)
 
-#define TCALC_VEC_FREE_CF(vec, freefn) do { \
-  TCALC_ARR_FREE_CF(vec.arr, vec.len, freefn); \
+#define TCALC_VEC_FREE_F(vec, freefn) do { \
+  TCALC_ARR_FREE_F(vec.arr, vec.len, freefn); \
   TCALC_VEC_RESET(vec); \
 } while (0)
 
-#define TCALC_VEC_FREE_CFV(vec, freefnv) do { \
-  TCALC_ARR_FREE_CF(vec.arr, vec.len, freefnv); \
+#define TCALC_VEC_FREE_FV(vec, freefnv) do { \
+  TCALC_ARR_FREE_F(vec.arr, vec.len, freefnv); \
   TCALC_VEC_RESET(vec); \
 } while (0)
-
-#define TCALC_VEC_FREE_C(vec) TCALC_VEC_FREE_CFV(vec, free)
 
 #endif

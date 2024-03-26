@@ -28,7 +28,7 @@ void tcalc_binary_op_def_freev(void* binary_op_def);
 void tcalc_unary_op_def_freev(void* unary_op_def);
 
 tcalc_error_t tcalc_context_alloc_empty(tcalc_context_t** out) {
-  tcalc_context_t* context = (tcalc_context_t*)calloc(1, sizeof(tcalc_context_t));
+  tcalc_context_t* context = (tcalc_context_t*)calloc(1, sizeof(tcalc_context_t)); // use of calloc is important here
   if (context == NULL) return TCALC_BAD_ALLOC;
 
   *out = context;
@@ -102,11 +102,11 @@ tcalc_error_t tcalc_context_alloc_default(tcalc_context_t** out) {
 }
 
 void tcalc_context_free(tcalc_context_t* context) {
-  TCALC_VEC_FREE_CF(context->binary_funcs, tcalc_binary_func_def_free);
-  TCALC_VEC_FREE_CF(context->unary_funcs, tcalc_unary_func_def_free);
-  TCALC_VEC_FREE_CF(context->variables, tcalc_variable_def_free);
-  TCALC_VEC_FREE_CF(context->unary_ops, tcalc_unary_op_def_free);
-  TCALC_VEC_FREE_CF(context->binary_ops, tcalc_binary_op_def_free);
+  TCALC_VEC_FREE_F(context->binary_funcs, tcalc_binary_func_def_free);
+  TCALC_VEC_FREE_F(context->unary_funcs, tcalc_unary_func_def_free);
+  TCALC_VEC_FREE_F(context->variables, tcalc_variable_def_free);
+  TCALC_VEC_FREE_F(context->unary_ops, tcalc_unary_op_def_free);
+  TCALC_VEC_FREE_F(context->binary_ops, tcalc_binary_op_def_free);
 
   free(context);
 }
@@ -116,7 +116,7 @@ tcalc_error_t tcalc_context_add_variable(tcalc_context_t* context, char* name, d
   tcalc_error_t err = tcalc_variable_def_alloc(name, value, &variable);
   if (err) return err;
 
-  TCALC_VEC_PUSH(context->variables, variable, err)
+  TCALC_VEC_PUSH(context->variables, variable, err);
   if (err) goto cleanup;
 
   return TCALC_OK;

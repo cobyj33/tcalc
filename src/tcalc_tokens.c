@@ -247,7 +247,7 @@ tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size
   size_t offset = 0;
   char* current_token;
   while ((err = tcalc_next_math_strtoken(expr, &current_token, offset, &offset)) == TCALC_OK) {
-    TCALC_DARR_PUSH(token_buffer, tb_size, tb_capacity, current_token, err)
+    TCALC_DARR_PUSH(token_buffer, tb_size, tb_capacity, current_token, err);
     if (err) goto cleanup;
   }
 
@@ -449,7 +449,7 @@ tcalc_error_t tcalc_are_groupsyms_balanced(const char* expr) {
     switch (expr[i]) {
       case '(':
       case '[': {
-        TCALC_DARR_PUSH(stack, stack_size, stack_capacity, expr[i], err)
+        TCALC_DARR_PUSH(stack, stack_size, stack_capacity, expr[i], err);
         if (err) goto cleanup;
         break;
       }

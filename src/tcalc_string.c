@@ -20,6 +20,7 @@
 
 #include "tcalc_error.h"
 #include "tcalc_mem.h"
+#include "tcalc_vec.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -78,9 +79,7 @@ tcalc_error_t tcalc_strsubstr(const char* src, size_t start, size_t end, char** 
 
 tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_OK;
-  char** strings = NULL;
-  size_t strings_size = 0;
-  size_t strings_capacity = 0;
+  TCALC_VEC(char*) strings = TCALC_VEC_INIT;
 
   size_t start = 0;
   size_t end = 0;
@@ -90,7 +89,7 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* o
     
     char* substr;
     if ((err =  tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
-    TCALC_DARR_PUSH(strings, strings_size, strings_capacity, substr, err)
+    TCALC_VEC_PUSH(strings, substr, err);
     if (err) goto cleanup;
 
 
@@ -102,16 +101,16 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* o
   if (str[start] != '\0') {
     char* substr;
     if (( err = tcalc_strsubstr(str, start, end, &substr)) != TCALC_OK) goto cleanup;
-    TCALC_DARR_PUSH(strings, strings_size, strings_capacity, substr, err)
+    TCALC_VEC_PUSH(strings, substr, err);
     if (err) goto cleanup;
   }
 
-  *out = strings;
-  *out_size = strings_size;
+  *out = strings.arr;
+  *out_size = strings.len;
   return TCALC_OK;
 
   cleanup:
-    TCALC_ARR_FREE_F(strings, strings_size, free);
+    TCALC_VEC_FREE_F(strings, free);
     return err;
 }
 

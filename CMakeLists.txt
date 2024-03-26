@@ -8,6 +8,7 @@ option(TCALC_BUILD_TESTS "Build tcalc tests" OFF)
 
 set(TCALC_SRC_FILES
 ./src/tcalc_error.c
+./src/tcalc_mem.c
 ./src/tcalc_string.c
 ./src/tcalc_func.c
 ./src/tcalc_eval.c
