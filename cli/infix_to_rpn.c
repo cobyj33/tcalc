@@ -53,6 +53,6 @@ int main(int argc, char** argv) {
   printf("%c", '\n');
 
 
-  tcalc_free_arr((void**)rpn_tokens, nb_rpn_tokens, tcalc_token_freev);
+  TCALC_ARR_FREE_CF(rpn_tokens, nb_rpn_tokens, tcalc_token_free);
   return EXIT_SUCCESS;
 }

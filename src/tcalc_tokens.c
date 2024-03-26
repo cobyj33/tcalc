@@ -87,13 +87,13 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
   tcalc_token_t** initial_infix_tokens;
   size_t nb_initial_infix_tokens;
   err = tcalc_tokenize_infix_strtokens_assign_types(str_tokens, nb_str_tokens, &initial_infix_tokens, &nb_initial_infix_tokens);
-  tcalc_free_arr((void**)str_tokens, nb_str_tokens, free);
+  TCALC_ARR_FREE_F(str_tokens, nb_str_tokens, free);
   if (err) return err;
 
   tcalc_token_t** resolved_infix_tokens;
   size_t nb_resolved_infix_tokens;
   err = tcalc_tokenize_infix_token_insertions(initial_infix_tokens, nb_initial_infix_tokens, &resolved_infix_tokens, &nb_resolved_infix_tokens);
-  tcalc_free_arr((void**)initial_infix_tokens, nb_initial_infix_tokens, tcalc_token_freev);
+  TCALC_ARR_FREE_F(initial_infix_tokens, nb_initial_infix_tokens, tcalc_token_free);
   if (err) return err;
 
   *out = resolved_infix_tokens;
@@ -137,7 +137,7 @@ tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size
   return err;
 
   cleanup:
-    tcalc_free_arr((void**)final_tokens, nb_final_tokens, tcalc_token_freev);
+    TCALC_ARR_FREE_F(final_tokens, nb_final_tokens, tcalc_token_free);
     return err;
 }
 
@@ -207,7 +207,7 @@ tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, siz
   return err;
 
   cleanup:
-    tcalc_free_arr((void**)infix_tokens, nb_infix_tokens, tcalc_token_freev);
+    TCALC_ARR_FREE_F(infix_tokens, nb_infix_tokens, tcalc_token_free);
     return err;
 }
 
@@ -257,7 +257,7 @@ tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size
   return TCALC_OK;
 
   cleanup:
-    tcalc_free_arr((void**)token_buffer, tb_size, free);
+    TCALC_ARR_FREE_F(token_buffer, tb_size, free);
     return err;
 }
 
@@ -361,7 +361,7 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
 
   *out = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_str_tokens);
   if (*out == NULL) {
-    tcalc_free_arr((void**)token_strings, nb_str_tokens, free);
+    TCALC_ARR_FREE_F(token_strings, nb_str_tokens, free);
     return TCALC_BAD_ALLOC;
   }
 
@@ -395,12 +395,12 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
     (*out_size)++;
   }
 
-  tcalc_free_arr((void**)token_strings, nb_str_tokens, free);
+  TCALC_ARR_FREE_F(token_strings, nb_str_tokens, free);
   return TCALC_OK;
 
   cleanup:
-    tcalc_free_arr((void**)token_strings, nb_str_tokens, free);
-    tcalc_free_arr((void**)*out, *out_size, tcalc_token_freev); // strings in tokens are already freed by freeing the initial token strings
+    TCALC_ARR_FREE_F(token_strings, nb_str_tokens, free);
+    TCALC_ARR_FREE_F(*out, *out_size, tcalc_token_free);
     return err;
 }
 

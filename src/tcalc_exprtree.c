@@ -27,11 +27,11 @@ tcalc_error_t tcalc_create_exprtree_infix(const char* infix, const tcalc_context
   tcalc_token_t** rpn_tokens;
   size_t nb_rpn_tokens;
   err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, context, &rpn_tokens, &nb_rpn_tokens);
-  tcalc_free_arr((void**)infix_tokens, nb_infix_tokens, tcalc_token_freev);
+  TCALC_ARR_FREE_F(infix_tokens, nb_infix_tokens, tcalc_token_free);
   if (err) return err;
 
   err = tcalc_rpn_tokens_to_exprtree(rpn_tokens, nb_rpn_tokens, context, out);
-  tcalc_free_arr((void**)rpn_tokens, nb_rpn_tokens, tcalc_token_freev);
+  TCALC_ARR_FREE_F(rpn_tokens, nb_rpn_tokens, tcalc_token_free);
   return err;
 }
 
@@ -42,7 +42,7 @@ tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, const tcalc_context_t* 
   if (err) return err;
 
   err = tcalc_rpn_tokens_to_exprtree(tokens, nb_tokens, context, out);
-  tcalc_free_arr((void**)tokens, nb_tokens, tcalc_token_freev);
+  TCALC_ARR_FREE_F(tokens, nb_tokens, tcalc_token_free);
   return err;
 }
 
@@ -226,7 +226,7 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
   return err;
 
   cleanup:
-    tcalc_free_arr((void**)tree_stack, tree_stack_size, tcalc_exprtree_node_freev);
+    TCALC_ARR_FREE_F(tree_stack, tree_stack_size, tcalc_exprtree_node_free);
     return err;
 }
 

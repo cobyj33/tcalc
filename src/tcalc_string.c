@@ -111,7 +111,7 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* o
   return TCALC_OK;
 
   cleanup:
-    tcalc_free_arr((void**)strings, strings_size, free);
+    TCALC_ARR_FREE_F(strings, strings_size, free);
     return err;
 }
 

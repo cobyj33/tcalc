@@ -67,7 +67,7 @@ void TestTCalcStrSplit(CuTest* tc) {
   CuAssertStrEquals(tc, split[11], "yo");
   CuAssertStrEquals(tc, split[12], "yooo");
   
-  tcalc_free_arr((void**)split, split_size, free);
+  TCALC_ARR_FREE_F(split, split_size, free);
 }
 
 void TestTCalcStrSplitEdges(CuTest* tc) {
@@ -89,7 +89,7 @@ void TestTCalcStrSplitEdges(CuTest* tc) {
   CuAssertStrEquals(tc, split[5], "or");
   CuAssertStrEquals(tc, split[6], "back");
   
-  tcalc_free_arr((void**)split, split_size, free);
+  TCALC_ARR_FREE_F(split, split_size, free);
   err = tcalc_strsplit(packed_left, ' ', &split, &split_size);
   CuAssertTrue(tc, err == TCALC_OK);
   CuAssertIntEquals(tc, split_size, 5);
@@ -100,7 +100,7 @@ void TestTCalcStrSplitEdges(CuTest* tc) {
   CuAssertStrEquals(tc, split[3], "the");
   CuAssertStrEquals(tc, split[4], "front");
 
-  tcalc_free_arr((void**)split, split_size, free);
+  TCALC_ARR_FREE_F(split, split_size, free);
   err = tcalc_strsplit(packed_right, ' ', &split, &split_size);
   CuAssertTrue(tc, err == TCALC_OK);
   CuAssertIntEquals(tc, split_size, 5);

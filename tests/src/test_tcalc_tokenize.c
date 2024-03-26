@@ -24,7 +24,7 @@ void TestTCalcSimpleTokens(CuTest *tc) {
   CuAssertStrEquals(tc, tokens[6]->value, "/");
 
 
-  tcalc_free_arr((void**)tokens, size, tcalc_token_freev);
+  TCALC_ARR_FREE_F(tokens, size, tcalc_token_free);
 }
 
 CuSuite* TCalcTokenizeGetSuite() {

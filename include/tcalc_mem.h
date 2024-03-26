@@ -99,7 +99,7 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
 */
 #define TCALC_ARR_FREE_CF(arr, len, freefn) do { \
   for (size_t i = 0; i < len; i++) { \
-    freefn(arr[i]); \
+    freefn((arr)[i]); \
   } \
 } while (0)
 
@@ -117,20 +117,6 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
     freefnv((void*)(arr[i])); \
   } \
 } while (0)
-
-/**
- * Free the contents of the array with the default C standard free funcion
-*/
-#define TCALC_ARR_FREE_C(arr, len) TCALC_ARR_FREE_CFV(arr, len, free)
-
-/**
- * Free a dynamically allocated array and all of its contents, all with the C standard free function.
-*/
-#define TCALC_ARR_FREE(arr, len) do { \
-    TCALC_ARR_FREE_C(arr, len); \
-    free(arr); \
-    arr = NULL; \
-  } while (0)
 
 /**
  * Free a dynamically allocated array and all of its contents, freeing the contents with a callback.
@@ -151,13 +137,5 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
     free(arr); \
     arr = NULL; \
   } while (0) 
-
-/**
- * Inspired from the ALLOC_GROW API In git
- * 
- * ALLOC_GROW Documentation: https://github.com/git/git/blob/35f6318d44379452d8d33e880d8df0267b4a0cd0/Documentation/technical/api-allocation-growing.txt#L1-L20
- * Also in https://github.com/git/git/blob/master/git-compat-util.h
-*/
-tcalc_error_t tcalc_alloc_grow(void** arr, size_t item_size, size_t size, size_t* capacity);
 
 #endif
