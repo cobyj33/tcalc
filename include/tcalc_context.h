@@ -9,8 +9,8 @@
 #include <stddef.h>
 
 typedef enum tcalc_assoc{
-  TCALC_RIGHT_ASSOCIATIVE,
-  TCALC_LEFT_ASSOCIATIVE,
+  TCALC_RIGHT_ASSOC,
+  TCALC_LEFT_ASSOC,
 } tcalc_assoc;
 
 /**
@@ -52,13 +52,13 @@ enum tcalc_exprtree_node_type {
 };
 
 typedef struct tcalc_vardef {
-  char* identifier;
+  char* id;
   double value;
 } tcalc_vardef;
 
 typedef struct tcalc_opdata {
-  int precedence;
-  tcalc_assoc associativity;
+  int prec;
+  tcalc_assoc assoc;
 } tcalc_opdata;
 
 typedef struct tcalc_exprvardef {
@@ -69,34 +69,34 @@ typedef struct tcalc_exprvardef {
 
 
 typedef struct tcalc_uopdef {
-  char* identifier;
-  int precedence;
-  tcalc_assoc associativity;
-  tcalc_unfunc function;
+  char* id;
+  int prec;
+  tcalc_assoc assoc;
+  tcalc_unfunc func;
 } tcalc_uopdef;
 
 typedef struct tcalc_relation_opdef {
-  char* identifier;
-  int precedence;
-  tcalc_assoc associativity;
-  tcalc_relation_func function;
+  char* id;
+  int prec;
+  tcalc_assoc assoc;
+  tcalc_relation_func func;
 } tcalc_relation_opdef;
 
 typedef struct tcalc_binopdef {
-  char* identifier;
-  int precedence;
-  tcalc_assoc associativity;
-  tcalc_binfunc function;
+  char* id;
+  int prec;
+  tcalc_assoc assoc;
+  tcalc_binfunc func;
 } tcalc_binopdef;
 
 typedef struct tcalc_unfuncdef {
-  char* identifier;
-  tcalc_unfunc function;
+  char* id;
+  tcalc_unfunc func;
 } tcalc_unfuncdef;
 
 typedef struct tcalc_binfuncdef {
-  char* identifier;
-  tcalc_binfunc function;
+  char* id;
+  tcalc_binfunc func;
 } tcalc_binfuncdef;
 
 typedef struct tcalc_groupsymdef {
@@ -104,8 +104,8 @@ typedef struct tcalc_groupsymdef {
   char end_symbol;
 } tcalc_groupsymdef;
 
-tcalc_opdata tcalc_binary_op_get_data(tcalc_binopdef* binary_op_def);
-tcalc_opdata tcalc_unary_op_get_data(tcalc_uopdef* unary_op_def);
+tcalc_opdata tcalc_getbinopdata(tcalc_binopdef* binary_op_def);
+tcalc_opdata tcalc_getunopdata(tcalc_uopdef* unary_op_def);
 
 /**
  * Some conditions to a tcalc context:
@@ -134,21 +134,21 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out);
 
 void tcalc_ctx_free(tcalc_ctx* context);
 
-tcalc_err tcalc_ctx_add_variable(tcalc_ctx* context, char* name, double value);
-tcalc_err tcalc_ctx_add_unary_func(tcalc_ctx* context, char* name, tcalc_unfunc function);
-tcalc_err tcalc_ctx_add_binary_func(tcalc_ctx* context, char* name, tcalc_binfunc function);
-tcalc_err tcalc_ctx_add_unary_op(tcalc_ctx* context, char* name, int precedence, tcalc_assoc associativity, tcalc_unfunc function);
-tcalc_err tcalc_ctx_add_binary_op(tcalc_ctx* context,  char* name, int precedence, tcalc_assoc associativity, tcalc_binfunc function);
+tcalc_err tcalc_ctx_addvar(tcalc_ctx* context, char* name, double value);
+tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* context, char* name, tcalc_unfunc func);
+tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* context, char* name, tcalc_binfunc func);
+tcalc_err tcalc_ctx_addunop(tcalc_ctx* context, char* name, int prec, tcalc_assoc assoc, tcalc_unfunc func);
+tcalc_err tcalc_ctx_addbinop(tcalc_ctx* context,  char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func);
 
-int tcalc_ctx_has_identifier(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_has_func(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasid(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasfunc(const tcalc_ctx* context, const char* name);
 
-int tcalc_ctx_has_op(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_has_unary_op(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_has_binary_op(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_has_unary_func(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_has_binary_func(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_has_variable(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasop(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasunop(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasbinop(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasunfunc(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasbinfunc(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasvar(const tcalc_ctx* context, const char* name);
 
 /**
  * tcalc_ctx_get_x functions will not return an error whenever the same given
@@ -156,11 +156,11 @@ int tcalc_ctx_has_variable(const tcalc_ctx* context, const char* name);
  * functions (if tcalc_ctx_has_x returns true, tcalc_ctx_get_x will not return an error)
 */
 
-tcalc_err tcalc_ctx_get_unary_func(const tcalc_ctx* context, const char* name, tcalc_unfuncdef** out);
-tcalc_err tcalc_ctx_get_binary_func(const tcalc_ctx* context, const char* name, tcalc_binfuncdef** out);
-tcalc_err tcalc_ctx_get_variable(const tcalc_ctx* context, const char* name, tcalc_vardef** out);
-tcalc_err tcalc_ctx_get_unary_op(const tcalc_ctx* context, const char* name, tcalc_uopdef** out);
-tcalc_err tcalc_ctx_get_binary_op(const tcalc_ctx* context, const char* name, tcalc_binopdef** out);
+tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* context, const char* name, tcalc_unfuncdef** out);
+tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* context, const char* name, tcalc_binfuncdef** out);
+tcalc_err tcalc_ctx_getvar(const tcalc_ctx* context, const char* name, tcalc_vardef** out);
+tcalc_err tcalc_ctx_getunop(const tcalc_ctx* context, const char* name, tcalc_uopdef** out);
+tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* context, const char* name, tcalc_binopdef** out);
 
 tcalc_err tcalc_ctx_get_op_data(const tcalc_ctx* context, const char* name, tcalc_opdata* out);
 

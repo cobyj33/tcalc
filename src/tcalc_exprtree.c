@@ -50,11 +50,11 @@ tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const tcalc_ctx* context, t
 /**
  * Detailed explanation of how an expression tree is evaluated
  * 
- * If the token type is a number:
+ * If the token type is  number:
  *  - simply read the number value in the 
  * 
  * If the token type is a unary operator
- * 
+ * a
 */
 tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* context, double* out) {
   tcalc_err err = TCALC_OK;
@@ -66,32 +66,32 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* context, do
     case TCALC_UNARY_OPERATOR: {
       double operand;
       tcalc_uopdef* unary_op_def;
-      if ((err = tcalc_ctx_get_unary_op(context, expr->token->value, &unary_op_def)) != TCALC_OK) return err;
+      if ((err = tcalc_ctx_getunop(context, expr->token->value, &unary_op_def)) != TCALC_OK) return err;
       if ((err = tcalc_eval_exprtree(expr->children[0], context, &operand)) != TCALC_OK) return err;
-      return unary_op_def->function(operand, out);
+      return unary_op_def->func(operand, out);
     }
     case TCALC_BINARY_OPERATOR: {
       double operand1, operand2;
       tcalc_binopdef* binary_op_def;
-      if ((err = tcalc_ctx_get_binary_op(context, expr->token->value, &binary_op_def)) != TCALC_OK) return err;
+      if ((err = tcalc_ctx_getbinop(context, expr->token->value, &binary_op_def)) != TCALC_OK) return err;
       if ((err = tcalc_eval_exprtree(expr->children[0], context, &operand1)) != TCALC_OK) return err;
       if ((err = tcalc_eval_exprtree(expr->children[1], context, &operand2)) != TCALC_OK) return err;
-      return binary_op_def->function(operand1, operand2, out);
+      return binary_op_def->func(operand1, operand2, out);
     }
     case TCALC_IDENTIFIER: {
 
-      if (tcalc_ctx_has_unary_func(context, expr->token->value)) {
+      if (tcalc_ctx_hasunfunc(context, expr->token->value)) {
         tcalc_unfuncdef* unary_func_def;
-        tcalc_ctx_get_unary_func(context, expr->token->value, &unary_func_def);
+        tcalc_ctx_getunfunc(context, expr->token->value, &unary_func_def);
         
         double operand;
         tcalc_err err = tcalc_eval_exprtree(expr->children[0], context, &operand);
         if (err) return err;
 
-        return unary_func_def->function(operand, out);
-      } else if (tcalc_ctx_has_binary_func(context, expr->token->value)) {
+        return unary_func_def->func(operand, out);
+      } else if (tcalc_ctx_hasbinfunc(context, expr->token->value)) {
         tcalc_binfuncdef* binary_func_def;
-        tcalc_ctx_get_binary_func(context, expr->token->value, &binary_func_def);
+        tcalc_ctx_getbinfunc(context, expr->token->value, &binary_func_def);
 
         double operand1;
         double operand2;
@@ -100,10 +100,10 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* context, do
         err = tcalc_eval_exprtree(expr->children[1], context, &operand2);
         if (err) return err;
       
-        return binary_func_def->function(operand1, operand2, out);
-      } else if (tcalc_ctx_has_variable(context, expr->token->value)) {
+        return binary_func_def->func(operand1, operand2, out);
+      } else if (tcalc_ctx_hasvar(context, expr->token->value)) {
         tcalc_vardef* vardef;
-        tcalc_ctx_get_variable(context, expr->token->value, &vardef);
+        tcalc_ctx_getvar(context, expr->token->value, &vardef);
 
         *out = vardef->value;
         return TCALC_OK;
@@ -170,13 +170,13 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
       } // TCALC_UNARY_OPERATOR
       case TCALC_IDENTIFIER: {
 
-        if (tcalc_ctx_has_variable(context, tokens[i]->value)) {
+        if (tcalc_ctx_hasvar(context, tokens[i]->value)) {
 
           tcalc_exprtree* tree_node;
           if ((err = tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node)) != TCALC_OK) goto cleanup;
           tree_stack[tree_stack_size++] = tree_node;
 
-        } else if (tcalc_ctx_has_binary_func(context, tokens[i]->value)) {
+        } else if (tcalc_ctx_hasbinfunc(context, tokens[i]->value)) {
           if (tree_stack_size < 2) {
             err = TCALC_INVALID_OP;
             goto cleanup; 
@@ -190,7 +190,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
 
           tree_stack[tree_stack_size - 2] = tree_node;
           tree_stack_size--;
-        } else if (tcalc_ctx_has_unary_func(context, tokens[i]->value)) {
+        } else if (tcalc_ctx_hasunfunc(context, tokens[i]->value)) {
           if (tree_stack_size < 1) {
             err = TCALC_INVALID_OP;
             goto cleanup; 

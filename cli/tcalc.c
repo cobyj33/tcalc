@@ -157,7 +157,7 @@ int tcalc_repl() {
       printf("%f\n\n", ans);
     }
 
-    tcalc_ctx_add_variable(context, "ans", ans);
+    tcalc_ctx_addvar(context, "ans", ans);
   }
 
   return EXIT_SUCCESS;
