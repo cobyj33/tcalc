@@ -6,18 +6,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-tcalc_error_t tcalc_context_get_token_op_data(const tcalc_context_t* ctx, tcalc_token_t* token, tcalc_op_data_t* out) {
+tcalc_error_t tcalc_context_get_token_op_data(const tcalc_context* ctx, tcalc_token* token, tcalc_opdata* out) {
   tcalc_error_t err = TCALC_OK;
 
   switch (token->type) {
     case TCALC_UNARY_OPERATOR: {
-      tcalc_unary_op_def_t* unary_op_def;
+      tcalc_unary_opdef* unary_op_def;
       if ((err = tcalc_context_get_unary_op(ctx, token->value, &unary_op_def)) != TCALC_OK) return err;
       *out = tcalc_unary_op_get_data(unary_op_def);
       return TCALC_OK;
     }
     case TCALC_BINARY_OPERATOR: {
-      tcalc_binary_op_def_t* binary_op_def;
+      tcalc_binary_opdef* binary_op_def;
       if ((err = tcalc_context_get_binary_op(ctx, token->value, &binary_op_def)) != TCALC_OK) return err;
       *out = tcalc_binary_op_get_data(binary_op_def);
       return TCALC_OK;
@@ -41,14 +41,14 @@ tcalc_error_t tcalc_context_get_token_op_data(const tcalc_context_t* ctx, tcalc_
  * Upon returning TCALC_OK, *out is an allocated array of size *out_size. The caller
  * is responsible for freeing these tokens.
 */
-tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_toks, size_t nb_infix_toks, const tcalc_context_t* ctx, tcalc_token_t*** out, size_t* out_size) {
+tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_infix_toks, const tcalc_context* ctx, tcalc_token*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_OK;
 
-  tcalc_token_t** opstk = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_infix_toks);
+  tcalc_token** opstk = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_infix_toks);
   if (opstk == NULL) return TCALC_BAD_ALLOC;
   size_t opstk_size = 0;
 
-  tcalc_token_t** rpn_toks = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_infix_toks); // tcalc_token_t* array, will be joined
+  tcalc_token** rpn_toks = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_infix_toks); // tcalc_token* array, will be joined
   size_t rpn_toks_size = 0;
   if (rpn_toks == NULL) {
     free(opstk);
@@ -106,11 +106,11 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token_t** infix_toks, size_
       }
       case TCALC_UNARY_OPERATOR:
       case TCALC_BINARY_OPERATOR: {
-        tcalc_op_data_t curr_opdata, stk_opdata;
+        tcalc_opdata curr_opdata, stk_opdata;
         if ((err = tcalc_context_get_token_op_data(ctx, infix_toks[i], &curr_opdata))) goto cleanup;
 
         while (opstk_size > 0) {
-          tcalc_token_t* stack_top = opstk[opstk_size - 1];
+          tcalc_token* stack_top = opstk[opstk_size - 1];
           if (stack_top->type == TCALC_GROUP_START) break;
 
           if ((err = tcalc_context_get_token_op_data(ctx, stack_top, &stk_opdata))) goto cleanup;

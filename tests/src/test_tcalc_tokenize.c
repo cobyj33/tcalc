@@ -8,7 +8,7 @@
 
 void TestTCalcSimpleTokens(CuTest *tc) {
   const char* expression = "3 .4 5.0 10 + - /";
-  tcalc_token_t** tokens;
+  tcalc_token** tokens;
   size_t size;
   tcalc_error_t err = tcalc_tokenize_rpn(expression, &tokens, &size);
   CuAssertTrue(tc, err == TCALC_OK);

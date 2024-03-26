@@ -8,6 +8,8 @@
 
 #define alloc_nr(x) (((x)+16)*3/2)
 
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
 void* tcalc_xmalloc(size_t);
 void* tcalc_xcalloc(size_t, size_t);
 void* tcalc_xrealloc(void*, size_t);

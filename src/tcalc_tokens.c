@@ -25,11 +25,11 @@ tcalc_error_t tcalc_valid_token_str(const char* token);
 tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
 int tcalc_are_groupsyms_balanced(const char* expr);
 tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size);
-tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token_t*** out, size_t* out_size);
-tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size_t nb_tokens, tcalc_token_t*** out, size_t* out_size);
+tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size);
+tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, tcalc_token*** out, size_t* out_size);
 int tcalc_is_identifier(const char* str);
 
-const char* tcalc_token_type_str(tcalc_token_type_t token_type) {
+const char* tcalc_token_type_str(tcalc_token_type token_type) {
   switch (token_type) {
     case TCALC_NUMBER: return "number";
     case TCALC_UNARY_OPERATOR: return "unary operator";
@@ -43,10 +43,10 @@ const char* tcalc_token_type_str(tcalc_token_type_t token_type) {
   return "unknown token type";
 }
 
-tcalc_error_t tcalc_token_alloc(tcalc_token_type_t type, char* value, tcalc_token_t** out) {
+tcalc_error_t tcalc_token_alloc(tcalc_token_type type, char* value, tcalc_token** out) {
   if (value == NULL) return TCALC_INVALID_ARG;
 
-  tcalc_token_t* token = (tcalc_token_t*)malloc(sizeof(tcalc_token_t));
+  tcalc_token* token = (tcalc_token*)malloc(sizeof(tcalc_token));
   if (token == NULL)
     return TCALC_BAD_ALLOC;
 
@@ -61,20 +61,20 @@ tcalc_error_t tcalc_token_alloc(tcalc_token_type_t type, char* value, tcalc_toke
   return TCALC_OK;
 }
 
-void tcalc_token_free(tcalc_token_t* token) {
+void tcalc_token_free(tcalc_token* token) {
   free(token->value);
   free(token);
 }
 
 void tcalc_token_freev(void* token) {
-  tcalc_token_free((tcalc_token_t*)token);
+  tcalc_token_free((tcalc_token*)token);
 }
 
-tcalc_error_t tcalc_token_clone(tcalc_token_t* src, tcalc_token_t** out) {
+tcalc_error_t tcalc_token_clone(tcalc_token* src, tcalc_token** out) {
   return tcalc_token_alloc(src->type, src->value, out);
 }
 
-tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_t* out_size) {
+tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_OK;
   *out_size = 0;
   if ((err = tcalc_are_groupsyms_balanced(expr)) != TCALC_OK) return err;
@@ -84,13 +84,13 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
   err = tcalc_tokenize_infix_strtokens(expr, &str_tokens, &nb_str_tokens);
   if (err) return err;
 
-  tcalc_token_t** initial_infix_tokens;
+  tcalc_token** initial_infix_tokens;
   size_t nb_initial_infix_tokens;
   err = tcalc_tokenize_infix_strtokens_assign_types(str_tokens, nb_str_tokens, &initial_infix_tokens, &nb_initial_infix_tokens);
   TCALC_ARR_FREE_F(str_tokens, nb_str_tokens, free);
   if (err) return err;
 
-  tcalc_token_t** resolved_infix_tokens;
+  tcalc_token** resolved_infix_tokens;
   size_t nb_resolved_infix_tokens;
   err = tcalc_tokenize_infix_token_insertions(initial_infix_tokens, nb_initial_infix_tokens, &resolved_infix_tokens, &nb_resolved_infix_tokens);
   TCALC_ARR_FREE_F(initial_infix_tokens, nb_initial_infix_tokens, tcalc_token_free);
@@ -108,14 +108,14 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token_t*** out, size_
  * - Insert shorthand multiplication logic
  *   - Essentially, if a number preceeds an identifier or grouping symbol, append a multiplication token after that number
 */
-tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size_t nb_tokens, tcalc_token_t*** out, size_t* out_size) {
+tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, tcalc_token*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_OK;
-  tcalc_token_t** final_tokens = NULL;
+  tcalc_token** final_tokens = NULL;
   size_t nb_final_tokens = 0;
   size_t final_tokens_capacity = 0;
 
   for (size_t i = 0; i < nb_tokens; i++) {
-    tcalc_token_t* clone;
+    tcalc_token* clone;
     if ((err = tcalc_token_clone(tokens[i], &clone)) != TCALC_OK) goto cleanup;
     TCALC_DARR_PUSH(final_tokens, nb_final_tokens, final_tokens_capacity, clone, err);
     if (err) goto cleanup;
@@ -123,7 +123,7 @@ tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size
     if (i + 1 < nb_tokens) {
       if (tokens[i]->type == TCALC_NUMBER || tokens[i]->type == TCALC_GROUP_END) {
         if (tokens[i + 1]->type == TCALC_GROUP_START || tokens[i + 1]->type == TCALC_IDENTIFIER || tokens[i + 1]->type == TCALC_GROUP_START) {
-          tcalc_token_t* clone;
+          tcalc_token* clone;
           if ((err = tcalc_token_alloc(TCALC_BINARY_OPERATOR, "*", &clone)) != TCALC_OK) goto cleanup;
           TCALC_DARR_PUSH(final_tokens, nb_final_tokens, final_tokens_capacity, clone, err);
           if (err) goto cleanup;
@@ -153,15 +153,15 @@ tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size
  * before they are processed.
  * 
 */
-tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token_t*** out, size_t* out_size) {
+tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size) {
   tcalc_error_t err = TCALC_OK;
   
-  tcalc_token_t** infix_tokens = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_str_tokens);
+  tcalc_token** infix_tokens = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_str_tokens);
   size_t nb_infix_tokens = 0;
   if (infix_tokens == NULL) { return TCALC_BAD_ALLOC; }
 
   for (size_t i = 0; i < nb_str_tokens; i++) {
-    tcalc_token_type_t token_type;
+    tcalc_token_type token_type;
 
     if (strcmp(str_tokens[i], "+")  == 0 || strcmp(str_tokens[i], "-") == 0) {
       
@@ -197,7 +197,7 @@ tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, siz
       goto cleanup;
     }
 
-    tcalc_token_t* token;
+    tcalc_token* token;
     if ((err = tcalc_token_alloc(token_type, str_tokens[i], &token)) != TCALC_OK) goto cleanup;
     infix_tokens[nb_infix_tokens++] = token;
   }
@@ -349,17 +349,17 @@ tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t star
 /**
  * 
  * 
- * @param out allocate and return a list of tcalc_token_t objects based on expr param
+ * @param out allocate and return a list of tcalc_token objects based on expr param
  * @param out_size 
 */
-tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t* out_size) {
+tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_size) {
   *out_size = 0;
   char** token_strings;
   size_t nb_str_tokens;
   tcalc_error_t err = tcalc_strsplit(expr, ' ', &token_strings, &nb_str_tokens); // very simple :)
   if (err) return err;
 
-  *out = (tcalc_token_t**)malloc(sizeof(tcalc_token_t*) * nb_str_tokens);
+  *out = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_str_tokens);
   if (*out == NULL) {
     TCALC_ARR_FREE_F(token_strings, nb_str_tokens, free);
     return TCALC_BAD_ALLOC;
@@ -368,7 +368,7 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
   for (size_t i = 0; i < nb_str_tokens; i++) {
     if ((err = tcalc_valid_token_str(token_strings[i])) != TCALC_OK) goto cleanup;
 
-    tcalc_token_type_t token_type;
+    tcalc_token_type token_type;
 
     if (strcmp(token_strings[i], "-") == 0 ||
         strcmp(token_strings[i], "+") == 0 || 
@@ -386,7 +386,7 @@ tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token_t*** out, size_t*
       goto cleanup;
     }
 
-    tcalc_token_t* token;
+    tcalc_token* token;
     if ((err = tcalc_token_alloc(token_type, token_strings[i], &token)) != TCALC_OK) {
       goto cleanup;
     }

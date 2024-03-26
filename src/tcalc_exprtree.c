@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tokens, const tcalc_context_t* context, tcalc_exprtree_t** out);
+tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, const tcalc_context* context, tcalc_exprtree** out);
 
 /**
  * General Pipeline:
@@ -18,13 +18,13 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
  * Convert infix tokens into rpn-formatted tokens
  * Convert rpn-formatted tokens into returned expression tree
 */
-tcalc_error_t tcalc_create_exprtree_infix(const char* infix, const tcalc_context_t* context, tcalc_exprtree_t** out) {
-  tcalc_token_t** infix_tokens;
+tcalc_error_t tcalc_create_exprtree_infix(const char* infix, const tcalc_context* context, tcalc_exprtree** out) {
+  tcalc_token** infix_tokens;
   size_t nb_infix_tokens;
   tcalc_error_t err = tcalc_tokenize_infix(infix, &infix_tokens, &nb_infix_tokens);
   if (err) return err;
 
-  tcalc_token_t** rpn_tokens;
+  tcalc_token** rpn_tokens;
   size_t nb_rpn_tokens;
   err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, context, &rpn_tokens, &nb_rpn_tokens);
   TCALC_ARR_FREE_F(infix_tokens, nb_infix_tokens, tcalc_token_free);
@@ -35,8 +35,8 @@ tcalc_error_t tcalc_create_exprtree_infix(const char* infix, const tcalc_context
   return err;
 }
 
-tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, const tcalc_context_t* context, tcalc_exprtree_t** out) {
-  tcalc_token_t** tokens;
+tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, const tcalc_context* context, tcalc_exprtree** out) {
+  tcalc_token** tokens;
   size_t nb_tokens;
   tcalc_error_t err = tcalc_tokenize_rpn(rpn, &tokens, &nb_tokens);
   if (err) return err;
@@ -56,7 +56,7 @@ tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, const tcalc_context_t* 
  * If the token type is a unary operator
  * 
 */
-tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t* context, double* out) {
+tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_context* context, double* out) {
   tcalc_error_t err = TCALC_OK;
   
   switch (expr->token->type) {
@@ -65,14 +65,14 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
     }
     case TCALC_UNARY_OPERATOR: {
       double operand;
-      tcalc_unary_op_def_t* unary_op_def;
+      tcalc_unary_opdef* unary_op_def;
       if ((err = tcalc_context_get_unary_op(context, expr->token->value, &unary_op_def)) != TCALC_OK) return err;
       if ((err = tcalc_eval_exprtree(expr->children[0], context, &operand)) != TCALC_OK) return err;
       return unary_op_def->function(operand, out);
     }
     case TCALC_BINARY_OPERATOR: {
       double operand1, operand2;
-      tcalc_binary_op_def_t* binary_op_def;
+      tcalc_binary_opdef* binary_op_def;
       if ((err = tcalc_context_get_binary_op(context, expr->token->value, &binary_op_def)) != TCALC_OK) return err;
       if ((err = tcalc_eval_exprtree(expr->children[0], context, &operand1)) != TCALC_OK) return err;
       if ((err = tcalc_eval_exprtree(expr->children[1], context, &operand2)) != TCALC_OK) return err;
@@ -81,7 +81,7 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
     case TCALC_IDENTIFIER: {
 
       if (tcalc_context_has_unary_func(context, expr->token->value)) {
-        tcalc_unary_func_def_t* unary_func_def;
+        tcalc_unary_funcdef* unary_func_def;
         tcalc_context_get_unary_func(context, expr->token->value, &unary_func_def);
         
         double operand;
@@ -90,7 +90,7 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
 
         return unary_func_def->function(operand, out);
       } else if (tcalc_context_has_binary_func(context, expr->token->value)) {
-        tcalc_binary_func_def_t* binary_func_def;
+        tcalc_binary_funcdef* binary_func_def;
         tcalc_context_get_binary_func(context, expr->token->value, &binary_func_def);
 
         double operand1;
@@ -102,7 +102,7 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
       
         return binary_func_def->function(operand1, operand2, out);
       } else if (tcalc_context_has_variable(context, expr->token->value)) {
-        tcalc_variable_def_t* vardef;
+        tcalc_vardef* vardef;
         tcalc_context_get_variable(context, expr->token->value, &vardef);
 
         *out = vardef->value;
@@ -118,17 +118,17 @@ tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree_t* expr, const tcalc_context_t*
   }
 }
 
-void tcalc_exprtree_free(tcalc_exprtree_t* head) {
+void tcalc_exprtree_free(tcalc_exprtree* head) {
   for (size_t i = 0; i < head->nb_children; i++)
     tcalc_exprtree_free(head->children[i]);
   tcalc_token_free(head->token);
   free(head);
 }
 
-tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tokens, const tcalc_context_t* context, tcalc_exprtree_t** out) {
+tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, const tcalc_context* context, tcalc_exprtree** out) {
   tcalc_error_t err = TCALC_OK;
 
-  tcalc_exprtree_t** tree_stack = (tcalc_exprtree_t**)malloc(sizeof(tcalc_exprtree_t*) * nb_tokens);
+  tcalc_exprtree** tree_stack = (tcalc_exprtree**)malloc(sizeof(tcalc_exprtree*) * nb_tokens);
   if (tree_stack == NULL) return TCALC_BAD_ALLOC;
   size_t tree_stack_size = 0; 
 
@@ -136,7 +136,7 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
 
     switch (tokens[i]->type) {
       case TCALC_NUMBER: {
-        tcalc_exprtree_t* tree_node;
+        tcalc_exprtree* tree_node;
         if ((err = tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node)) != TCALC_OK) goto cleanup;
         tree_stack[tree_stack_size++] = tree_node;
         break;
@@ -147,7 +147,7 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
           goto cleanup;
         }
 
-        tcalc_exprtree_t* tree_node;
+        tcalc_exprtree* tree_node;
         if ((err = tcalc_exprtree_node_alloc(tokens[i], 2, &tree_node)) != TCALC_OK) goto cleanup;
 
         tree_node->children[0] = tree_stack[tree_stack_size - 2];
@@ -163,7 +163,7 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
           goto cleanup; 
         }
 
-        tcalc_exprtree_t* tree_node;
+        tcalc_exprtree* tree_node;
         if ((err = tcalc_exprtree_node_alloc(tokens[i], 1, &tree_node)) != TCALC_OK) goto cleanup;
 
         tree_node->children[0] = tree_stack[tree_stack_size - 1];
@@ -174,7 +174,7 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
 
         if (tcalc_context_has_variable(context, tokens[i]->value)) {
 
-          tcalc_exprtree_t* tree_node;
+          tcalc_exprtree* tree_node;
           if ((err = tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node)) != TCALC_OK) goto cleanup;
           tree_stack[tree_stack_size++] = tree_node;
 
@@ -184,7 +184,7 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
             goto cleanup; 
           }
 
-          tcalc_exprtree_t* tree_node;
+          tcalc_exprtree* tree_node;
           if ((err = tcalc_exprtree_node_alloc(tokens[i], 2, &tree_node)) != TCALC_OK) goto cleanup;
 
           tree_node->children[0] = tree_stack[tree_stack_size - 2];
@@ -198,7 +198,7 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
             goto cleanup; 
           }
 
-          tcalc_exprtree_t* tree_node;
+          tcalc_exprtree* tree_node;
           if ((err = tcalc_exprtree_node_alloc(tokens[i], 1, &tree_node)) != TCALC_OK) goto cleanup;
 
           tree_node->children[0] = tree_stack[tree_stack_size - 1];
@@ -230,10 +230,10 @@ tcalc_error_t tcalc_rpn_tokens_to_exprtree(tcalc_token_t** tokens, size_t nb_tok
     return err;
 }
 
-tcalc_error_t tcalc_exprtree_node_alloc(tcalc_token_t* token, size_t nb_children, tcalc_exprtree_t** out) {
+tcalc_error_t tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcalc_exprtree** out) {
   tcalc_error_t err;
   
-  tcalc_exprtree_t* node = (tcalc_exprtree_t*)malloc(sizeof(tcalc_exprtree_t));
+  tcalc_exprtree* node = (tcalc_exprtree*)malloc(sizeof(tcalc_exprtree));
   if (node == NULL) return TCALC_BAD_ALLOC;
   
   if ((err = tcalc_token_clone(token, &node->token)) != TCALC_OK) {
@@ -245,7 +245,7 @@ tcalc_error_t tcalc_exprtree_node_alloc(tcalc_token_t* token, size_t nb_children
   node->nb_children = nb_children;
 
   if (nb_children > 0) {
-    node->children = (tcalc_exprtree_t**)malloc(sizeof(tcalc_exprtree_t*) * nb_children);
+    node->children = (tcalc_exprtree**)malloc(sizeof(tcalc_exprtree*) * nb_children);
     if (node->children == NULL) {
       tcalc_token_free(node->token);
       free(node);
@@ -257,12 +257,12 @@ tcalc_error_t tcalc_exprtree_node_alloc(tcalc_token_t* token, size_t nb_children
   return TCALC_OK;
 }
 
-void tcalc_exprtree_node_free(tcalc_exprtree_t* node) {
+void tcalc_exprtree_node_free(tcalc_exprtree* node) {
   tcalc_token_free(node->token);
   free(node->children);
   free(node);
 }
 
 void tcalc_exprtree_node_freev(void* node) {
-  tcalc_exprtree_node_free((tcalc_exprtree_t*)node);
+  tcalc_exprtree_node_free((tcalc_exprtree*)node);
 }

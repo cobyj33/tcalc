@@ -21,7 +21,7 @@ const char* TCALC_HELP_MESSAGE = "tcalc usage: tcalc [-h] expression \n"
 "    --tokens-as-rpn: Print the reverse-polish notation tokens of the given expression\n";
 
 int tcalc_repl();
-void tcalc_exprtree_print(tcalc_exprtree_t* node, size_t depth);
+void tcalc_exprtree_print(tcalc_exprtree* node, size_t depth);
 int tcalc_cli_expr_print_tree(const char* expr);
 int tcalc_cli_eval(const char* expr);
 int tcalc_cli_eval_rpn(const char* expr);
@@ -129,39 +129,53 @@ const char* repl_entrance_text = "tcalc REPL begun: Enter q to exit\n";
 int tcalc_repl() {
   fputs(repl_entrance_text, stdout);
   char input_buffer[4096] = {'\0'};
-  const char* quit_strings[3] = {"quit", "q", "exit"};
+  const char* quit_strings[4] = {"quit", "q", "exit", "end"};
   
-  while (!str_in_list(input_buffer, quit_strings, 3)) {
+  tcalc_context* context = NULL;
+  tcalc_error_t err = tcalc_context_alloc_default(&context);
+  if (err) {
+    fprintf(stderr, "Failed to allocate context for REPL... exiting: %s", tcalc_strerrcode(err));
+    goto cleanup;
+  }
+
+  while (!str_in_list(input_buffer, quit_strings, ARRAY_SIZE(quit_strings))) {
+    fputs("> ", stdout);
     char* input = fgets(input_buffer, 4096, stdin);
     if (input == NULL) {
       fprintf(stderr, "Error reading from stdin: Exiting\n");
-      return EXIT_FAILURE;
+      goto cleanup;
     }
 
     input[strcspn(input, "\r\n")] = '\0';
-    if (str_in_list(input, quit_strings, 3)) break;
+    if (str_in_list(input, quit_strings,  ARRAY_SIZE(quit_strings))) break;
 
     double ans;
-    tcalc_error_t err = tcalc_eval(input, &ans);
+    tcalc_error_t err = tcalc_eval_wctx(input, context, &ans);
     if (err) {
       fprintf(stderr, "tcalc error: %s\n\n", tcalc_strerrcode(err));
     } else {
       printf("%f\n\n", ans);
     }
+
+    tcalc_context_add_variable(context, "ans", ans);
   }
 
   return EXIT_SUCCESS;
+
+  cleanup:
+    tcalc_context_free(context);
+    return EXIT_FAILURE;
 }
 
 int tcalc_cli_expr_print_tree(const char* expr) {
-  tcalc_context_t* context;
+  tcalc_context* context;
   tcalc_error_t err = tcalc_context_alloc_default(&context);
   if (err) {
     fprintf(stderr, "TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
     return EXIT_FAILURE;
   }
 
-  tcalc_exprtree_t* tree;
+  tcalc_exprtree* tree;
   err = tcalc_create_exprtree_infix(expr, context, &tree);
   tcalc_context_free(context);
 
@@ -175,7 +189,7 @@ int tcalc_cli_expr_print_tree(const char* expr) {
   return EXIT_SUCCESS;
 }
 
-void tcalc_exprtree_print(tcalc_exprtree_t* node, size_t depth) {
+void tcalc_exprtree_print(tcalc_exprtree* node, size_t depth) {
   if (depth > TCAPC_EXPRTREE_PRINT_MAX_DEPTH) return;
 
   for (int i = 0; i < depth; i++)
@@ -189,9 +203,9 @@ void tcalc_exprtree_print(tcalc_exprtree_t* node, size_t depth) {
 
 int tcalc_cli_rpn_tokenizer(const char* expr) {
   int exitcode = EXIT_SUCCESS;
-  tcalc_context_t* context = NULL;
-  tcalc_token_t** infix_tokens = NULL;
-  tcalc_token_t** rpn_tokens = NULL;
+  tcalc_context* context = NULL;
+  tcalc_token** infix_tokens = NULL;
+  tcalc_token** rpn_tokens = NULL;
   size_t nb_infix_tokens = 0;
   size_t nb_rpn_tokens = 0;
 
@@ -232,7 +246,7 @@ int tcalc_cli_rpn_tokenizer(const char* expr) {
 }
 
 int tcalc_cli_infix_tokenizer(const char* expr) {
-  tcalc_token_t** tokens;
+  tcalc_token** tokens;
   size_t nb_tokens;
   
   tcalc_error_t err = tcalc_tokenize_infix(expr, &tokens, &nb_tokens);

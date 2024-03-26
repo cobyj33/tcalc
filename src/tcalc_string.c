@@ -219,3 +219,11 @@ tcalc_error_t tcalc_strtoint(const char* str, int* out)
   return TCALC_OK;
 }
 
+int tcalc_streq(const char* a, const char* b) {
+  size_t i = 0;
+  for (; a[i] != '\0' && b[i] != '\0'; i++) {
+    if (a[i] != b[i]) return 0;
+  }
+
+  return a[i] == b[i]; // either a[i] or b[i] will be '\0'. Therefore, if they are equal they have both ended
+}
