@@ -21,12 +21,12 @@ const char* TCALC_ALLOWED_CHARS = "0123456789. abcdefghijklmnopqrstuvwxyz,()[]+-
 const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%";
 
 int is_valid_tcalc_char(char ch);
-tcalc_error_t tcalc_valid_token_str(const char* token);
-tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
+tcalc_err tcalc_valid_token_str(const char* token);
+tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
 int tcalc_are_groupsyms_balanced(const char* expr);
-tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size);
-tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size);
-tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, tcalc_token*** out, size_t* out_size);
+tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size);
+tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size);
+tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, tcalc_token*** out, size_t* out_size);
 int tcalc_is_identifier(const char* str);
 
 const char* tcalc_token_type_str(tcalc_token_type token_type) {
@@ -43,7 +43,7 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
   return "unknown token type";
 }
 
-tcalc_error_t tcalc_token_alloc(tcalc_token_type type, char* value, tcalc_token** out) {
+tcalc_err tcalc_token_alloc(tcalc_token_type type, char* value, tcalc_token** out) {
   if (value == NULL) return TCALC_INVALID_ARG;
 
   tcalc_token* token = (tcalc_token*)malloc(sizeof(tcalc_token));
@@ -70,12 +70,12 @@ void tcalc_token_freev(void* token) {
   tcalc_token_free((tcalc_token*)token);
 }
 
-tcalc_error_t tcalc_token_clone(tcalc_token* src, tcalc_token** out) {
+tcalc_err tcalc_token_clone(tcalc_token* src, tcalc_token** out) {
   return tcalc_token_alloc(src->type, src->value, out);
 }
 
-tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out_size) {
-  tcalc_error_t err = TCALC_OK;
+tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out_size) {
+  tcalc_err err = TCALC_OK;
   *out_size = 0;
   if ((err = tcalc_are_groupsyms_balanced(expr)) != TCALC_OK) return err;
 
@@ -108,8 +108,8 @@ tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t*
  * - Insert shorthand multiplication logic
  *   - Essentially, if a number preceeds an identifier or grouping symbol, append a multiplication token after that number
 */
-tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, tcalc_token*** out, size_t* out_size) {
-  tcalc_error_t err = TCALC_OK;
+tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, tcalc_token*** out, size_t* out_size) {
+  tcalc_err err = TCALC_OK;
   tcalc_token** final_tokens = NULL;
   size_t nb_final_tokens = 0;
   size_t final_tokens_capacity = 0;
@@ -153,8 +153,8 @@ tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t
  * before they are processed.
  * 
 */
-tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size) {
-  tcalc_error_t err = TCALC_OK;
+tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size) {
+  tcalc_err err = TCALC_OK;
   
   tcalc_token** infix_tokens = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_str_tokens);
   size_t nb_infix_tokens = 0;
@@ -237,8 +237,8 @@ tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, siz
  * "     [45 ^ (3 / 2)] *   +11"
  * "[", "45", "^", "(", "3", "/", "2", ")", "]", "*", "+", "11"
 */
-tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size) {
-  tcalc_error_t err = TCALC_OK;
+tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size) {
+  tcalc_err err = TCALC_OK;
   *out_size = 0;
   char** token_buffer = NULL;
   size_t tb_size = 0;
@@ -290,8 +290,8 @@ tcalc_error_t tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size
  * "32+-34*(5 * 101)"
  * "32", "+", "-", "34", "*", "(", "5", "*", "101", ")"
 */
-tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t start, size_t* new_offset) {
-  tcalc_error_t err;
+tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, size_t* new_offset) {
+  tcalc_err err;
   size_t offset = start;
 
 	while (expr[offset] == ' ') // consume all spaces
@@ -352,11 +352,11 @@ tcalc_error_t tcalc_next_math_strtoken(const char* expr, char** out, size_t star
  * @param out allocate and return a list of tcalc_token objects based on expr param
  * @param out_size 
 */
-tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_size) {
+tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_size) {
   *out_size = 0;
   char** token_strings;
   size_t nb_str_tokens;
-  tcalc_error_t err = tcalc_strsplit(expr, ' ', &token_strings, &nb_str_tokens); // very simple :)
+  tcalc_err err = tcalc_strsplit(expr, ' ', &token_strings, &nb_str_tokens); // very simple :)
   if (err) return err;
 
   *out = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_str_tokens);
@@ -415,7 +415,7 @@ int is_valid_tcalc_char(char ch) {
  * 
  * returns TCALC_OK on success and TCALC_INVALID_ARG on error.
 */
-tcalc_error_t tcalc_valid_token_str(const char* token) {
+tcalc_err tcalc_valid_token_str(const char* token) {
   if (token == NULL) return TCALC_INVALID_ARG;
   if (token[0] == '\0') return TCALC_INVALID_ARG; // empty string
 
@@ -435,8 +435,8 @@ tcalc_error_t tcalc_valid_token_str(const char* token) {
 /**
  * There's probably a better way to implement this but whatever
 */
-tcalc_error_t tcalc_are_groupsyms_balanced(const char* expr) {
-  tcalc_error_t err = TCALC_OK;
+tcalc_err tcalc_are_groupsyms_balanced(const char* expr) {
+  tcalc_err err = TCALC_OK;
   
   char* stack = NULL;
   size_t stack_size = 0;

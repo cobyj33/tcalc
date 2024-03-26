@@ -6,9 +6,9 @@
 
 
 
-tcalc_error_t tcalc_eval(const char* infix, double* out) {
-  tcalc_context* context;
-  tcalc_error_t err = tcalc_ctx_alloc_default(&context);
+tcalc_err tcalc_eval(const char* infix, double* out) {
+  tcalc_ctx* context;
+  tcalc_err err = tcalc_ctx_alloc_default(&context);
   if (err) return err;
 
   err = tcalc_eval_wctx(infix, context, out);
@@ -16,9 +16,9 @@ tcalc_error_t tcalc_eval(const char* infix, double* out) {
   return err;
 }
 
-tcalc_error_t tcalc_eval_wctx(const char* infix, tcalc_context* ctx, double* out) {
+tcalc_err tcalc_eval_wctx(const char* infix, tcalc_ctx* ctx, double* out) {
   tcalc_exprtree* tree;
-  tcalc_error_t err = tcalc_create_exprtree_infix(infix, ctx, &tree);
+  tcalc_err err = tcalc_create_exprtree_infix(infix, ctx, &tree);
   if (err) return err;
 
   err = tcalc_eval_exprtree(tree, ctx, out);
@@ -26,9 +26,9 @@ tcalc_error_t tcalc_eval_wctx(const char* infix, tcalc_context* ctx, double* out
   return err;
 }
 
-tcalc_error_t tcalc_eval_rpn(const char* rpn, double* out) {
-  tcalc_context* context;
-  tcalc_error_t err = tcalc_ctx_alloc_default(&context);
+tcalc_err tcalc_eval_rpn(const char* rpn, double* out) {
+  tcalc_ctx* context;
+  tcalc_err err = tcalc_ctx_alloc_default(&context);
   if (err) return err;
 
   tcalc_exprtree* tree;

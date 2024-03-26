@@ -12,8 +12,8 @@
  * make these two functions work well. They're quite simple to be honest, they do math.
 */
 
-tcalc_error_t tcalc_eval_wctx(const char* infix, tcalc_context* ctx, double* out);
-tcalc_error_t tcalc_eval(const char* infix, double* out);
-tcalc_error_t tcalc_eval_rpn(const char* rpn, double* out);
+tcalc_err tcalc_eval_wctx(const char* infix, tcalc_ctx* ctx, double* out);
+tcalc_err tcalc_eval(const char* infix, double* out);
+tcalc_err tcalc_eval_rpn(const char* rpn, double* out);
 
 #endif

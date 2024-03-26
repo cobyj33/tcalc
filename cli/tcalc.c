@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 
 int tcalc_cli_eval(const char* expr) {
   double ans;
-  tcalc_error_t err = tcalc_eval(expr, &ans);
+  tcalc_err err = tcalc_eval(expr, &ans);
 
   if (err) {
     fprintf(stderr, "TCalc error while evaluating expression: %s\n ", tcalc_strerrcode(err));
@@ -106,7 +106,7 @@ int tcalc_cli_eval(const char* expr) {
 
 int tcalc_cli_eval_rpn(const char* expr) {
   double ans;
-  tcalc_error_t err = tcalc_eval_rpn(expr, &ans);
+  tcalc_err err = tcalc_eval_rpn(expr, &ans);
 
   if (err) {
     fprintf(stderr, "TCalc error while evaluating expression: %s\n ", tcalc_strerrcode(err));
@@ -131,8 +131,8 @@ int tcalc_repl() {
   char input_buffer[4096] = {'\0'};
   const char* quit_strings[4] = {"quit", "q", "exit", "end"};
   
-  tcalc_context* context = NULL;
-  tcalc_error_t err = tcalc_ctx_alloc_default(&context);
+  tcalc_ctx* context = NULL;
+  tcalc_err err = tcalc_ctx_alloc_default(&context);
   if (err) {
     fprintf(stderr, "Failed to allocate context for REPL... exiting: %s", tcalc_strerrcode(err));
     goto cleanup;
@@ -150,7 +150,7 @@ int tcalc_repl() {
     if (str_in_list(input, quit_strings,  ARRAY_SIZE(quit_strings))) break;
 
     double ans;
-    tcalc_error_t err = tcalc_eval_wctx(input, context, &ans);
+    tcalc_err err = tcalc_eval_wctx(input, context, &ans);
     if (err) {
       fprintf(stderr, "tcalc error: %s\n\n", tcalc_strerrcode(err));
     } else {
@@ -168,8 +168,8 @@ int tcalc_repl() {
 }
 
 int tcalc_cli_expr_print_tree(const char* expr) {
-  tcalc_context* context;
-  tcalc_error_t err = tcalc_ctx_alloc_default(&context);
+  tcalc_ctx* context;
+  tcalc_err err = tcalc_ctx_alloc_default(&context);
   if (err) {
     fprintf(stderr, "TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
     return EXIT_FAILURE;
@@ -203,13 +203,13 @@ void tcalc_exprtree_print(tcalc_exprtree* node, size_t depth) {
 
 int tcalc_cli_rpn_tokenizer(const char* expr) {
   int exitcode = EXIT_SUCCESS;
-  tcalc_context* context = NULL;
+  tcalc_ctx* context = NULL;
   tcalc_token** infix_tokens = NULL;
   tcalc_token** rpn_tokens = NULL;
   size_t nb_infix_tokens = 0;
   size_t nb_rpn_tokens = 0;
 
-  tcalc_error_t err = tcalc_ctx_alloc_default(&context);
+  tcalc_err err = tcalc_ctx_alloc_default(&context);
   if (err) {
     fprintf(stderr, "Error while allocating tcalc context: %s\n", tcalc_strerrcode(err));
     exitcode = EXIT_FAILURE; goto cleanup;
@@ -249,7 +249,7 @@ int tcalc_cli_infix_tokenizer(const char* expr) {
   tcalc_token** tokens;
   size_t nb_tokens;
   
-  tcalc_error_t err = tcalc_tokenize_infix(expr, &tokens, &nb_tokens);
+  tcalc_err err = tcalc_tokenize_infix(expr, &tokens, &nb_tokens);
   if (err) {
     printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
     return EXIT_FAILURE;

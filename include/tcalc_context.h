@@ -68,12 +68,12 @@ typedef struct tcalc_exprvardef {
 } tcalc_exprvardef;
 
 
-typedef struct tcalc_unary_opdef {
+typedef struct tcalc_uopdef {
   char* identifier;
   int precedence;
   tcalc_assoc associativity;
-  tcalc_unary_func function;
-} tcalc_unary_opdef;
+  tcalc_unfunc function;
+} tcalc_uopdef;
 
 typedef struct tcalc_relation_opdef {
   char* identifier;
@@ -82,30 +82,30 @@ typedef struct tcalc_relation_opdef {
   tcalc_relation_func function;
 } tcalc_relation_opdef;
 
-typedef struct tcalc_binary_opdef {
+typedef struct tcalc_binopdef {
   char* identifier;
   int precedence;
   tcalc_assoc associativity;
-  tcalc_binary_func function;
-} tcalc_binary_opdef;
+  tcalc_binfunc function;
+} tcalc_binopdef;
 
-typedef struct tcalc_unary_funcdef {
+typedef struct tcalc_unfuncdef {
   char* identifier;
-  tcalc_unary_func function;
-} tcalc_unary_funcdef;
+  tcalc_unfunc function;
+} tcalc_unfuncdef;
 
-typedef struct tcalc_binary_funcdef {
+typedef struct tcalc_binfuncdef {
   char* identifier;
-  tcalc_binary_func function;
-} tcalc_binary_funcdef;
+  tcalc_binfunc function;
+} tcalc_binfuncdef;
 
 typedef struct tcalc_groupsymdef {
   char start_symbol;
   char end_symbol;
 } tcalc_groupsymdef;
 
-tcalc_opdata tcalc_binary_op_get_data(tcalc_binary_opdef* binary_op_def);
-tcalc_opdata tcalc_unary_op_get_data(tcalc_unary_opdef* unary_op_def);
+tcalc_opdata tcalc_binary_op_get_data(tcalc_binopdef* binary_op_def);
+tcalc_opdata tcalc_unary_op_get_data(tcalc_uopdef* unary_op_def);
 
 /**
  * Some conditions to a tcalc context:
@@ -114,41 +114,41 @@ tcalc_opdata tcalc_unary_op_get_data(tcalc_unary_opdef* unary_op_def);
  * Binary function identifiers must only contain alphabetical characters
  * Variable identifiers must only contain aphabetical characters
  * 
- * Symbols and identifiers must NOT be the same across the tcalc_context 
+ * Symbols and identifiers must NOT be the same across the tcalc_ctx 
  * - The only exception to the above rule is that unary operators and binary operators
  *  can have the same symbol identifiers. This should be taken with salt though, as the tokenizer
  *  will disambiguate itself which + or - are unary and which + or - are binary. 
  *  If I had created math I wouldn't have created it like this.
 */
-typedef struct tcalc_context {
-  TCALC_VEC(tcalc_unary_funcdef*) unary_funcs;
-  TCALC_VEC(tcalc_binary_funcdef*) binary_funcs;
+typedef struct tcalc_ctx {
+  TCALC_VEC(tcalc_unfuncdef*) unary_funcs;
+  TCALC_VEC(tcalc_binfuncdef*) binary_funcs;
   TCALC_VEC(tcalc_vardef*) variables;
-  TCALC_VEC(tcalc_unary_opdef*) unary_ops;
-  TCALC_VEC(tcalc_binary_opdef*) binary_ops;
+  TCALC_VEC(tcalc_uopdef*) unary_ops;
+  TCALC_VEC(tcalc_binopdef*) binary_ops;
   TCALC_VEC(tcalc_relation_opdef*) relation_ops;
-} tcalc_context;
+} tcalc_ctx;
 
-tcalc_error_t tcalc_ctx_alloc_empty(tcalc_context** out);
-tcalc_error_t tcalc_ctx_alloc_default(tcalc_context** out);
+tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out);
+tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out);
 
-void tcalc_ctx_free(tcalc_context* context);
+void tcalc_ctx_free(tcalc_ctx* context);
 
-tcalc_error_t tcalc_ctx_add_variable(tcalc_context* context, char* name, double value);
-tcalc_error_t tcalc_ctx_add_unary_func(tcalc_context* context, char* name, tcalc_unary_func function);
-tcalc_error_t tcalc_ctx_add_binary_func(tcalc_context* context, char* name, tcalc_binary_func function);
-tcalc_error_t tcalc_ctx_add_unary_op(tcalc_context* context, char* name, int precedence, tcalc_assoc associativity, tcalc_unary_func function);
-tcalc_error_t tcalc_ctx_add_binary_op(tcalc_context* context,  char* name, int precedence, tcalc_assoc associativity, tcalc_binary_func function);
+tcalc_err tcalc_ctx_add_variable(tcalc_ctx* context, char* name, double value);
+tcalc_err tcalc_ctx_add_unary_func(tcalc_ctx* context, char* name, tcalc_unfunc function);
+tcalc_err tcalc_ctx_add_binary_func(tcalc_ctx* context, char* name, tcalc_binfunc function);
+tcalc_err tcalc_ctx_add_unary_op(tcalc_ctx* context, char* name, int precedence, tcalc_assoc associativity, tcalc_unfunc function);
+tcalc_err tcalc_ctx_add_binary_op(tcalc_ctx* context,  char* name, int precedence, tcalc_assoc associativity, tcalc_binfunc function);
 
-int tcalc_ctx_has_identifier(const tcalc_context* context, const char* name);
-int tcalc_ctx_has_func(const tcalc_context* context, const char* name);
+int tcalc_ctx_has_identifier(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_has_func(const tcalc_ctx* context, const char* name);
 
-int tcalc_ctx_has_op(const tcalc_context* context, const char* name);
-int tcalc_ctx_has_unary_op(const tcalc_context* context, const char* name);
-int tcalc_ctx_has_binary_op(const tcalc_context* context, const char* name);
-int tcalc_ctx_has_unary_func(const tcalc_context* context, const char* name);
-int tcalc_ctx_has_binary_func(const tcalc_context* context, const char* name);
-int tcalc_ctx_has_variable(const tcalc_context* context, const char* name);
+int tcalc_ctx_has_op(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_has_unary_op(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_has_binary_op(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_has_unary_func(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_has_binary_func(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_has_variable(const tcalc_ctx* context, const char* name);
 
 /**
  * tcalc_ctx_get_x functions will not return an error whenever the same given
@@ -156,15 +156,15 @@ int tcalc_ctx_has_variable(const tcalc_context* context, const char* name);
  * functions (if tcalc_ctx_has_x returns true, tcalc_ctx_get_x will not return an error)
 */
 
-tcalc_error_t tcalc_ctx_get_unary_func(const tcalc_context* context, const char* name, tcalc_unary_funcdef** out);
-tcalc_error_t tcalc_ctx_get_binary_func(const tcalc_context* context, const char* name, tcalc_binary_funcdef** out);
-tcalc_error_t tcalc_ctx_get_variable(const tcalc_context* context, const char* name, tcalc_vardef** out);
-tcalc_error_t tcalc_ctx_get_unary_op(const tcalc_context* context, const char* name, tcalc_unary_opdef** out);
-tcalc_error_t tcalc_ctx_get_binary_op(const tcalc_context* context, const char* name, tcalc_binary_opdef** out);
+tcalc_err tcalc_ctx_get_unary_func(const tcalc_ctx* context, const char* name, tcalc_unfuncdef** out);
+tcalc_err tcalc_ctx_get_binary_func(const tcalc_ctx* context, const char* name, tcalc_binfuncdef** out);
+tcalc_err tcalc_ctx_get_variable(const tcalc_ctx* context, const char* name, tcalc_vardef** out);
+tcalc_err tcalc_ctx_get_unary_op(const tcalc_ctx* context, const char* name, tcalc_uopdef** out);
+tcalc_err tcalc_ctx_get_binary_op(const tcalc_ctx* context, const char* name, tcalc_binopdef** out);
 
-tcalc_error_t tcalc_ctx_get_op_data(const tcalc_context* context, const char* name, tcalc_opdata* out);
+tcalc_err tcalc_ctx_get_op_data(const tcalc_ctx* context, const char* name, tcalc_opdata* out);
 
-tcalc_error_t tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcalc_exprtree** out);
+tcalc_err tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcalc_exprtree** out);
 void tcalc_exprtree_node_free(tcalc_exprtree* node);
 void tcalc_exprtree_node_freev(void* node);
 
@@ -175,10 +175,10 @@ void tcalc_exprtree_free(tcalc_exprtree* head);
 
 int tcalc_exprtree_is_vardef(tcalc_exprtree* expr);
 
-tcalc_error_t tcalc_create_exprtree_rpn(const char* rpn, const tcalc_context* context, tcalc_exprtree** out);
-tcalc_error_t tcalc_create_exprtree_infix(const char* infix, const tcalc_context* context, tcalc_exprtree** out);
-tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token** tokens, size_t nb_tokens, const tcalc_context* context, tcalc_token*** out, size_t* out_size);
+tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const tcalc_ctx* context, tcalc_exprtree** out);
+tcalc_err tcalc_create_exprtree_infix(const char* infix, const tcalc_ctx* context, tcalc_exprtree** out);
+tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* context, tcalc_token*** out, size_t* out_size);
 
-tcalc_error_t tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_context* context, double* out);
+tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* context, double* out);
 
 #endif

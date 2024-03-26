@@ -24,7 +24,7 @@ void tcalc_setfullerrorf(const char* format, ...) {
 }
 
 
-const char* tcalc_strerrcode(tcalc_error_t err) {
+const char* tcalc_strerrcode(tcalc_err err) {
   switch (err) {
     case TCALC_OK: return "ok";
     case TCALC_OUT_OF_BOUNDS: return "out of bounds";

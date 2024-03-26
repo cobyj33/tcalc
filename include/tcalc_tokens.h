@@ -46,7 +46,7 @@ typedef enum tcalc_token_type {
   TCALC_UNARY_OPERATOR,
   TCALC_BINARY_OPERATOR,
   TCALC_PARAM_SEPARATOR,
-  TCALC_IDENTIFIER, // Any alphabetical word which may denote some sort of function or variable depending on a given tcalc_context
+  TCALC_IDENTIFIER, // Any alphabetical word which may denote some sort of function or variable depending on a given tcalc_ctx
   TCALC_GROUP_START, // Starting token for a grouping symbol
   TCALC_GROUP_END // Ending token for a grouping symbol
 } tcalc_token_type;
@@ -74,12 +74,12 @@ typedef struct tcalc_token {
  * a configured token. Tokenizer functions themselves have to determine when a given token has
  * a specific meaning
 */
-tcalc_error_t tcalc_token_alloc(tcalc_token_type type, char* value, tcalc_token** out);
-tcalc_error_t tcalc_token_clone(tcalc_token* src, tcalc_token** out);
+tcalc_err tcalc_token_alloc(tcalc_token_type type, char* value, tcalc_token** out);
+tcalc_err tcalc_token_clone(tcalc_token* src, tcalc_token** out);
 void tcalc_token_free(tcalc_token* token);
 void tcalc_token_freev(void* token);
 
-tcalc_error_t tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out_size);
-tcalc_error_t tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_size);
+tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out_size);
+tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_size);
 
 #endif

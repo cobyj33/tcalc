@@ -53,14 +53,14 @@ size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize)
     return(src - osrc - 1); /* count does not include NUL */
 }
 
-tcalc_error_t tcalc_strdup(const char *src, char** out) {
+tcalc_err tcalc_strdup(const char *src, char** out) {
     *out = (char*)malloc(sizeof(char) * (strlen(src) + 1));  // Space for length plus nul
     if (*out == NULL) return TCALC_BAD_ALLOC;          // No memory
     strcpy(*out, src);                      // Copy the characters
     return TCALC_OK;                            // Return the new string
 }
 
-tcalc_error_t tcalc_strcombine(const char *first, const char *second, char** out) {
+tcalc_err tcalc_strcombine(const char *first, const char *second, char** out) {
   *out = (char*)calloc((strlen(first) + strlen(second) + 1), sizeof(char));
   if (*out == NULL) return TCALC_BAD_ALLOC;
   strcpy(*out, first);
@@ -68,7 +68,7 @@ tcalc_error_t tcalc_strcombine(const char *first, const char *second, char** out
   return TCALC_OK;
 }
 
-tcalc_error_t tcalc_strsubstr(const char* src, size_t start, size_t end, char** out) {
+tcalc_err tcalc_strsubstr(const char* src, size_t start, size_t end, char** out) {
   size_t len = end - start;
   *out = (char*)malloc(sizeof(char) * (len + 1));
   if (*out == NULL) return TCALC_BAD_ALLOC;
@@ -77,8 +77,8 @@ tcalc_error_t tcalc_strsubstr(const char* src, size_t start, size_t end, char** 
   return TCALC_OK;
 }
 
-tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* out_size) {
-  tcalc_error_t err = TCALC_OK;
+tcalc_err tcalc_strsplit(const char* str, char split, char*** out, size_t* out_size) {
+  tcalc_err err = TCALC_OK;
   TCALC_VEC(char*) strings = TCALC_VEC_INIT;
 
   size_t start = 0;
@@ -114,7 +114,7 @@ tcalc_error_t tcalc_strsplit(const char* str, char split, char*** out, size_t* o
     return err;
 }
 
-tcalc_error_t find_in_strarr(const char** list, size_t list_len, const char* search, size_t* out) {
+tcalc_err find_in_strarr(const char** list, size_t list_len, const char* search, size_t* out) {
   for (size_t i = 0; i < list_len; i++) {
     if (strcmp(list[i], search) == 0) {
       *out = i;
@@ -139,7 +139,7 @@ int tcalc_strisdouble(const char* str) {
   return tcalc_strtodouble(str, &dummyout) == TCALC_OK;
 }
 
-tcalc_error_t tcalc_strtodouble(const char* str, double* out)
+tcalc_err tcalc_strtodouble(const char* str, double* out)
 {
   *out = 0.0;
 
@@ -189,7 +189,7 @@ tcalc_error_t tcalc_strtodouble(const char* str, double* out)
   return TCALC_OK;
 }
 
-tcalc_error_t tcalc_strtoint(const char* str, int* out)
+tcalc_err tcalc_strtoint(const char* str, int* out)
 {
   *out = 0;
   if (str == NULL)

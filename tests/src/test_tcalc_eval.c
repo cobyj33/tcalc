@@ -5,13 +5,13 @@
 #include "CuTest.h"
 
 #include <stddef.h>
-//tcalc_error_t tcalc_eval_rpn(const char* rpn, double* out);
+//tcalc_err tcalc_eval_rpn(const char* rpn, double* out);
 
 double TCALC_EVAL_ASSERT_DELTA = 0.0001;
 
 void TestTCalcEvalSuccesses(CuTest *tc) {
   double res = 0.0;
-  tcalc_error_t err = tcalc_eval("6 * 3 + 4 * ( 9 / 3 )", &res);
+  tcalc_err err = tcalc_eval("6 * 3 + 4 * ( 9 / 3 )", &res);
   CuAssertTrue(tc, err == TCALC_OK);
   CuAssertDblEquals(tc, res, 30.0, TCALC_EVAL_ASSERT_DELTA);
 
@@ -66,7 +66,7 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
 
 void TestTCalcEvalFailures(CuTest *tc) {
   double res;
-  tcalc_error_t err = tcalc_eval("1 / sin(2 * pi)", &res);
+  tcalc_err err = tcalc_eval("1 / sin(2 * pi)", &res);
   CuAssertTrue(tc, err == TCALC_DIVISION_BY_ZERO);
 }
 

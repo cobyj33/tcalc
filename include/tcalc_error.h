@@ -5,13 +5,13 @@
 /**
  * tcalc_error.h - Error handling in tcalc
  * 
- * In tcalc, functions that have any chance to fail should return a tcalc_error_t
+ * In tcalc, functions that have any chance to fail should return a tcalc_err
  * enum. As a result, many functions really return their data to an *out pointer that
  * the user must supply. Usually, functions will not check if this is NULL or not, and
  * passing a NULL to an *out parameter or an *out_size parameter will be undefined unless
  * otherwise stated so by the given function's documentation
  * 
- * If a function does not return tcalc_error_t, that MUST mean that it will
+ * If a function does not return tcalc_err, that MUST mean that it will
  * never fail. This applies to EVERYTHING.
  * (There is a gray area with functions that check for the existence of a value
  * or condition, as they don't technically "fail" in the
@@ -19,7 +19,7 @@
  * 
  * 
  * As an extra note, if the function contains any type of allocation,
- * it should return tcalc_error_t, as an allocation failure is always possible.
+ * it should return tcalc_err, as an allocation failure is always possible.
  * 
  * The global error is generally only set when actual lexical, syntactical, or semantical
  * errors are encountered. This is so code isn't cluttered with reporting error strings
@@ -68,7 +68,7 @@ void tcalc_setfullerrorf(const char* format, ...);
  * for the programmer to know what error happened, such as a code block which
  * was supposed to be unreachable.
 */
-typedef enum tcalc_error_t {
+typedef enum tcalc_err {
   TCALC_OK = 0,
   TCALC_OUT_OF_BOUNDS = -43110,
   TCALC_BAD_ALLOC,
@@ -85,7 +85,7 @@ typedef enum tcalc_error_t {
   TCALC_UNKNOWN_TOKEN,
   TCALC_UNIMPLEMENTED,
   TCALC_UNKNOWN
-} tcalc_error_t;
+} tcalc_err;
 
 #define tc_failed(err, expr) (err = expr) != TCALC_OK
 
@@ -93,6 +93,6 @@ typedef enum tcalc_error_t {
  * The string returned by tcalc_strerrcode does not have to be freed,
  * as it will always be a string literal.
 */
-const char* tcalc_strerrcode(tcalc_error_t err);
+const char* tcalc_strerrcode(tcalc_err err);
 
 #endif

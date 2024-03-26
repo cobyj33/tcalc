@@ -6,18 +6,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-tcalc_error_t tcalc_ctx_get_token_op_data(const tcalc_context* ctx, tcalc_token* token, tcalc_opdata* out) {
-  tcalc_error_t err = TCALC_OK;
+tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, tcalc_opdata* out) {
+  tcalc_err err = TCALC_OK;
 
   switch (token->type) {
     case TCALC_UNARY_OPERATOR: {
-      tcalc_unary_opdef* unary_op_def;
+      tcalc_uopdef* unary_op_def;
       if ((err = tcalc_ctx_get_unary_op(ctx, token->value, &unary_op_def)) != TCALC_OK) return err;
       *out = tcalc_unary_op_get_data(unary_op_def);
       return TCALC_OK;
     }
     case TCALC_BINARY_OPERATOR: {
-      tcalc_binary_opdef* binary_op_def;
+      tcalc_binopdef* binary_op_def;
       if ((err = tcalc_ctx_get_binary_op(ctx, token->value, &binary_op_def)) != TCALC_OK) return err;
       *out = tcalc_binary_op_get_data(binary_op_def);
       return TCALC_OK;
@@ -41,8 +41,8 @@ tcalc_error_t tcalc_ctx_get_token_op_data(const tcalc_context* ctx, tcalc_token*
  * Upon returning TCALC_OK, *out is an allocated array of size *out_size. The caller
  * is responsible for freeing these tokens.
 */
-tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_infix_toks, const tcalc_context* ctx, tcalc_token*** out, size_t* out_size) {
-  tcalc_error_t err = TCALC_OK;
+tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_infix_toks, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size) {
+  tcalc_err err = TCALC_OK;
 
   tcalc_token** opstk = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_infix_toks);
   if (opstk == NULL) return TCALC_BAD_ALLOC;

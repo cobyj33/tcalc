@@ -20,7 +20,7 @@ void* tcalc_xrealloc(void*, size_t);
  * arr: The pointer to the array to perform possible growth on
  * size: The size to which the array should fit into
  * capacity: The current capacity of the array
- * err: a tcalc_error_t variable that will be set upon any errors
+ * err: a tcalc_err variable that will be set upon any errors
  * 
  * the capacity variable will be updated to the current array's capacity if
  * reallocated, or will stay the same under no reallocation
@@ -53,7 +53,7 @@ void* tcalc_xrealloc(void*, size_t);
  * size: The current size of the array
  * capacity: The current capacity of the array
  * val: The value to add to the array
- * err: a tcalc_error_t variable that will be set upon any errors
+ * err: a tcalc_err variable that will be set upon any errors
 */
 #define TCALC_DARR_PUSH(arr, size, capacity, val, err) do { \
     TCALC_DARR_GROW(arr, size + 1, capacity, err); \
@@ -68,7 +68,7 @@ void* tcalc_xrealloc(void*, size_t);
  * capacity: The current capacity of the array
  * val: The value to add to the array
  * index: The index to insert the value at
- * err: a tcalc_error_t variable that will be set upon any errors
+ * err: a tcalc_err variable that will be set upon any errors
 */
 #define TCALC_DARR_INSERT(arr, size, capacity, val, index, err) do { \
     if (index > size || index < 0) { \
