@@ -27,7 +27,7 @@ void tcalc_unary_func_def_freev(void* unary_func_def);
 void tcalc_binary_op_def_freev(void* binary_op_def);
 void tcalc_unary_op_def_freev(void* unary_op_def);
 
-tcalc_error_t tcalc_context_alloc_empty(tcalc_context** out) {
+tcalc_error_t tcalc_ctx_alloc_empty(tcalc_context** out) {
   tcalc_context* context = (tcalc_context*)calloc(1, sizeof(tcalc_context)); // use of calloc is important here
   if (context == NULL) return TCALC_BAD_ALLOC;
 
@@ -35,73 +35,73 @@ tcalc_error_t tcalc_context_alloc_empty(tcalc_context** out) {
   return TCALC_OK; 
 }
 
-tcalc_error_t tcalc_context_alloc_default(tcalc_context** out) {
+tcalc_error_t tcalc_ctx_alloc_default(tcalc_context** out) {
   tcalc_context* context;
-  tcalc_error_t err = tcalc_context_alloc_empty(&context);
+  tcalc_error_t err = tcalc_ctx_alloc_empty(&context);
   if (err) return err;
 
-  if ((err = tcalc_context_add_unary_func(context, "sin", tcalc_sin)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "cos", tcalc_cos)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "tan", tcalc_tan)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "sec", tcalc_sec)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "csc", tcalc_csc)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "cot", tcalc_cot)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "asin", tcalc_asin)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "arcsin", tcalc_asin)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "acos", tcalc_acos)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "arccos", tcalc_acos)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "atan", tcalc_atan)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "arctan", tcalc_atan)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "asec", tcalc_asec)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "arcsec", tcalc_asec)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "acsc", tcalc_acsc)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "arccsc", tcalc_acsc)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "acot", tcalc_acot)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "arccot", tcalc_acot)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "sinh", tcalc_sinh)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "cosh", tcalc_cosh)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "tanh", tcalc_tanh)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "asinh", tcalc_asinh)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "arcsinh", tcalc_asinh)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "acosh", tcalc_acosh)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "arccosh", tcalc_acosh)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "atanh", tcalc_atanh)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "arctanh", tcalc_atanh)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "log", tcalc_log)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "ln", tcalc_ln)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "exp", tcalc_exp)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "sqrt", tcalc_sqrt)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "cbrt", tcalc_cbrt)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "ceil", tcalc_ceil)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "floor", tcalc_floor)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "round", tcalc_round)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_func(context, "abs", tcalc_abs)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "sin", tcalc_sin)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "cos", tcalc_cos)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "tan", tcalc_tan)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "sec", tcalc_sec)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "csc", tcalc_csc)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "cot", tcalc_cot)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "asin", tcalc_asin)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "arcsin", tcalc_asin)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "acos", tcalc_acos)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "arccos", tcalc_acos)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "atan", tcalc_atan)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "arctan", tcalc_atan)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "asec", tcalc_asec)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "arcsec", tcalc_asec)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "acsc", tcalc_acsc)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "arccsc", tcalc_acsc)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "acot", tcalc_acot)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "arccot", tcalc_acot)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "sinh", tcalc_sinh)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "cosh", tcalc_cosh)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "tanh", tcalc_tanh)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "asinh", tcalc_asinh)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "arcsinh", tcalc_asinh)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "acosh", tcalc_acosh)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "arccosh", tcalc_acosh)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "atanh", tcalc_atanh)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "arctanh", tcalc_atanh)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "log", tcalc_log)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "ln", tcalc_ln)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "exp", tcalc_exp)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "sqrt", tcalc_sqrt)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "cbrt", tcalc_cbrt)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "ceil", tcalc_ceil)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "floor", tcalc_floor)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "round", tcalc_round)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_func(context, "abs", tcalc_abs)) != TCALC_OK) goto cleanup;
 
-  if ((err = tcalc_context_add_binary_func(context, "pow", tcalc_pow)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_binary_func(context, "pow", tcalc_pow)) != TCALC_OK) goto cleanup;
 
 
-  if ((err = tcalc_context_add_variable(context, "pi", M_PI)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_variable(context, "e", M_E)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_variable(context, "pi", M_PI)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_variable(context, "e", M_E)) != TCALC_OK) goto cleanup;
 
-  if ((err = tcalc_context_add_unary_op(context, "+", 3, TCALC_RIGHT_ASSOCIATIVE, tcalc_unary_plus)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_unary_op(context, "-", 3, TCALC_RIGHT_ASSOCIATIVE, tcalc_unary_minus)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_op(context, "+", 3, TCALC_RIGHT_ASSOCIATIVE, tcalc_unary_plus)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_unary_op(context, "-", 3, TCALC_RIGHT_ASSOCIATIVE, tcalc_unary_minus)) != TCALC_OK) goto cleanup;
 
-  if ((err = tcalc_context_add_binary_op(context, "+", 1, TCALC_LEFT_ASSOCIATIVE, tcalc_add)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_binary_op(context, "-", 1, TCALC_LEFT_ASSOCIATIVE, tcalc_subtract)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_binary_op(context, "*", 2, TCALC_LEFT_ASSOCIATIVE, tcalc_multiply)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_binary_op(context, "/", 2, TCALC_LEFT_ASSOCIATIVE, tcalc_divide)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_binary_op(context, "%", 2, TCALC_LEFT_ASSOCIATIVE, tcalc_mod)) != TCALC_OK) goto cleanup;
-  if ((err = tcalc_context_add_binary_op(context, "^", 3, TCALC_RIGHT_ASSOCIATIVE, tcalc_pow)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_binary_op(context, "+", 1, TCALC_LEFT_ASSOCIATIVE, tcalc_add)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_binary_op(context, "-", 1, TCALC_LEFT_ASSOCIATIVE, tcalc_subtract)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_binary_op(context, "*", 2, TCALC_LEFT_ASSOCIATIVE, tcalc_multiply)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_binary_op(context, "/", 2, TCALC_LEFT_ASSOCIATIVE, tcalc_divide)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_binary_op(context, "%", 2, TCALC_LEFT_ASSOCIATIVE, tcalc_mod)) != TCALC_OK) goto cleanup;
+  if ((err = tcalc_ctx_add_binary_op(context, "^", 3, TCALC_RIGHT_ASSOCIATIVE, tcalc_pow)) != TCALC_OK) goto cleanup;
   
   *out = context;
   return err;
 
   cleanup:
-    tcalc_context_free(context);
+    tcalc_ctx_free(context);
     return err;
 }
 
-void tcalc_context_free(tcalc_context* context) {
+void tcalc_ctx_free(tcalc_context* context) {
   TCALC_VEC_FREE_F(context->binary_funcs, tcalc_binary_func_def_free);
   TCALC_VEC_FREE_F(context->unary_funcs, tcalc_unary_func_def_free);
   TCALC_VEC_FREE_F(context->variables, tcalc_variable_def_free);
@@ -111,7 +111,7 @@ void tcalc_context_free(tcalc_context* context) {
   free(context);
 }
 
-tcalc_error_t tcalc_context_add_variable(tcalc_context* context, char* name, double value) {
+tcalc_error_t tcalc_ctx_add_variable(tcalc_context* context, char* name, double value) {
   for (size_t i = 0; i < context->variables.len; i++) {
     if (strcmp(context->variables.arr[i]->identifier, name) == 0) {
       context->variables.arr[i]->value = value;
@@ -132,7 +132,7 @@ tcalc_error_t tcalc_context_add_variable(tcalc_context* context, char* name, dou
     return err;
 }
 
-tcalc_error_t tcalc_context_add_unary_func(tcalc_context* context, char* name, tcalc_unary_func function) {
+tcalc_error_t tcalc_ctx_add_unary_func(tcalc_context* context, char* name, tcalc_unary_func function) {
   for (size_t i = 0; i < context->unary_funcs.len; i++) {
     if (strcmp(context->unary_funcs.arr[i]->identifier, name) == 0) {
       context->unary_funcs.arr[i]->function = function;
@@ -153,7 +153,7 @@ tcalc_error_t tcalc_context_add_unary_func(tcalc_context* context, char* name, t
     return err;
 }
 
-tcalc_error_t tcalc_context_add_binary_func(tcalc_context* context, char* name, tcalc_binary_func function) {
+tcalc_error_t tcalc_ctx_add_binary_func(tcalc_context* context, char* name, tcalc_binary_func function) {
   tcalc_binary_funcdef* binary_func;
   tcalc_error_t err = tcalc_binary_func_def_alloc(name, function, &binary_func);
   if (err) return err;
@@ -167,7 +167,7 @@ tcalc_error_t tcalc_context_add_binary_func(tcalc_context* context, char* name, 
     return err;
 }
 
-tcalc_error_t tcalc_context_add_unary_op(tcalc_context* context, char* name, int precedence, tcalc_assoc associativity, tcalc_unary_func function) {
+tcalc_error_t tcalc_ctx_add_unary_op(tcalc_context* context, char* name, int precedence, tcalc_assoc associativity, tcalc_unary_func function) {
   tcalc_unary_opdef* unary_op;
   tcalc_error_t err = tcalc_unary_op_def_alloc(name, precedence, associativity, function, &unary_op);
   if (err) return err;
@@ -181,7 +181,7 @@ tcalc_error_t tcalc_context_add_unary_op(tcalc_context* context, char* name, int
     return err;
 }
 
-tcalc_error_t tcalc_context_add_binary_op(tcalc_context* context,  char* name, int precedence, tcalc_assoc associativity, tcalc_binary_func function) {
+tcalc_error_t tcalc_ctx_add_binary_op(tcalc_context* context,  char* name, int precedence, tcalc_assoc associativity, tcalc_binary_func function) {
   tcalc_binary_opdef* binary_op;
   tcalc_error_t err = tcalc_binary_op_def_alloc(name, precedence, associativity, function, &binary_op);
   if (err) return err;
@@ -194,41 +194,41 @@ tcalc_error_t tcalc_context_add_binary_op(tcalc_context* context,  char* name, i
     return err;
 }
 
-int tcalc_context_has_identifier(const tcalc_context* context, const char* name) {
-  return tcalc_context_has_variable(context, name) ||
-  tcalc_context_has_func(context, name);
+int tcalc_ctx_has_identifier(const tcalc_context* context, const char* name) {
+  return tcalc_ctx_has_variable(context, name) ||
+  tcalc_ctx_has_func(context, name);
 }
 
-int tcalc_context_has_func(const tcalc_context* context, const char* name) {
-  return tcalc_context_has_unary_func(context, name) ||
-  tcalc_context_has_binary_func(context, name);
+int tcalc_ctx_has_func(const tcalc_context* context, const char* name) {
+  return tcalc_ctx_has_unary_func(context, name) ||
+  tcalc_ctx_has_binary_func(context, name);
 }
 
-int tcalc_context_has_unary_func(const tcalc_context* context, const char* name) {
-  return tcalc_context_get_unary_func(context, name, NULL) == TCALC_OK;
+int tcalc_ctx_has_unary_func(const tcalc_context* context, const char* name) {
+  return tcalc_ctx_get_unary_func(context, name, NULL) == TCALC_OK;
 }
 
-int tcalc_context_has_binary_func(const tcalc_context* context, const char* name) {
-  return tcalc_context_get_binary_func(context, name, NULL) == TCALC_OK;
+int tcalc_ctx_has_binary_func(const tcalc_context* context, const char* name) {
+  return tcalc_ctx_get_binary_func(context, name, NULL) == TCALC_OK;
 }
 
-int tcalc_context_has_variable(const tcalc_context* context, const char* name) {
-  return tcalc_context_get_variable(context, name, NULL) == TCALC_OK;
+int tcalc_ctx_has_variable(const tcalc_context* context, const char* name) {
+  return tcalc_ctx_get_variable(context, name, NULL) == TCALC_OK;
 }
 
-int tcalc_context_has_unary_op(const tcalc_context* context, const char* name) {
-  return tcalc_context_get_unary_op(context, name, NULL) == TCALC_OK;
+int tcalc_ctx_has_unary_op(const tcalc_context* context, const char* name) {
+  return tcalc_ctx_get_unary_op(context, name, NULL) == TCALC_OK;
 }
 
-int tcalc_context_has_binary_op(const tcalc_context* context, const char* name) {
-  return tcalc_context_get_binary_op(context, name, NULL) == TCALC_OK;
+int tcalc_ctx_has_binary_op(const tcalc_context* context, const char* name) {
+  return tcalc_ctx_get_binary_op(context, name, NULL) == TCALC_OK;
 }
 
-int tcalc_context_has_op(const tcalc_context* context, const char* name) {
-  return tcalc_context_has_binary_op(context, name) || tcalc_context_has_unary_op(context, name);
+int tcalc_ctx_has_op(const tcalc_context* context, const char* name) {
+  return tcalc_ctx_has_binary_op(context, name) || tcalc_ctx_has_unary_op(context, name);
 }
 
-tcalc_error_t tcalc_context_get_unary_func(const tcalc_context* context, const char* name, tcalc_unary_funcdef** out) {
+tcalc_error_t tcalc_ctx_get_unary_func(const tcalc_context* context, const char* name, tcalc_unary_funcdef** out) {
   for (size_t i = 0; i < context->unary_funcs.len; i++) {
     if (strcmp(context->unary_funcs.arr[i]->identifier, name) == 0) {
       if (out != NULL) *out = context->unary_funcs.arr[i];
@@ -238,7 +238,7 @@ tcalc_error_t tcalc_context_get_unary_func(const tcalc_context* context, const c
   return TCALC_NOT_FOUND;
 }
 
-tcalc_error_t tcalc_context_get_binary_func(const tcalc_context* context, const char* name, tcalc_binary_funcdef** out) {
+tcalc_error_t tcalc_ctx_get_binary_func(const tcalc_context* context, const char* name, tcalc_binary_funcdef** out) {
   for (size_t i = 0; i < context->binary_funcs.len; i++) {
     if (strcmp(context->binary_funcs.arr[i]->identifier, name) == 0) {
       if (out != NULL) *out = context->binary_funcs.arr[i];
@@ -248,7 +248,7 @@ tcalc_error_t tcalc_context_get_binary_func(const tcalc_context* context, const 
   return TCALC_NOT_FOUND;
 }
 
-tcalc_error_t tcalc_context_get_variable(const tcalc_context* context, const char* name, tcalc_vardef** out) {
+tcalc_error_t tcalc_ctx_get_variable(const tcalc_context* context, const char* name, tcalc_vardef** out) {
   for (size_t i = 0; i < context->variables.len; i++) {
     if (strcmp(context->variables.arr[i]->identifier, name) == 0) {
       if (out != NULL) *out = context->variables.arr[i];
@@ -258,7 +258,7 @@ tcalc_error_t tcalc_context_get_variable(const tcalc_context* context, const cha
   return TCALC_NOT_FOUND;
 }
 
-tcalc_error_t tcalc_context_get_unary_op(const tcalc_context* context, const char* name, tcalc_unary_opdef** out) {
+tcalc_error_t tcalc_ctx_get_unary_op(const tcalc_context* context, const char* name, tcalc_unary_opdef** out) {
   for (size_t i = 0; i < context->unary_ops.len; i++) {
     if (strcmp(context->unary_ops.arr[i]->identifier, name) == 0) {
       if (out != NULL) *out = context->unary_ops.arr[i];
@@ -268,7 +268,7 @@ tcalc_error_t tcalc_context_get_unary_op(const tcalc_context* context, const cha
   return TCALC_NOT_FOUND;
 }
 
-tcalc_error_t tcalc_context_get_binary_op(const tcalc_context* context, const char* name, tcalc_binary_opdef** out) {
+tcalc_error_t tcalc_ctx_get_binary_op(const tcalc_context* context, const char* name, tcalc_binary_opdef** out) {
   for (size_t i = 0; i < context->binary_ops.len; i++) {
     if (strcmp(context->binary_ops.arr[i]->identifier, name) == 0) {
       if (out != NULL) *out = context->binary_ops.arr[i];

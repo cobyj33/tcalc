@@ -36,6 +36,8 @@ int has_in_strarr(const char**, size_t, const char*);
 
 tcalc_error_t tcalc_strsplit(const char*, char, char***, size_t* return_size);
 
+int tcalc_streq(const char*, const char*);
+
 /**
  * 
  * @param src

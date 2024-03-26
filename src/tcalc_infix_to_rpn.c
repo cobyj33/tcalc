@@ -6,19 +6,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-tcalc_error_t tcalc_context_get_token_op_data(const tcalc_context* ctx, tcalc_token* token, tcalc_opdata* out) {
+tcalc_error_t tcalc_ctx_get_token_op_data(const tcalc_context* ctx, tcalc_token* token, tcalc_opdata* out) {
   tcalc_error_t err = TCALC_OK;
 
   switch (token->type) {
     case TCALC_UNARY_OPERATOR: {
       tcalc_unary_opdef* unary_op_def;
-      if ((err = tcalc_context_get_unary_op(ctx, token->value, &unary_op_def)) != TCALC_OK) return err;
+      if ((err = tcalc_ctx_get_unary_op(ctx, token->value, &unary_op_def)) != TCALC_OK) return err;
       *out = tcalc_unary_op_get_data(unary_op_def);
       return TCALC_OK;
     }
     case TCALC_BINARY_OPERATOR: {
       tcalc_binary_opdef* binary_op_def;
-      if ((err = tcalc_context_get_binary_op(ctx, token->value, &binary_op_def)) != TCALC_OK) return err;
+      if ((err = tcalc_ctx_get_binary_op(ctx, token->value, &binary_op_def)) != TCALC_OK) return err;
       *out = tcalc_binary_op_get_data(binary_op_def);
       return TCALC_OK;
     }
@@ -95,7 +95,7 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t 
         opstk_size--; // pop off opening grouping symbol
 
         if (opstk_size >= 1) {
-          if (tcalc_context_has_func(ctx, opstk[opstk_size - 1]->value)) {
+          if (tcalc_ctx_has_func(ctx, opstk[opstk_size - 1]->value)) {
               if ((err = tcalc_token_clone(opstk[opstk_size - 1], &rpn_toks[rpn_toks_size])) != TCALC_OK) goto cleanup;
               rpn_toks_size++;
               opstk_size--;
@@ -107,13 +107,13 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t 
       case TCALC_UNARY_OPERATOR:
       case TCALC_BINARY_OPERATOR: {
         tcalc_opdata curr_opdata, stk_opdata;
-        if ((err = tcalc_context_get_token_op_data(ctx, infix_toks[i], &curr_opdata))) goto cleanup;
+        if ((err = tcalc_ctx_get_token_op_data(ctx, infix_toks[i], &curr_opdata))) goto cleanup;
 
         while (opstk_size > 0) {
           tcalc_token* stack_top = opstk[opstk_size - 1];
           if (stack_top->type == TCALC_GROUP_START) break;
 
-          if ((err = tcalc_context_get_token_op_data(ctx, stack_top, &stk_opdata))) goto cleanup;
+          if ((err = tcalc_ctx_get_token_op_data(ctx, stack_top, &stk_opdata))) goto cleanup;
           if (curr_opdata.precedence > stk_opdata.precedence) break;
           if (curr_opdata.precedence == stk_opdata.precedence && curr_opdata.associativity == TCALC_RIGHT_ASSOCIATIVE) break;
 
@@ -126,9 +126,9 @@ tcalc_error_t tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t 
         break;
       }
       case TCALC_IDENTIFIER: {  
-        if (tcalc_context_has_func(ctx, infix_toks[i]->value)) {
+        if (tcalc_ctx_has_func(ctx, infix_toks[i]->value)) {
           opstk[opstk_size++] = infix_toks[i];
-        } else if (tcalc_context_has_variable(ctx, infix_toks[i]->value)) {
+        } else if (tcalc_ctx_has_variable(ctx, infix_toks[i]->value)) {
           if ((err = tcalc_token_clone(infix_toks[i], &rpn_toks[rpn_toks_size])) != TCALC_OK) goto cleanup;
           rpn_toks_size++;
         } else {
