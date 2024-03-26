@@ -49,19 +49,4 @@ if (TCALC_BUILD_TESTS)
   add_executable(tcalc_tests ./tests/src/test_run_all_tests.c ${TEST_SRC_FILES} )
   target_include_directories(tcalc_tests PRIVATE ./tests/include)
   target_link_libraries(tcalc_tests PRIVATE cutest tcalc)
-
-  add_executable(rpn_tokenizer ./cli/rpn_tokenizer.c)
-  target_link_libraries(rpn_tokenizer PRIVATE tcalc)
-  
-  add_executable(infix_tokenizer ./cli/infix_tokenizer.c)
-  target_link_libraries(infix_tokenizer PRIVATE tcalc)
-  
-  add_executable(rpn ./cli/rpn.c)
-  target_link_libraries(rpn PRIVATE tcalc)
-  
-  add_executable(infix_to_rpn ./cli/infix_to_rpn.c)
-  target_link_libraries(infix_to_rpn PRIVATE tcalc)
-  
-  add_executable(exprtree ./cli/exprtree.c)
-  target_link_libraries(exprtree PRIVATE tcalc)
 endif()

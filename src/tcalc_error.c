@@ -23,6 +23,7 @@ void tcalc_setfullerrorf(const char* format, ...) {
   va_end(args);
 }
 
+
 const char* tcalc_strerrcode(tcalc_error_t err) {
   switch (err) {
     case TCALC_OK: return "ok";
@@ -45,3 +46,4 @@ const char* tcalc_strerrcode(tcalc_error_t err) {
 
   return "unknown tcalc error";
 }
+

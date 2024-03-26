@@ -87,6 +87,8 @@ typedef enum tcalc_error_t {
   TCALC_UNKNOWN
 } tcalc_error_t;
 
+#define tc_failed(err, expr) (err = expr) != TCALC_OK
+
 /**
  * The string returned by tcalc_strerrcode does not have to be freed,
  * as it will always be a string literal.

@@ -8,10 +8,9 @@
 
 #define alloc_nr(x) (((x)+16)*3/2)
 
-void* tcalc_malloc(size_t);
-void* tcalc_calloc(size_t, size_t);
-void* tcalc_realloc(void*, size_t);
-void tcalc_free(void*);
+void* tcalc_xmalloc(size_t);
+void* tcalc_xcalloc(size_t, size_t);
+void* tcalc_xrealloc(void*, size_t);
 
 /**
  * 

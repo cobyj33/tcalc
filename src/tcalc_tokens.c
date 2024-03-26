@@ -29,7 +29,7 @@ tcalc_error_t tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, siz
 tcalc_error_t tcalc_tokenize_infix_token_insertions(tcalc_token_t** tokens, size_t nb_tokens, tcalc_token_t*** out, size_t* out_size);
 int tcalc_is_identifier(const char* str);
 
-const char* tcalc_token_type_get_string(tcalc_token_type_t token_type) {
+const char* tcalc_token_type_str(tcalc_token_type_t token_type) {
   switch (token_type) {
     case TCALC_NUMBER: return "number";
     case TCALC_UNARY_OPERATOR: return "unary operator";

@@ -51,7 +51,7 @@ typedef enum tcalc_token_type_t {
   TCALC_GROUP_END // Ending token for a grouping symbol
 } tcalc_token_type_t;
 
-const char* tcalc_token_type_get_string(tcalc_token_type_t token_type);
+const char* tcalc_token_type_str(tcalc_token_type_t token_type);
 
 /**
  * Since tokens get passed around so much, it would be difficult to determine
@@ -61,7 +61,6 @@ const char* tcalc_token_type_get_string(tcalc_token_type_t token_type);
  * so each time a token is used, we know its can be freed safely without some other
  * token having a pointer to the same string value
 */
-
 typedef struct tcalc_token_t {
   tcalc_token_type_t type;
   char* value;
