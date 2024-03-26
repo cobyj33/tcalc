@@ -35,7 +35,7 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
 */
 #define TCALC_DARR_GROW(arr, size, capacity, err) do { \
     if (capacity == 0) { \
-      arr = malloc(sizeof(*arr)); \
+      arr = malloc(sizeof(*(arr))); \
       if (arr == NULL) { \
         err = TCALC_BAD_ALLOC; \
       } else { \
@@ -123,20 +123,21 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
 */
 #define TCALC_ARR_FREE_C(arr, len) TCALC_ARR_FREE_CFV(arr, len, free)
 
-
 /**
  * Free a dynamically allocated array and all of its contents, all with the C standard free function.
 */
 #define TCALC_ARR_FREE(arr, len) do { \
     TCALC_ARR_FREE_C(arr, len); \
     free(arr); \
+    arr = NULL; \
   } while (0)
 
 /**
  * Free a dynamically allocated array and all of its contents, freeing the contents with a callback.
 */
 #define TCALC_ARR_FREE_F(arr, len, freefn) do { \
-    TCALC_ARR_FREE_CF(arr, len, freefn); free(arr); \
+    TCALC_ARR_FREE_CF(arr, len, freefn); \
+    free(arr); \
     arr = NULL; \
   } while (0)
 
@@ -148,7 +149,7 @@ void tcalc_free_arr(void** arr, size_t size, void(*freecb)(void*));
 #define TCALC_ARR_FREE_FV(arr, len, freefnv) do { \
     TCALC_ARR_FREE_CFV(arr, len, freefnv); \
     free(arr); \
-    arr = NULL; \ 
+    arr = NULL; \
   } while (0) 
 
 /**

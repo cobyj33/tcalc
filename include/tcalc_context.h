@@ -120,46 +120,13 @@ tcalc_op_data_t tcalc_unary_op_get_data(tcalc_unary_op_def_t* unary_op_def);
  *  will disambiguate itself which + or - are unary and which + or - are binary. 
  *  If I had created math I wouldn't have created it like this.
 */
-// typedef struct tcalc_context_t {
-//   tcalc_unary_func_def_t unary_funcs[TCALC_CONTEXT_MAX_UNARY_FUNC_DEFS];
-//   size_t nb_unary_funcs;
-//   tcalc_binary_func_def_t binary_funcs[TCALC_CONTEXT_MAX_BINARY_FUNC_DEFS];
-//   size_t nb_binary_funcs;
-//   tcalc_variable_def_t variables[TCALC_CONTEXT_MAX_VARIABLE_DEFS];
-//   size_t nb_variables;
-// } tcalc_context_t;
-
-TCALC_DECLARE_VEC(tcalc_unary_func_def_t);
-TCALC_DECLARE_VEC(tcalc_binary_func_def_t);
-TCALC_DECLARE_VEC(tcalc_variable_def_t);
-TCALC_DECLARE_VEC(tcalc_unary_op_def_t);
-TCALC_DECLARE_VEC(tcalc_binary_op_def_t);
-TCALC_DECLARE_VEC(tcalc_relation_op_def_t);
-
 typedef struct tcalc_context_t {
-  tcalc_unary_func_def_t** unary_funcs;
-  size_t nb_unary_funcs;
-  size_t unary_funcs_capacity;
-
-  tcalc_binary_func_def_t** binary_funcs;
-  size_t nb_binary_funcs;
-  size_t binary_funcs_capacity;
-
-  tcalc_variable_def_t** variables;
-  size_t nb_variables;
-  size_t variables_capacity;
-
-  tcalc_unary_op_def_t** unary_ops;
-  size_t nb_unary_ops;
-  size_t unary_ops_capacity;
-
-  tcalc_binary_op_def_t** binary_ops;
-  size_t nb_binary_ops;
-  size_t binary_ops_capacity;
-
-  tcalc_relation_op_def_t** relation_ops;
-  size_t nb_relation_ops;
-  size_t relation_ops_capacity;
+  TCALC_VEC(tcalc_unary_func_def_t*) unary_funcs;
+  TCALC_VEC(tcalc_binary_func_def_t*) binary_funcs;
+  TCALC_VEC(tcalc_variable_def_t*) variables;
+  TCALC_VEC(tcalc_unary_op_def_t*) unary_ops;
+  TCALC_VEC(tcalc_binary_op_def_t*) binary_ops;
+  TCALC_VEC(tcalc_relation_op_def_t*) relation_ops;
 } tcalc_context_t;
 
 tcalc_error_t tcalc_context_alloc_empty(tcalc_context_t** out);

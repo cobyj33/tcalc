@@ -4,16 +4,29 @@
 #include <stddef.h>
 #include "tcalc_mem.h"
 
-#define TCALC_VEC(type) tcalc_vec_ ## type
-
-#define TCALC_DECLARE_VEC(type) typedef struct { \
+#define TCALC_VEC(type) struct { \
     type* arr; \
     size_t len; \
     size_t cap; \
-  } TCALC_VEC(type)
+  }
+
+#define TCALC_VEC_INIT { .arr = NULL, .len = 0, .cap = 0 }
+#define TCALC_VEC_RESET(vec) do { vec.arr = NULL; vec.len = 0; vec.cap = 0; } while (0)
 
 #define TCALC_VEC_PUSH(vec, item, err) TCALC_DARR_PUSH(vec.arr, vec.len, vec.cap, item, err)
 #define TCALC_VEC_INSERT(vec, item, index, err) TCALC_DARR_INSERT(vec.arr, vec.len, vec.cap, item, index, err)
 #define TCALC_VEC_GROW(vec, res_size, err) TCALC_DARR_GROW(vec.arr, res_size, vec.cap, err)
+
+#define TCALC_VEC_FREE_CF(vec, freefn) do { \
+  TCALC_ARR_FREE_CF(vec.arr, vec.len, freefn); \
+  TCALC_VEC_RESET(vec); \
+} while (0)
+
+#define TCALC_VEC_FREE_CFV(vec, freefnv) do { \
+  TCALC_ARR_FREE_CF(vec.arr, vec.len, freefnv); \
+  TCALC_VEC_RESET(vec); \
+} while (0)
+
+#define TCALC_VEC_FREE_C(vec) TCALC_VEC_FREE_CFV(vec, free)
 
 #endif

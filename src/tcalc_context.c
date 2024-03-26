@@ -102,14 +102,12 @@ tcalc_error_t tcalc_context_alloc_default(tcalc_context_t** out) {
 }
 
 void tcalc_context_free(tcalc_context_t* context) {
-  if (context == NULL) return;
+  TCALC_VEC_FREE_CF(context->binary_funcs, tcalc_binary_func_def_free);
+  TCALC_VEC_FREE_CF(context->unary_funcs, tcalc_unary_func_def_free);
+  TCALC_VEC_FREE_CF(context->variables, tcalc_variable_def_free);
+  TCALC_VEC_FREE_CF(context->unary_ops, tcalc_unary_op_def_free);
+  TCALC_VEC_FREE_CF(context->binary_ops, tcalc_binary_op_def_free);
 
-  tcalc_free_arr((void**)context->binary_funcs, context->nb_binary_funcs, tcalc_binary_func_def_freev);
-  tcalc_free_arr((void**)context->unary_funcs, context->nb_unary_funcs, tcalc_unary_func_def_freev);
-  tcalc_free_arr((void**)context->variables, context->nb_variables, tcalc_variable_def_freev);
-  tcalc_free_arr((void**)context->unary_ops, context->nb_unary_ops, tcalc_unary_op_def_freev);
-  tcalc_free_arr((void**)context->binary_ops, context->nb_binary_ops, tcalc_binary_op_def_freev);
-  
   free(context);
 }
 
@@ -118,7 +116,7 @@ tcalc_error_t tcalc_context_add_variable(tcalc_context_t* context, char* name, d
   tcalc_error_t err = tcalc_variable_def_alloc(name, value, &variable);
   if (err) return err;
 
-  TCALC_DARR_PUSH(context->variables, context->nb_variables, context->variables_capacity, variable, err)
+  TCALC_VEC_PUSH(context->variables, variable, err)
   if (err) goto cleanup;
 
   return TCALC_OK;
@@ -132,7 +130,7 @@ tcalc_error_t tcalc_context_add_unary_func(tcalc_context_t* context, char* name,
   tcalc_error_t err = tcalc_unary_func_def_alloc(name, function, &unary_func);
   if (err) return err;
 
-  TCALC_DARR_PUSH(context->unary_funcs, context->nb_unary_funcs, context->unary_funcs_capacity, unary_func, err)
+  TCALC_VEC_PUSH(context->unary_funcs, unary_func, err);
   if (err) goto cleanup;
 
   return TCALC_OK;
@@ -146,7 +144,7 @@ tcalc_error_t tcalc_context_add_binary_func(tcalc_context_t* context, char* name
   tcalc_error_t err = tcalc_binary_func_def_alloc(name, function, &binary_func);
   if (err) return err;
 
-  TCALC_DARR_PUSH(context->binary_funcs, context->nb_binary_funcs, context->binary_funcs_capacity, binary_func, err)
+  TCALC_VEC_PUSH(context->binary_funcs, binary_func, err);
   if (err) goto cleanup;
 
   return TCALC_OK;
@@ -160,7 +158,7 @@ tcalc_error_t tcalc_context_add_unary_op(tcalc_context_t* context, char* name, i
   tcalc_error_t err = tcalc_unary_op_def_alloc(name, precedence, associativity, function, &unary_op);
   if (err) return err;
 
-  TCALC_DARR_PUSH(context->unary_ops, context->nb_unary_ops, context->unary_ops_capacity, unary_op, err)
+  TCALC_VEC_PUSH(context->unary_ops, unary_op, err);
   if (err) goto cleanup;
 
   return TCALC_OK;
@@ -173,8 +171,7 @@ tcalc_error_t tcalc_context_add_binary_op(tcalc_context_t* context,  char* name,
   tcalc_binary_op_def_t* binary_op;
   tcalc_error_t err = tcalc_binary_op_def_alloc(name, precedence, associativity, function, &binary_op);
   if (err) return err;
-
-  TCALC_DARR_PUSH(context->binary_ops, context->nb_binary_ops, context->binary_ops_capacity, binary_op, err)
+  TCALC_VEC_PUSH(context->binary_ops, binary_op, err);
   if (err) goto cleanup;
 
   return TCALC_OK;
@@ -218,9 +215,9 @@ int tcalc_context_has_op(const tcalc_context_t* context, const char* name) {
 }
 
 tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const char* name, tcalc_unary_func_def_t** out) {
-  for (size_t i = 0; i < context->nb_unary_funcs; i++) {
-    if (strcmp(context->unary_funcs[i]->identifier, name) == 0) {
-      if (out != NULL) *out = context->unary_funcs[i];
+  for (size_t i = 0; i < context->unary_funcs.len; i++) {
+    if (strcmp(context->unary_funcs.arr[i]->identifier, name) == 0) {
+      if (out != NULL) *out = context->unary_funcs.arr[i];
       return TCALC_OK;
     }
   }
@@ -228,9 +225,9 @@ tcalc_error_t tcalc_context_get_unary_func(const tcalc_context_t* context, const
 }
 
 tcalc_error_t tcalc_context_get_binary_func(const tcalc_context_t* context, const char* name, tcalc_binary_func_def_t** out) {
-  for (size_t i = 0; i < context->nb_binary_funcs; i++) {
-    if (strcmp(context->binary_funcs[i]->identifier, name) == 0) {
-      if (out != NULL) *out = context->binary_funcs[i];
+  for (size_t i = 0; i < context->binary_funcs.len; i++) {
+    if (strcmp(context->binary_funcs.arr[i]->identifier, name) == 0) {
+      if (out != NULL) *out = context->binary_funcs.arr[i];
       return TCALC_OK;
     }
   }
@@ -238,9 +235,9 @@ tcalc_error_t tcalc_context_get_binary_func(const tcalc_context_t* context, cons
 }
 
 tcalc_error_t tcalc_context_get_variable(const tcalc_context_t* context, const char* name, tcalc_variable_def_t** out) {
-  for (size_t i = 0; i < context->nb_variables; i++) {
-    if (strcmp(context->variables[i]->identifier, name) == 0) {
-      if (out != NULL) *out = context->variables[i];
+  for (size_t i = 0; i < context->variables.len; i++) {
+    if (strcmp(context->variables.arr[i]->identifier, name) == 0) {
+      if (out != NULL) *out = context->variables.arr[i];
       return TCALC_OK;
     }
   }
@@ -248,9 +245,9 @@ tcalc_error_t tcalc_context_get_variable(const tcalc_context_t* context, const c
 }
 
 tcalc_error_t tcalc_context_get_unary_op(const tcalc_context_t* context, const char* name, tcalc_unary_op_def_t** out) {
-  for (size_t i = 0; i < context->nb_unary_ops; i++) {
-    if (strcmp(context->unary_ops[i]->identifier, name) == 0) {
-      if (out != NULL) *out = context->unary_ops[i];
+  for (size_t i = 0; i < context->unary_ops.len; i++) {
+    if (strcmp(context->unary_ops.arr[i]->identifier, name) == 0) {
+      if (out != NULL) *out = context->unary_ops.arr[i];
       return TCALC_OK;
     }
   }
@@ -258,9 +255,9 @@ tcalc_error_t tcalc_context_get_unary_op(const tcalc_context_t* context, const c
 }
 
 tcalc_error_t tcalc_context_get_binary_op(const tcalc_context_t* context, const char* name, tcalc_binary_op_def_t** out) {
-  for (size_t i = 0; i < context->nb_binary_ops; i++) {
-    if (strcmp(context->binary_ops[i]->identifier, name) == 0) {
-      if (out != NULL) *out = context->binary_ops[i];
+  for (size_t i = 0; i < context->binary_ops.len; i++) {
+    if (strcmp(context->binary_ops.arr[i]->identifier, name) == 0) {
+      if (out != NULL) *out = context->binary_ops.arr[i];
       return TCALC_OK;
     }
   }

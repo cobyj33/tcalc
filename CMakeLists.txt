@@ -27,7 +27,7 @@ set(TEST_SRC_FILES
 
 set(TCALC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic)
 if (MSVC)
-  set(TCALC_COMPILE_OPTIONS /std:c++17 /W4 /WX)
+  set(TCALC_COMPILE_OPTIONS /W4 /WX)
 endif()
 
 add_library(tcalc ${TCALC_SRC_FILES})
@@ -38,10 +38,12 @@ set_target_properties(tcalc PROPERTIES C_STANDARD 99)
 
 add_library(cutest SHARED ./lib/cutest-1.5/CuTest.c)
 target_include_directories(cutest PUBLIC ./lib/cutest-1.5)
+set_target_properties(cutest PROPERTIES C_STANDARD 99)
 
 add_executable(tcalc_cli ./cli/tcalc.c)
 set_property(TARGET tcalc_cli PROPERTY OUTPUT_NAME tcalc)
 target_link_libraries(tcalc_cli PRIVATE tcalc)
+set_target_properties(tcalc_cli PROPERTIES C_STANDARD 99)
 
 if (TCALC_BUILD_TESTS)
   add_executable(tcalc_tests ./tests/src/test_run_all_tests.c ${TEST_SRC_FILES} )
