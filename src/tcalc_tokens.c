@@ -35,6 +35,7 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
     case TCALC_UNARY_OPERATOR: return "unary operator";
     case TCALC_BINARY_OPERATOR: return "binary operator";
     case TCALC_IDENTIFIER: return "identifier";
+    case TCALC_RELATION_OPERATOR: return "relation operator";
     case TCALC_PARAM_SEPARATOR: return "parameter separator";
     case TCALC_GROUP_START: return "group start";
     case TCALC_GROUP_END: return "group end";
@@ -117,7 +118,7 @@ tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_
 
   for (size_t i = 0; i < nb_tokens; i++) {
     tcalc_token* clone;
-    if ((err = tcalc_token_clone(tokens[i], &clone)) != TCALC_OK) goto cleanup;
+    cleanup_on_err(err, tcalc_token_clone(tokens[i], &clone));
     TCALC_DARR_PUSH(final_tokens, nb_final_tokens, final_tokens_capacity, clone, err);
     if (err) goto cleanup;
 
@@ -125,7 +126,7 @@ tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_
       if (tokens[i]->type == TCALC_NUMBER || tokens[i]->type == TCALC_GROUP_END) {
         if (tokens[i + 1]->type == TCALC_GROUP_START || tokens[i + 1]->type == TCALC_IDENTIFIER || tokens[i + 1]->type == TCALC_GROUP_START) {
           tcalc_token* clone;
-          if ((err = tcalc_token_alloc(TCALC_BINARY_OPERATOR, "*", &clone)) != TCALC_OK) goto cleanup;
+          cleanup_on_err(err, tcalc_token_alloc(TCALC_BINARY_OPERATOR, "*", &clone));
           TCALC_DARR_PUSH(final_tokens, nb_final_tokens, final_tokens_capacity, clone, err);
           if (err) goto cleanup;
         }
@@ -199,7 +200,7 @@ tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t 
     }
 
     tcalc_token* token;
-    if ((err = tcalc_token_alloc(token_type, str_tokens[i], &token)) != TCALC_OK) goto cleanup;
+    cleanup_on_err(err, tcalc_token_alloc(token_type, str_tokens[i], &token));
     infix_tokens[nb_infix_tokens++] = token;
   }
 
@@ -367,7 +368,7 @@ tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_s
   }
 
   for (size_t i = 0; i < nb_str_tokens; i++) {
-    if ((err = tcalc_valid_token_str(token_strings[i])) != TCALC_OK) goto cleanup;
+    cleanup_on_err(err, tcalc_valid_token_str(token_strings[i]));
 
     tcalc_token_type token_type;
 
@@ -388,9 +389,7 @@ tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_s
     }
 
     tcalc_token* token;
-    if ((err = tcalc_token_alloc(token_type, token_strings[i], &token)) != TCALC_OK) {
-      goto cleanup;
-    }
+    cleanup_on_err(err, tcalc_token_alloc(token_type, token_strings[i], &token));
 
     (*out)[i] = token;
     (*out_size)++;
@@ -456,16 +455,8 @@ tcalc_err tcalc_are_groupsyms_balanced(const char* expr) {
       }
       case ')':
       case ']': {
-        if (stack_size == 0) {
-          err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
-          goto cleanup;
-        }
-
-        if (stack[stack_size - 1] != corresponding[(int)expr[i]]) {
-          err = TCALC_UNBALANCED_GROUPING_SYMBOLS;
-          goto cleanup;
-        }
-
+        cleanup_on_err(err, err_pred(stack_size == 0, TCALC_UNBALANCED_GROUPING_SYMBOLS));
+        cleanup_on_err(err, err_pred(stack[stack_size - 1] != corresponding[(int)expr[i]], TCALC_UNBALANCED_GROUPING_SYMBOLS));
         stack_size--;
         break;
       }

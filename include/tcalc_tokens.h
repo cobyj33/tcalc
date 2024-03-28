@@ -45,7 +45,7 @@ typedef enum tcalc_token_type {
   TCALC_NUMBER, // A parsable number
   TCALC_UNARY_OPERATOR,
   TCALC_BINARY_OPERATOR,
-  // TCALC_RELATION_OPERATOR,
+  TCALC_RELATION_OPERATOR,
   TCALC_PARAM_SEPARATOR,
   TCALC_IDENTIFIER, // Any alphabetical word which may denote some sort of function or variable depending on a given tcalc_ctx
   TCALC_GROUP_START, // Starting token for a grouping symbol

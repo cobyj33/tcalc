@@ -148,7 +148,7 @@ int tcalc_repl() {
     goto cleanup;
   }
 
-  if ((err = tcalc_ctx_addvar(ctx, "ans", 0.0)) != TCALC_OK) goto cleanup;
+  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", 0.0));
 
   while (!str_in_list(input_buffer, quit_strings, ARRAY_SIZE(quit_strings))) {
     fputs("> ", stdout);
@@ -193,7 +193,7 @@ int tcalc_repl() {
     }
 
     fputs("\n", stdout);
-    if ((err = tcalc_ctx_addvar(ctx, "ans", ans)) != TCALC_OK) goto cleanup;
+    cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", ans));
   }
 
   return EXIT_SUCCESS;

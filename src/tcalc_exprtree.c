@@ -142,18 +142,15 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
     switch (tokens[i]->type) {
       case TCALC_NUMBER: {
         tcalc_exprtree* tree_node;
-        if ((err = tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node)) != TCALC_OK) goto cleanup;
+        cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node));
         tree_stack[tree_stack_size++] = tree_node;
         break;
       } // TCALC_NUMBER
       case TCALC_BINARY_OPERATOR: {
-        if (tree_stack_size < 2) {
-          err = TCALC_INVALID_OP;
-          goto cleanup;
-        }
+        cleanup_on_err(err, err_pred(tree_stack_size < 2, TCALC_INVALID_OP));
 
         tcalc_exprtree* tree_node;
-        if ((err = tcalc_exprtree_node_alloc(tokens[i], 2, &tree_node)) != TCALC_OK) goto cleanup;
+        cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 2, &tree_node));
 
         tree_node->children[0] = tree_stack[tree_stack_size - 2];
         tree_node->children[1] = tree_stack[tree_stack_size - 1];
@@ -163,13 +160,10 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
         break;
       } // TCALC_BINARY_OPERATOR
       case TCALC_UNARY_OPERATOR: {
-        if (tree_stack_size < 1) {
-          err = TCALC_INVALID_OP;
-          goto cleanup; 
-        }
+        cleanup_on_err(err, err_pred(tree_stack_size < 1, TCALC_INVALID_OP));
 
         tcalc_exprtree* tree_node;
-        if ((err = tcalc_exprtree_node_alloc(tokens[i], 1, &tree_node)) != TCALC_OK) goto cleanup;
+        cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 1, &tree_node));
 
         tree_node->children[0] = tree_stack[tree_stack_size - 1];
         tree_stack[tree_stack_size - 1] = tree_node;
@@ -180,17 +174,14 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
         if (tcalc_ctx_hasvar(context, tokens[i]->value)) {
 
           tcalc_exprtree* tree_node;
-          if ((err = tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node)) != TCALC_OK) goto cleanup;
+          cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node));
           tree_stack[tree_stack_size++] = tree_node;
 
         } else if (tcalc_ctx_hasbinfunc(context, tokens[i]->value)) {
-          if (tree_stack_size < 2) {
-            err = TCALC_INVALID_OP;
-            goto cleanup; 
-          }
+          cleanup_on_err(err, tree_stack_size < 2 ? TCALC_INVALID_OP : TCALC_OK);
 
           tcalc_exprtree* tree_node;
-          if ((err = tcalc_exprtree_node_alloc(tokens[i], 2, &tree_node)) != TCALC_OK) goto cleanup;
+          cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 2, &tree_node));
 
           tree_node->children[0] = tree_stack[tree_stack_size - 2];
           tree_node->children[1] = tree_stack[tree_stack_size - 1];
@@ -198,13 +189,10 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
           tree_stack[tree_stack_size - 2] = tree_node;
           tree_stack_size--;
         } else if (tcalc_ctx_hasunfunc(context, tokens[i]->value)) {
-          if (tree_stack_size < 1) {
-            err = TCALC_INVALID_OP;
-            goto cleanup; 
-          }
+          cleanup_on_err(err, tree_stack_size < 1 ? TCALC_INVALID_OP : TCALC_OK);
 
           tcalc_exprtree* tree_node;
-          if ((err = tcalc_exprtree_node_alloc(tokens[i], 1, &tree_node)) != TCALC_OK) goto cleanup;
+          cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 1, &tree_node));
 
           tree_node->children[0] = tree_stack[tree_stack_size - 1];
           tree_stack[tree_stack_size - 1] = tree_node;

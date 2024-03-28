@@ -88,7 +88,8 @@ typedef enum tcalc_err {
 } tcalc_err;
 
 #define tc_failed(err, expr) ((err) = (expr)) != TCALC_OK
-#define cleanup_on_err(err, expr) if (tc_failed(err, expr)) goto cleanup; 
+#define cleanup_on_err(err, expr) if (tc_failed(err, expr)) goto cleanup
+#define err_pred(expr, erronerr) expr ? erronerr : TCALC_OK
 
 /**
  * The string returned by tcalc_strerrcode does not have to be freed,
