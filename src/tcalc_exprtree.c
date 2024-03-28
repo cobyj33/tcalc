@@ -126,6 +126,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
 }
 
 void tcalc_exprtree_free(tcalc_exprtree* head) {
+  if (head == NULL) return;
   TCALC_ARR_FREE_CF(head->children, head->nb_children, tcalc_exprtree_free);
   tcalc_token_free(head->token);
   free(head);
@@ -251,6 +252,7 @@ tcalc_err tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcal
 }
 
 void tcalc_exprtree_node_free(tcalc_exprtree* node) {
+  if (node == NULL) return;
   tcalc_token_free(node->token);
   free(node->children);
   free(node);

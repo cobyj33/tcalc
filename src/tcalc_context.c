@@ -96,6 +96,7 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
 }
 
 void tcalc_ctx_free(tcalc_ctx* ctx) {
+  if (ctx == NULL) return;
   TCALC_VEC_FREE_F(ctx->binfuncs, tcalc_binfuncdef_free);
   TCALC_VEC_FREE_F(ctx->unfuncs, tcalc_unfuncdef_free);
   TCALC_VEC_FREE_F(ctx->vars, tcalc_vardef_free);
