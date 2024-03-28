@@ -46,6 +46,13 @@ tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const tcalc_ctx* context, t
   return err;
 }
 
+int tcalc_exprtree_is_vardef(tcalc_exprtree* expr) {
+  if (expr == NULL) return 0;
+
+  // if (expr->token->type == TCALC_RELATION_OPERATOR) {}
+  return 1;
+}
+
 
 /**
  * Detailed explanation of how an expression tree is evaluated

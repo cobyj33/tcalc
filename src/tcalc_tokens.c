@@ -62,6 +62,7 @@ tcalc_err tcalc_token_alloc(tcalc_token_type type, char* value, tcalc_token** ou
 }
 
 void tcalc_token_free(tcalc_token* token) {
+  if (token == NULL) return;
   free(token->value);
   free(token);
 }

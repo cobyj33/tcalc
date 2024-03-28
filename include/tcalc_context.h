@@ -121,12 +121,12 @@ tcalc_opdata tcalc_getunopdata(tcalc_uopdef* unary_op_def);
  *  If I had created math I wouldn't have created it like this.
 */
 typedef struct tcalc_ctx {
-  TCALC_VEC(tcalc_unfuncdef*) unary_funcs;
-  TCALC_VEC(tcalc_binfuncdef*) binary_funcs;
-  TCALC_VEC(tcalc_vardef*) variables;
-  TCALC_VEC(tcalc_uopdef*) unary_ops;
-  TCALC_VEC(tcalc_binopdef*) binary_ops;
-  TCALC_VEC(tcalc_relation_opdef*) relation_ops;
+  TCALC_VEC(tcalc_unfuncdef*) unfuncs;
+  TCALC_VEC(tcalc_binfuncdef*) binfuncs;
+  TCALC_VEC(tcalc_vardef*) vars;
+  TCALC_VEC(tcalc_uopdef*) unops;
+  TCALC_VEC(tcalc_binopdef*) binops;
+  TCALC_VEC(tcalc_relation_opdef*) relops;
 } tcalc_ctx;
 
 tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out);
@@ -173,6 +173,10 @@ void tcalc_exprtree_node_freev(void* node);
 */
 void tcalc_exprtree_free(tcalc_exprtree* head);
 
+/**
+ * Vardef form: 
+ *  <variable> "=" expression
+*/
 int tcalc_exprtree_is_vardef(tcalc_exprtree* expr);
 
 tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const tcalc_ctx* context, tcalc_exprtree** out);
