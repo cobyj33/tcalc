@@ -118,8 +118,7 @@ tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, char* name, double val) {
   tcalc_err err = tcalc_vardef_alloc(name, val, &variable);
   if (err) return err;
 
-  TCALC_VEC_PUSH(ctx->vars, variable, err);
-  if (err) goto cleanup;
+  cleanup_on_macerr(err, TCALC_VEC_PUSH(ctx->vars, variable, err));
 
   return TCALC_OK;
   cleanup:
@@ -139,8 +138,7 @@ tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, char* name, tcalc_unfunc func) {
   tcalc_err err = tcalc_unfuncdef_alloc(name, func, &unary_func);
   if (err) return err;
 
-  TCALC_VEC_PUSH(ctx->unfuncs, unary_func, err);
-  if (err) goto cleanup;
+  cleanup_on_macerr(err, TCALC_VEC_PUSH(ctx->unfuncs, unary_func, err));
 
   return TCALC_OK;
   cleanup:
@@ -153,8 +151,7 @@ tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, char* name, tcalc_binfunc func) {
   tcalc_err err = tcalc_binfuncdef_alloc(name, func, &binary_func);
   if (err) return err;
 
-  TCALC_VEC_PUSH(ctx->binfuncs, binary_func, err);
-  if (err) goto cleanup;
+  cleanup_on_macerr(err, TCALC_VEC_PUSH(ctx->binfuncs, binary_func, err));
 
   return TCALC_OK;
   cleanup:
@@ -167,8 +164,7 @@ tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, char* name, int prec, tcalc_assoc as
   tcalc_err err = tcalc_unopdef_alloc(name, prec, assoc, func, &unary_op);
   if (err) return err;
 
-  TCALC_VEC_PUSH(ctx->unops, unary_op, err);
-  if (err) goto cleanup;
+  cleanup_on_macerr(err, TCALC_VEC_PUSH(ctx->unops, unary_op, err));
 
   return TCALC_OK;
   cleanup:
@@ -180,8 +176,8 @@ tcalc_err tcalc_ctx_addbinop(tcalc_ctx* ctx,  char* name, int prec, tcalc_assoc 
   tcalc_binopdef* binary_op;
   tcalc_err err = tcalc_binopdef_alloc(name, prec, assoc, func, &binary_op);
   if (err) return err;
-  TCALC_VEC_PUSH(ctx->binops, binary_op, err);
-  if (err) goto cleanup;
+  
+  cleanup_on_macerr(err, TCALC_VEC_PUSH(ctx->binops, binary_op, err));
 
   return TCALC_OK;
   cleanup:

@@ -89,8 +89,7 @@ tcalc_err tcalc_strsplit(const char* str, char split, char*** out, size_t* out_s
     
     char* substr;
     cleanup_on_err(err, tcalc_strsubstr(str, start, end, &substr));
-    TCALC_VEC_PUSH(strings, substr, err);
-    if (err) goto cleanup;
+    cleanup_on_macerr(err, TCALC_VEC_PUSH(strings, substr, err));
 
 
     while (str[end] == split && str[end] != '\0')
@@ -101,8 +100,7 @@ tcalc_err tcalc_strsplit(const char* str, char split, char*** out, size_t* out_s
   if (str[start] != '\0') {
     char* substr;
     cleanup_on_err(err, tcalc_strsubstr(str, start, end, &substr));
-    TCALC_VEC_PUSH(strings, substr, err);
-    if (err) goto cleanup;
+    cleanup_on_macerr(err, TCALC_VEC_PUSH(strings, substr, err));
   }
 
   *out = strings.arr;

@@ -89,6 +89,7 @@ typedef enum tcalc_err {
 
 #define tc_failed(err, expr) ((err) = (expr)) != TCALC_OK
 #define cleanup_on_err(err, expr) if (tc_failed(err, expr)) goto cleanup
+#define cleanup_on_macerr(err, mac) do { mac; if (err) goto cleanup; } while (0)
 #define err_pred(expr, erronerr) expr ? erronerr : TCALC_OK
 
 /**
