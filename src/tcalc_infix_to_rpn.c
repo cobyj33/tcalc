@@ -84,10 +84,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
           rpn_toks_size++;
           opstk_size--;
           
-          if (opstk_size == 0) {
-            err = TCALC_INVALID_OP;
-            goto cleanup;
-          }
+          cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_INVALID_OP));
         }
         opstk_size--; // pop off opening grouping symbol
 
