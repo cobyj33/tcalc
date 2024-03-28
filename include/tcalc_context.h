@@ -53,7 +53,7 @@ enum tcalc_exprtree_node_type {
 
 typedef struct tcalc_vardef {
   char* id;
-  double value;
+  double val;
 } tcalc_vardef;
 
 typedef struct tcalc_opdata {
@@ -134,7 +134,7 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out);
 
 void tcalc_ctx_free(tcalc_ctx* context);
 
-tcalc_err tcalc_ctx_addvar(tcalc_ctx* context, char* name, double value);
+tcalc_err tcalc_ctx_addvar(tcalc_ctx* context, char* name, double val);
 tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* context, char* name, tcalc_unfunc func);
 tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* context, char* name, tcalc_binfunc func);
 tcalc_err tcalc_ctx_addunop(tcalc_ctx* context, char* name, int prec, tcalc_assoc assoc, tcalc_unfunc func);

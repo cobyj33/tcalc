@@ -68,37 +68,37 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* context, do
   
   switch (expr->token->type) {
     case TCALC_NUMBER: { 
-      return tcalc_strtodouble(expr->token->value, out);
+      return tcalc_strtodouble(expr->token->val, out);
     }
     case TCALC_UNARY_OPERATOR: {
       double operand;
       tcalc_uopdef* unary_op_def;
-      if ((err = tcalc_ctx_getunop(context, expr->token->value, &unary_op_def)) != TCALC_OK) return err;
+      if ((err = tcalc_ctx_getunop(context, expr->token->val, &unary_op_def)) != TCALC_OK) return err;
       if ((err = tcalc_eval_exprtree(expr->children[0], context, &operand)) != TCALC_OK) return err;
       return unary_op_def->func(operand, out);
     }
     case TCALC_BINARY_OPERATOR: {
       double operand1, operand2;
       tcalc_binopdef* binary_op_def;
-      if ((err = tcalc_ctx_getbinop(context, expr->token->value, &binary_op_def)) != TCALC_OK) return err;
+      if ((err = tcalc_ctx_getbinop(context, expr->token->val, &binary_op_def)) != TCALC_OK) return err;
       if ((err = tcalc_eval_exprtree(expr->children[0], context, &operand1)) != TCALC_OK) return err;
       if ((err = tcalc_eval_exprtree(expr->children[1], context, &operand2)) != TCALC_OK) return err;
       return binary_op_def->func(operand1, operand2, out);
     }
     case TCALC_IDENTIFIER: {
 
-      if (tcalc_ctx_hasunfunc(context, expr->token->value)) {
+      if (tcalc_ctx_hasunfunc(context, expr->token->val)) {
         tcalc_unfuncdef* unary_func_def;
-        tcalc_ctx_getunfunc(context, expr->token->value, &unary_func_def);
+        tcalc_ctx_getunfunc(context, expr->token->val, &unary_func_def);
         
         double operand;
         tcalc_err err = tcalc_eval_exprtree(expr->children[0], context, &operand);
         if (err) return err;
 
         return unary_func_def->func(operand, out);
-      } else if (tcalc_ctx_hasbinfunc(context, expr->token->value)) {
+      } else if (tcalc_ctx_hasbinfunc(context, expr->token->val)) {
         tcalc_binfuncdef* binary_func_def;
-        tcalc_ctx_getbinfunc(context, expr->token->value, &binary_func_def);
+        tcalc_ctx_getbinfunc(context, expr->token->val, &binary_func_def);
 
         double operand1;
         double operand2;
@@ -108,11 +108,11 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* context, do
         if (err) return err;
       
         return binary_func_def->func(operand1, operand2, out);
-      } else if (tcalc_ctx_hasvar(context, expr->token->value)) {
+      } else if (tcalc_ctx_hasvar(context, expr->token->val)) {
         tcalc_vardef* vardef;
-        tcalc_ctx_getvar(context, expr->token->value, &vardef);
+        tcalc_ctx_getvar(context, expr->token->val, &vardef);
 
-        *out = vardef->value;
+        *out = vardef->val;
         return TCALC_OK;
       } else {
         return TCALC_UNKNOWN_IDENTIFIER;
@@ -171,13 +171,13 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
       } // TCALC_UNARY_OPERATOR
       case TCALC_IDENTIFIER: {
 
-        if (tcalc_ctx_hasvar(context, tokens[i]->value)) {
+        if (tcalc_ctx_hasvar(context, tokens[i]->val)) {
 
           tcalc_exprtree* tree_node;
           cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node));
           tree_stack[tree_stack_size++] = tree_node;
 
-        } else if (tcalc_ctx_hasbinfunc(context, tokens[i]->value)) {
+        } else if (tcalc_ctx_hasbinfunc(context, tokens[i]->val)) {
           cleanup_on_err(err, tree_stack_size < 2 ? TCALC_INVALID_OP : TCALC_OK);
 
           tcalc_exprtree* tree_node;
@@ -188,7 +188,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
 
           tree_stack[tree_stack_size - 2] = tree_node;
           tree_stack_size--;
-        } else if (tcalc_ctx_hasunfunc(context, tokens[i]->value)) {
+        } else if (tcalc_ctx_hasunfunc(context, tokens[i]->val)) {
           cleanup_on_err(err, tree_stack_size < 1 ? TCALC_INVALID_OP : TCALC_OK);
 
           tcalc_exprtree* tree_node;

@@ -64,7 +64,7 @@ const char* tcalc_token_type_str(tcalc_token_type token_type);
 */
 typedef struct tcalc_token {
   tcalc_token_type type;
-  char* value;
+  char* val;
 } tcalc_token;
 
 
@@ -75,7 +75,7 @@ typedef struct tcalc_token {
  * a configured token. Tokenizer functions themselves have to determine when a given token has
  * a specific meaning
 */
-tcalc_err tcalc_token_alloc(tcalc_token_type type, char* value, tcalc_token** out);
+tcalc_err tcalc_token_alloc(tcalc_token_type type, char* val, tcalc_token** out);
 tcalc_err tcalc_token_clone(tcalc_token* src, tcalc_token** out);
 void tcalc_token_free(tcalc_token* token);
 void tcalc_token_freev(void* token);

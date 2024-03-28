@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-tcalc_err tcalc_vardef_alloc(char* name, double value, tcalc_vardef** out);
+tcalc_err tcalc_vardef_alloc(char* name, double val, tcalc_vardef** out);
 tcalc_err tcalc_binfuncdef_alloc(char* name, tcalc_binfunc func, tcalc_binfuncdef** out);
 tcalc_err tcalc_unfuncdef_alloc(char* name, tcalc_unfunc func, tcalc_unfuncdef** out);
 tcalc_err tcalc_binopdef_alloc(char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func, tcalc_binopdef** out);
@@ -105,16 +105,16 @@ void tcalc_ctx_free(tcalc_ctx* context) {
   free(context);
 }
 
-tcalc_err tcalc_ctx_addvar(tcalc_ctx* context, char* name, double value) {
+tcalc_err tcalc_ctx_addvar(tcalc_ctx* context, char* name, double val) {
   for (size_t i = 0; i < context->vars.len; i++) {
     if (strcmp(context->vars.arr[i]->id, name) == 0) {
-      context->vars.arr[i]->value = value;
+      context->vars.arr[i]->val = val;
       return TCALC_OK;
     }
   }
 
   tcalc_vardef* variable;
-  tcalc_err err = tcalc_vardef_alloc(name, value, &variable);
+  tcalc_err err = tcalc_vardef_alloc(name, val, &variable);
   if (err) return err;
 
   TCALC_VEC_PUSH(context->vars, variable, err);
@@ -272,7 +272,7 @@ tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* context, const char* name, tcalc_b
   return TCALC_NOT_FOUND;
 }
 
-tcalc_err tcalc_vardef_alloc(char* name, double value, tcalc_vardef** out) {
+tcalc_err tcalc_vardef_alloc(char* name, double val, tcalc_vardef** out) {
   tcalc_vardef* var_def = (tcalc_vardef*)malloc(sizeof(tcalc_vardef));
   if (var_def == NULL) return TCALC_BAD_ALLOC;
 
@@ -282,7 +282,7 @@ tcalc_err tcalc_vardef_alloc(char* name, double value, tcalc_vardef** out) {
     return err;
   }
 
-  var_def->value = value;
+  var_def->val = val;
   *out = var_def;
   return TCALC_OK;
 }

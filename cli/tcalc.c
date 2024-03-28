@@ -168,7 +168,7 @@ int tcalc_repl() {
     }
     else if (strcmp(input, "variables") == 0) {
       for (size_t i = 0; i < ctx->vars.len; i++) {
-        printf("%s = %.5f\n", ctx->vars.arr[i]->id, ctx->vars.arr[i]->value);
+        printf("%s = %.5f\n", ctx->vars.arr[i]->id, ctx->vars.arr[i]->val);
       }
       continue;
     }
@@ -230,7 +230,7 @@ void tcalc_exprtree_print(tcalc_exprtree* node, size_t depth) {
 
   for (int i = 0; i < depth; i++)
     fputs("|___", stdout);
-  printf("%s\n", node->token->value);
+  printf("%s\n", node->token->val);
 
   for (size_t i = 0; i < node->nb_children; i++) {
     tcalc_exprtree_print(node->children[i], depth + 1);
@@ -264,12 +264,12 @@ int tcalc_cli_rpn_tokenizer(const char* expr) {
   }
 
   for (size_t i = 0; i < nb_rpn_tokens; i++) {
-    printf("{type: %s, value: '%s'}%s", tcalc_token_type_str(rpn_tokens[i]->type),  rpn_tokens[i]->value, i == nb_rpn_tokens - 1 ? "" : ", ");
+    printf("{type: %s, value: '%s'}%s", tcalc_token_type_str(rpn_tokens[i]->type),  rpn_tokens[i]->val, i == nb_rpn_tokens - 1 ? "" : ", ");
   }
   fputs("\n\n", stdout);
 
   for (size_t i = 0; i < nb_rpn_tokens; i++) {
-    printf("'%s'%s", rpn_tokens[i]->value, i == nb_rpn_tokens - 1 ? "" : ", ");
+    printf("'%s'%s", rpn_tokens[i]->val, i == nb_rpn_tokens - 1 ? "" : ", ");
   }
   fputs("\n", stdout);
 
@@ -292,12 +292,12 @@ int tcalc_cli_infix_tokenizer(const char* expr) {
   }
 
   for (size_t i = 0; i < nb_tokens; i++) {
-    printf("{type: %s, value: '%s'}, ", tcalc_token_type_str(tokens[i]->type),  tokens[i]->value);
+    printf("{type: %s, value: '%s'}, ", tcalc_token_type_str(tokens[i]->type),  tokens[i]->val);
   }
   printf("%s", "\n\n");
 
   for (size_t i = 0; i < nb_tokens; i++) {
-    printf("'%s'%s", tokens[i]->value, i == nb_tokens - 1 ? "" : ", ");
+    printf("'%s'%s", tokens[i]->val, i == nb_tokens - 1 ? "" : ", ");
   }
   printf("%c", '\n');
 
