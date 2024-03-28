@@ -132,37 +132,38 @@ typedef struct tcalc_ctx {
 tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out);
 tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out);
 
-void tcalc_ctx_free(tcalc_ctx* context);
+void tcalc_ctx_free(tcalc_ctx* ctx);
 
-tcalc_err tcalc_ctx_addvar(tcalc_ctx* context, char* name, double val);
-tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* context, char* name, tcalc_unfunc func);
-tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* context, char* name, tcalc_binfunc func);
-tcalc_err tcalc_ctx_addunop(tcalc_ctx* context, char* name, int prec, tcalc_assoc assoc, tcalc_unfunc func);
-tcalc_err tcalc_ctx_addbinop(tcalc_ctx* context,  char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func);
+tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, char* name, double val);
+tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, char* name, tcalc_unfunc func);
+tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, char* name, tcalc_binfunc func);
+tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, char* name, int prec, tcalc_assoc assoc, tcalc_unfunc func);
+tcalc_err tcalc_ctx_addbinop(tcalc_ctx* ctx,  char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func);
 
-int tcalc_ctx_hasid(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_hasfunc(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasid(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name);
 
-int tcalc_ctx_hasop(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_hasunop(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_hasbinop(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_hasunfunc(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_hasbinfunc(const tcalc_ctx* context, const char* name);
-int tcalc_ctx_hasvar(const tcalc_ctx* context, const char* name);
+int tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name);
 
 /**
  * tcalc_ctx_get_x functions will not return an error whenever the same given
- * context and name parameters return truthy from their corresponding tcalc_ctx_has_x
- * functions (if tcalc_ctx_has_x returns true, tcalc_ctx_get_x will not return an error)
+ * context and name parameters return truthy from their corresponding
+ * tcalc_ctx_has_x functions (if tcalc_ctx_has_x returns true, tcalc_ctx_get_x
+ * will not return an error)
 */
 
-tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* context, const char* name, tcalc_unfuncdef** out);
-tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* context, const char* name, tcalc_binfuncdef** out);
-tcalc_err tcalc_ctx_getvar(const tcalc_ctx* context, const char* name, tcalc_vardef** out);
-tcalc_err tcalc_ctx_getunop(const tcalc_ctx* context, const char* name, tcalc_uopdef** out);
-tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* context, const char* name, tcalc_binopdef** out);
+tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, tcalc_unfuncdef** out);
+tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, tcalc_binfuncdef** out);
+tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, tcalc_vardef** out);
+tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, tcalc_uopdef** out);
+tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, tcalc_binopdef** out);
 
-tcalc_err tcalc_ctx_get_op_data(const tcalc_ctx* context, const char* name, tcalc_opdata* out);
+tcalc_err tcalc_ctx_get_op_data(const tcalc_ctx* ctx, const char* name, tcalc_opdata* out);
 
 tcalc_err tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcalc_exprtree** out);
 void tcalc_exprtree_node_free(tcalc_exprtree* node);
@@ -179,10 +180,10 @@ void tcalc_exprtree_free(tcalc_exprtree* head);
 */
 int tcalc_exprtree_is_vardef(tcalc_exprtree* expr);
 
-tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const tcalc_ctx* context, tcalc_exprtree** out);
-tcalc_err tcalc_create_exprtree_infix(const char* infix, const tcalc_ctx* context, tcalc_exprtree** out);
-tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* context, tcalc_token*** out, size_t* out_size);
+tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const tcalc_ctx* ctx, tcalc_exprtree** out);
+tcalc_err tcalc_create_exprtree_infix(const char* infix, const tcalc_ctx* ctx, tcalc_exprtree** out);
+tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size);
 
-tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* context, double* out);
+tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double* out);
 
 #endif
