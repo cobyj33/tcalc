@@ -222,54 +222,33 @@ int tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name) {
   return tcalc_ctx_hasbinop(ctx, name) || tcalc_ctx_hasunop(ctx, name);
 }
 
-tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, tcalc_unfuncdef** out) {
-  for (size_t i = 0; i < ctx->unfuncs.len; i++) {
-    if (strcmp(ctx->unfuncs.arr[i]->id, name) == 0) {
-      if (out != NULL) *out = ctx->unfuncs.arr[i];
-      return TCALC_OK;
-    }
-  }
+#define tcalc_ctx_getx(ctx, arrname, idname, out) \
+  for (size_t i = 0; i < ctx->arrname.len; i++) { \
+    if (strcmp(ctx->arrname.arr[i]->id, idname) == 0) { \
+      if (out != NULL) *out = ctx->arrname.arr[i]; \
+      return TCALC_OK; \
+    } \
+  } \
   return TCALC_NOT_FOUND;
+
+tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, tcalc_unfuncdef** out) {
+  tcalc_ctx_getx(ctx, unfuncs, name, out);
 }
 
 tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, tcalc_binfuncdef** out) {
-  for (size_t i = 0; i < ctx->binfuncs.len; i++) {
-    if (strcmp(ctx->binfuncs.arr[i]->id, name) == 0) {
-      if (out != NULL) *out = ctx->binfuncs.arr[i];
-      return TCALC_OK;
-    }
-  }
-  return TCALC_NOT_FOUND;
+  tcalc_ctx_getx(ctx, binfuncs, name, out);
 }
 
 tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, tcalc_vardef** out) {
-  for (size_t i = 0; i < ctx->vars.len; i++) {
-    if (strcmp(ctx->vars.arr[i]->id, name) == 0) {
-      if (out != NULL) *out = ctx->vars.arr[i];
-      return TCALC_OK;
-    }
-  }
-  return TCALC_NOT_FOUND;
+  tcalc_ctx_getx(ctx, vars, name, out);
 }
 
 tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, tcalc_uopdef** out) {
-  for (size_t i = 0; i < ctx->unops.len; i++) {
-    if (strcmp(ctx->unops.arr[i]->id, name) == 0) {
-      if (out != NULL) *out = ctx->unops.arr[i];
-      return TCALC_OK;
-    }
-  }
-  return TCALC_NOT_FOUND;
+  tcalc_ctx_getx(ctx, unops, name, out);
 }
 
 tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, tcalc_binopdef** out) {
-  for (size_t i = 0; i < ctx->binops.len; i++) {
-    if (strcmp(ctx->binops.arr[i]->id, name) == 0) {
-      if (out != NULL) *out = ctx->binops.arr[i];
-      return TCALC_OK;
-    }
-  }
-  return TCALC_NOT_FOUND;
+  tcalc_ctx_getx(ctx, binops, name, out);
 }
 
 tcalc_err tcalc_vardef_alloc(char* name, double val, tcalc_vardef** out) {

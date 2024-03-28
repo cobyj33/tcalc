@@ -255,7 +255,3 @@ void tcalc_exprtree_node_free(tcalc_exprtree* node) {
   free(node->children);
   free(node);
 }
-
-void tcalc_exprtree_node_freev(void* node) {
-  tcalc_exprtree_node_free((tcalc_exprtree*)node);
-}

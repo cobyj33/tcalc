@@ -167,7 +167,6 @@ tcalc_err tcalc_ctx_get_op_data(const tcalc_ctx* ctx, const char* name, tcalc_op
 
 tcalc_err tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcalc_exprtree** out);
 void tcalc_exprtree_node_free(tcalc_exprtree* node);
-void tcalc_exprtree_node_freev(void* node);
 
 /**
  * Free a tcalc expression tree recursively

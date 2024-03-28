@@ -68,10 +68,6 @@ void tcalc_token_free(tcalc_token* token) {
   free(token);
 }
 
-void tcalc_token_freev(void* token) {
-  tcalc_token_free((tcalc_token*)token);
-}
-
 tcalc_err tcalc_token_clone(tcalc_token* src, tcalc_token** out) {
   return tcalc_token_alloc(src->type, src->val, out);
 }

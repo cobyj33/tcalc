@@ -78,7 +78,6 @@ typedef struct tcalc_token {
 tcalc_err tcalc_token_alloc(tcalc_token_type type, char* val, tcalc_token** out);
 tcalc_err tcalc_token_clone(tcalc_token* src, tcalc_token** out);
 void tcalc_token_free(tcalc_token* token);
-void tcalc_token_freev(void* token);
 
 tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out_size);
 tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_size);
