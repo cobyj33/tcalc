@@ -251,7 +251,7 @@ int tcalc_cli_rpn_tokenizer(const char* expr) {
     exitcode = EXIT_FAILURE; goto cleanup;
   }
 
-  err = tcalc_tokenize_infix(expr, &infix_tokens, &nb_infix_tokens);
+  err = tcalc_tokenize_infix_ctx(expr, ctx, &infix_tokens, &nb_infix_tokens);
   if (err) {
     fprintf(stderr, "Error while tokenizing expr: %s\n ", tcalc_strerrcode(err));
     exitcode = EXIT_FAILURE; goto cleanup;

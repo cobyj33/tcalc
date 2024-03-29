@@ -1,5 +1,4 @@
 #include "tcalc_context.h"
-#include "tcalc_tokens.h"
 #include "tcalc_error.h"
 #include "tcalc_mem.h"
 
@@ -48,7 +47,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
   if (opstk == NULL) return TCALC_BAD_ALLOC;
   size_t opstk_size = 0;
 
-  tcalc_token** rpn_toks = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_infix_toks); // tcalc_token* array, will be joined
+  tcalc_token** rpn_toks = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_infix_toks); 
   size_t rpn_toks_size = 0;
   if (rpn_toks == NULL) {
     free(opstk);

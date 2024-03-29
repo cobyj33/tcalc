@@ -21,7 +21,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
 tcalc_err tcalc_create_exprtree_infix(const char* infix, const tcalc_ctx* ctx, tcalc_exprtree** out) {
   tcalc_token** infix_tokens;
   size_t nb_infix_tokens;
-  tcalc_err err = tcalc_tokenize_infix(infix, &infix_tokens, &nb_infix_tokens);
+  tcalc_err err = tcalc_tokenize_infix_ctx(infix, ctx, &infix_tokens, &nb_infix_tokens);
   if (err) return err;
 
   tcalc_token** rpn_tokens;
