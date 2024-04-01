@@ -38,6 +38,8 @@ tcalc_err tcalc_strsplit(const char*, char, char***, size_t* return_size);
 
 int tcalc_streq(const char*, const char*);
 
+int tcalc_str_list_has(const char* input, const char** list, size_t count);
+
 /**
  * 
  * @param src

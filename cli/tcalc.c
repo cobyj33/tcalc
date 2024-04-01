@@ -117,13 +117,6 @@ int tcalc_cli_eval_rpn(const char* expr) {
   return EXIT_SUCCESS;
 }
 
-int str_in_list(const char* input, const char** list, int count) {
-  for (int i = 0; i < count; i++) {
-    if (strcmp(input, list[i]) == 0) return 1;
-  }
-  return 0;
-}
-
 const char* repl_entrance_text = "tcalc REPL begun: Enter \"quit\", \"exit\", or \"end\" to exit\n";
 
 const char* repl_help = ""
@@ -150,7 +143,7 @@ int tcalc_repl() {
 
   cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", 0.0));
 
-  while (!str_in_list(input_buffer, quit_strings, ARRAY_SIZE(quit_strings))) {
+  while (!tcalc_str_list_has(input_buffer, quit_strings, ARRAY_SIZE(quit_strings))) {
     fputs("> ", stdout);
     char* input = fgets(input_buffer, 4096, stdin);
     if (input == NULL) {
@@ -160,7 +153,7 @@ int tcalc_repl() {
 
 
     input[strcspn(input, "\r\n")] = '\0';
-    if (str_in_list(input, quit_strings,  ARRAY_SIZE(quit_strings))) break;
+    if (tcalc_str_list_has(input, quit_strings,  ARRAY_SIZE(quit_strings))) break;
 
     if (strcmp(input, "help") == 0) {
       fputs(repl_help, stdout);

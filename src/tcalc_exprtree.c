@@ -73,16 +73,16 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
     case TCALC_UNARY_OPERATOR: {
       double operand;
       tcalc_uopdef* unary_op_def;
-      if ((err = tcalc_ctx_getunop(ctx, expr->token->val, &unary_op_def)) != TCALC_OK) return err;
-      if ((err = tcalc_eval_exprtree(expr->children[0], ctx, &operand)) != TCALC_OK) return err;
+      ret_on_err(err, tcalc_ctx_getunop(ctx, expr->token->val, &unary_op_def));
+      ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand));
       return unary_op_def->func(operand, out);
     }
     case TCALC_BINARY_OPERATOR: {
       double operand1, operand2;
       tcalc_binopdef* binary_op_def;
-      if ((err = tcalc_ctx_getbinop(ctx, expr->token->val, &binary_op_def)) != TCALC_OK) return err;
-      if ((err = tcalc_eval_exprtree(expr->children[0], ctx, &operand1)) != TCALC_OK) return err;
-      if ((err = tcalc_eval_exprtree(expr->children[1], ctx, &operand2)) != TCALC_OK) return err;
+      ret_on_err(err, tcalc_ctx_getbinop(ctx, expr->token->val, &binary_op_def));
+      ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand1));
+      ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
       return binary_op_def->func(operand1, operand2, out);
     }
     case TCALC_IDENTIFIER: {
@@ -92,8 +92,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
         tcalc_ctx_getunfunc(ctx, expr->token->val, &unary_func_def);
         
         double operand;
-        tcalc_err err = tcalc_eval_exprtree(expr->children[0], ctx, &operand);
-        if (err) return err;
+        ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand));
 
         return unary_func_def->func(operand, out);
       } else if (tcalc_ctx_hasbinfunc(ctx, expr->token->val)) {
@@ -102,10 +101,8 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
 
         double operand1;
         double operand2;
-        tcalc_err err = tcalc_eval_exprtree(expr->children[0], ctx, &operand1);
-        if (err) return err;
-        err = tcalc_eval_exprtree(expr->children[1], ctx, &operand2);
-        if (err) return err;
+        ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand1));
+        ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
       
         return binary_func_def->func(operand1, operand2, out);
       } else if (tcalc_ctx_hasvar(ctx, expr->token->val)) {

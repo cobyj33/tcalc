@@ -16,7 +16,7 @@
  * , - parameter separator
  * abcdefghijklmnopqrstuvwxyz - function and variable names
 */
-const char* TCALC_ALLOWED_CHARS = "0123456789. abcdefghijklmnopqrstuvwxyz,()[]+-*/^%";
+const char* TCALC_ALLOWED_CHARS = "0123456789. abcdefghijklmnopqrstuvwxyz,()[]+-*/^%!=<>";
 const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%";
 
 int is_valid_tcalc_char(char ch);
@@ -34,7 +34,7 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
     case TCALC_UNARY_OPERATOR: return "unary operator";
     case TCALC_BINARY_OPERATOR: return "binary operator";
     case TCALC_IDENTIFIER: return "identifier";
-    case TCALC_RELATION_OPERATOR: return "relation operator";
+    // case TCALC_RELATION_OPERATOR: return "relation operator";
     case TCALC_PARAM_SEPARATOR: return "parameter separator";
     case TCALC_GROUP_START: return "group start";
     case TCALC_GROUP_END: return "group end";
@@ -89,12 +89,11 @@ tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc
   *out = NULL;
   *out_size = 0;
 
-  if ((err = tcalc_are_groupsyms_balanced(expr)) != TCALC_OK) return err;
+  ret_on_err(err, tcalc_are_groupsyms_balanced(expr));
 
   char** str_tokens;
   size_t nb_str_tokens;
-  err = tcalc_tokenize_infix_strtokens(expr, &str_tokens, &nb_str_tokens);
-  if (err) return err;
+  ret_on_err(err, tcalc_tokenize_infix_strtokens(expr, &str_tokens, &nb_str_tokens));
 
   tcalc_token** initial_infix_tokens;
   size_t nb_initial_infix_tokens;
@@ -122,33 +121,33 @@ tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc
 */
 tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size) {
   tcalc_err err = TCALC_OK;
-  tcalc_token** final_tokens = NULL;
-  size_t nb_final_tokens = 0;
-  size_t final_tokens_capacity = 0;
+  tcalc_token** fin_toks = NULL;
+  size_t nb_fin_toks = 0;
+  size_t fin_toks_cap = 0;
 
   for (size_t i = 0; i < nb_tokens; i++) {
     tcalc_token* clone;
     cleanup_on_err(err, tcalc_token_clone(tokens[i], &clone));
-    TCALC_DARR_PUSH(final_tokens, nb_final_tokens, final_tokens_capacity, clone, err);
-    if (err) goto cleanup;
+    cleanup_on_macerr(err, TCALC_DARR_PUSH(fin_toks, nb_fin_toks, fin_toks_cap, clone, err));
 
-    if (i + 1 < nb_tokens) {
-      if (tokens[i]->type == TCALC_NUMBER || tokens[i]->type == TCALC_GROUP_END || (tokens[i]->type == TCALC_IDENTIFIER && tcalc_ctx_hasvar(ctx, tokens[i]->val))) {
-        if (tokens[i + 1]->type == TCALC_GROUP_START || tokens[i + 1]->type == TCALC_IDENTIFIER || tokens[i + 1]->type == TCALC_GROUP_START) {
-          tcalc_token* clone;
-          cleanup_on_err(err, tcalc_token_alloc(TCALC_BINARY_OPERATOR, "*", &clone));
-          cleanup_on_macerr(err, TCALC_DARR_PUSH(final_tokens, nb_final_tokens, final_tokens_capacity, clone, err));
-        }
-      }
+    if (i + 1 < nb_tokens &&
+      (tokens[i]->type == TCALC_NUMBER || 
+      tokens[i]->type == TCALC_GROUP_END ||
+      (tokens[i]->type == TCALC_IDENTIFIER && tcalc_ctx_hasvar(ctx, tokens[i]->val))) &&
+      (tokens[i + 1]->type == TCALC_GROUP_START ||
+      tokens[i + 1]->type == TCALC_IDENTIFIER)) {
+        tcalc_token* mult;
+        cleanup_on_err(err, tcalc_token_alloc(TCALC_BINARY_OPERATOR, "*", &mult));
+        cleanup_on_macerr(err, TCALC_DARR_PUSH(fin_toks, nb_fin_toks, fin_toks_cap, mult, err));
     }
   }
 
-  *out = final_tokens;
-  *out_size = nb_final_tokens;
+  *out = fin_toks;
+  *out_size = nb_fin_toks;
   return err;
 
   cleanup:
-    TCALC_ARR_FREE_F(final_tokens, nb_final_tokens, tcalc_token_free);
+    TCALC_ARR_FREE_F(fin_toks, nb_fin_toks, tcalc_token_free);
     return err;
 }
 
@@ -166,6 +165,7 @@ tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_
 */
 tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size) {
   tcalc_err err = TCALC_OK;
+  const char* relation_op_tokens[8] = {"=", "<", ">", "!", "==", "!=", ">=", "<="};
   
   tcalc_token** infix_tokens = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_str_tokens);
   size_t nb_infix_tokens = 0;
@@ -258,8 +258,7 @@ tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* 
   size_t offset = 0;
   char* current_token;
   while ((err = tcalc_next_math_strtoken(expr, &current_token, offset, &offset)) == TCALC_OK) {
-    TCALC_DARR_PUSH(token_buffer, tb_size, tb_capacity, current_token, err);
-    if (err) goto cleanup;
+    cleanup_on_macerr(err, TCALC_DARR_PUSH(token_buffer, tb_size, tb_capacity, current_token, err));
   }
 
   if (err != TCALC_STOP_ITER) goto cleanup;
@@ -321,6 +320,33 @@ tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, s
 		}
 	}
 
+  switch (expr[offset]) {
+    case ',':
+    case '(':
+    case ')':
+    case '[':
+    case ']':
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+    case '^':
+    case '%': {
+      ret_on_err(err, tcalc_strsubstr(expr, offset, offset + 1, out));
+      *new_offset = offset + 1;
+      return TCALC_OK;
+    }
+    case '=': 
+    case '<':
+    case '>':
+    case '!': { // "=", "<", ">", "!", "==", "<=", ">=", "!="
+      size_t reach = 1 + expr[offset + 1] == '=';
+      ret_on_err(err, tcalc_strsubstr(expr, offset, offset + reach, out));
+      *new_offset = offset + reach;
+      return TCALC_OK;
+    }
+  } 
+
 	if (isdigit(expr[offset]) || expr[offset] == '.') { // number checking.
 		if (expr[offset] == '.'  && !isdigit(expr[offset + 1])) { // lone decimal point
       return TCALC_INVALID_ARG;
@@ -338,7 +364,7 @@ tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, s
       offset++;
 		}
 		
-    if ((err = tcalc_strsubstr(expr, num_start, offset, out))  != TCALC_OK) return err; 
+    ret_on_err(err, tcalc_strsubstr(expr, num_start, offset, out));
     *new_offset = offset;
     return TCALC_OK;
 	}
@@ -349,7 +375,7 @@ tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, s
       offset++;
     }
 
-    if ((err = tcalc_strsubstr(expr, id_start, offset, out))  != TCALC_OK) return err; 
+    ret_on_err(err, tcalc_strsubstr(expr, id_start, offset, out));
     *new_offset = offset;
     return TCALC_OK;
   }

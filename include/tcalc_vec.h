@@ -16,6 +16,7 @@
 #define TCALC_VEC_PUSH(vec, item, err) TCALC_DARR_PUSH(vec.arr, vec.len, vec.cap, item, err)
 #define TCALC_VEC_INSERT(vec, item, index, err) TCALC_DARR_INSERT(vec.arr, vec.len, vec.cap, item, index, err)
 #define TCALC_VEC_GROW(vec, res_size, err) TCALC_DARR_GROW(vec.arr, res_size, vec.cap, err)
+#define TCALC_VEC_FOREACH(vec, iname) for (size_t iname = 0; iname < vec.len; iname++)
 
 #define TCALC_VEC_FREE_F(vec, freefn) do { \
   TCALC_ARR_FREE_F(vec.arr, vec.len, freefn); \

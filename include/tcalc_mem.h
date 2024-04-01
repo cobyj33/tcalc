@@ -6,12 +6,63 @@
 #include <stddef.h>
 #include <malloc.h>
 
+/**
+ * Notes about memory:
+ * 
+ * All freeing functions should be defined to take a NULL pointer as a valid
+ * argument. Freeing functions should never fail and therefore should never
+ * return a tcalc_err value. This greatly simplifies code using any freeing
+ * function since there is no null-checks that have to be used by other code
+ * before using freeing functions, and the cleanup: label pattern can work
+ * from anywhere within the function after allocated or soon-to-be-allocated 
+ * variables have been defined.
+ * 
+ * Most special types have specific alloc and free functions. For simplicity,
+ * and at least as of now, all types which have specific alloc and free functions
+ * should only be constructed using these functions.
+*/
+
 #define alloc_nr(x) (((x)+16)*3/2)
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
+/**
+ * Extended malloc function which aborts the program on malloc failure
+ * 
+ * Note that this may not be the best way to handle malloc failures in general
+ * code, as interactive sessions could terminate unexpectedly which may have
+ * been truly recoverable with more graceful methods.
+ * 
+ * @param size the size in bytes that the allocated memory block should be
+ * @returns A guaranteed non-NULL pointer to the allocated memory block
+*/
 void* tcalc_xmalloc(size_t);
+
+/**
+ * Extended calloc function which aborts the program on malloc failure
+ * 
+ * Note that this may not be the best way to handle malloc failures in general
+ * code, as interactive sessions could terminate unexpectedly which may have
+ * been truly recoverable with more graceful methods.
+ * 
+ * @param nmemb the number of members to allocate 
+ * @param memsize the size of a single member of the type wanted to be allocated
+ * @returns A guaranteed non-NULL pointer to the allocated memory block of the
+ * size memsize * nmemb. All of the bytes in the function will be initialized to 0.
+*/
 void* tcalc_xcalloc(size_t, size_t);
+/**
+ * Extended realloc function which aborts the program on malloc failure
+ * 
+ * Note that this may not be the best way to handle malloc failures in general
+ * code, as interactive sessions could terminate unexpectedly which may have
+ * been truly recoverable with more graceful methods.
+ * 
+ * @param ptr The pointer that should be reallocated. This pointer could be
+ * allocated with the C standard malloc or tcalc_xmalloc
+ * @param size the size in bytes that the new memory block should be
+ * @returns A guaranteed non-NULL pointer to the allocated memory block
+*/
 void* tcalc_xrealloc(void*, size_t);
 
 /**

@@ -225,3 +225,10 @@ int tcalc_streq(const char* a, const char* b) {
 
   return a[i] == b[i]; // either a[i] or b[i] will be '\0'. Therefore, if they are equal they have both ended
 }
+
+int tcalc_str_list_has(const char* input, const char** list, size_t count) {
+  for (size_t i = 0; i < count; i++) {
+    if (strcmp(input, list[i]) == 0) return 1;
+  }
+  return 0;
+}

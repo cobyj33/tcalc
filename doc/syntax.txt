@@ -1,0 +1,81 @@
+
+
+Logical Operators:
+  Logical operators evaluate relationships between a group of
+  relational or logical expressions 
+    &&,
+    &,
+    ||,
+    |,
+    !
+
+  Examples:
+    x == 3 && y < 10
+    x == 3 && y < 10 && z + 15 <= 25
+
+    !(x == 5)
+
+  Wrong Examples:
+    5 && 5
+    5 || 2 == 3
+    3 < y || y + 3 
+    !pi
+
+Relational Operators:
+  Relational operators dictate relationships between a
+  group of arithmetic expressions.
+    =
+    ==
+    !=
+    >
+    <
+    >=
+    <=
+
+  Ex:
+    5 == 5
+    3 < x < 4 < y (operator chaining is allowed on inequalities)
+    x != 2y + 3
+    sin(pi/2) = 1.0
+
+  Wrong Examples:
+    5 = (y = 3 && x = 4)
+    4 < y < 
+
+Arithmetic Operators:
+  Arithmetic operators dictate operations between numerical values
+  +
+  -
+  *
+  /
+  ^
+  + (unary)
+  - (binary)
+
+
+
+Defined Functions:
+  Trig:
+    sin(radians)
+    cos(radians)
+    tan(radians)
+    sec(radians)
+    csc(radians)
+    cot(radians)
+  Inverse trig:
+    arcsin(radians)
+    arccos(radians)
+    arctan(radians)
+    arcsec(radians)
+    arccsc(radians)
+    arccot(radians)
+  Hyperbolic Trig:
+    sinh(radians)
+    cosh(radians)
+    tanh(radians)
+    sech(radinas)
+    csch(radians)
+    coth(radians)
+
+
+

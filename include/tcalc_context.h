@@ -46,7 +46,7 @@ typedef enum tcalc_token_type {
   TCALC_NUMBER, // A parsable number
   TCALC_UNARY_OPERATOR,
   TCALC_BINARY_OPERATOR,
-  TCALC_RELATION_OPERATOR,
+  // TCALC_RELATION_OPERATOR,
   TCALC_PARAM_SEPARATOR,
   TCALC_IDENTIFIER, // Any alphabetical word which may denote some sort of function or variable depending on a given tcalc_ctx
   TCALC_GROUP_START, // Starting token for a grouping symbol
@@ -78,6 +78,19 @@ typedef struct tcalc_token {
 tcalc_err tcalc_token_alloc(tcalc_token_type type, char* val, tcalc_token** out);
 tcalc_err tcalc_token_clone(tcalc_token* src, tcalc_token** out);
 void tcalc_token_free(tcalc_token* token);
+
+typedef enum tcalc_exprtype {
+  TCALC_RELATION_EXPR,
+  TCALC_ARITHMETIC_EXPR
+} tcalc_exprtype;
+
+typedef struct tcalc_res {
+  tcalc_exprtype exprtype;
+  union {
+    double num;
+    int boolean;
+  } retval;
+} tcalc_res;
 
 typedef enum tcalc_assoc{
   TCALC_RIGHT_ASSOC,
@@ -146,12 +159,12 @@ typedef struct tcalc_uopdef {
   tcalc_unfunc func;
 } tcalc_uopdef;
 
-typedef struct tcalc_relation_opdef {
+typedef struct tcalc_relopdef {
   char* id;
   int prec;
   tcalc_assoc assoc;
   tcalc_relation_func func;
-} tcalc_relation_opdef;
+} tcalc_relopdef;
 
 typedef struct tcalc_binopdef {
   char* id;
@@ -197,7 +210,7 @@ typedef struct tcalc_ctx {
   TCALC_VEC(tcalc_vardef*) vars;
   TCALC_VEC(tcalc_uopdef*) unops;
   TCALC_VEC(tcalc_binopdef*) binops;
-  TCALC_VEC(tcalc_relation_opdef*) relops;
+  TCALC_VEC(tcalc_relopdef*) relops;
 } tcalc_ctx;
 
 tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out);
