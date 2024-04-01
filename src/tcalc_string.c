@@ -232,3 +232,12 @@ int tcalc_str_list_has(const char* input, const char** list, size_t count) {
   }
   return 0;
 }
+
+int tcalc_strhaspre(const char* prefix, const char* str) {
+  size_t i = 0;
+  for (; str[i] != '\0' && prefix[i] != '\0'; i++) {
+    if (prefix[i] != str[i]) return 0;
+  }
+
+  return prefix[i] == '\0';
+}

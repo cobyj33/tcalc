@@ -18,6 +18,7 @@
 */
 const char* TCALC_ALLOWED_CHARS = "0123456789. abcdefghijklmnopqrstuvwxyz,()[]+-*/^%!=<>";
 const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%";
+const char* TCALC_MULTI_TOKENS[] = {"**", NULL}; // make sure this remains null terminated
 
 int is_valid_tcalc_char(char ch);
 tcalc_err tcalc_valid_token_str(const char* token);
@@ -165,7 +166,7 @@ tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_
 */
 tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size) {
   tcalc_err err = TCALC_OK;
-  const char* relation_op_tokens[8] = {"=", "<", ">", "!", "==", "!=", ">=", "<="};
+  // const char* relation_op_tokens[8] = {"=", "<", ">", "!", "==", "!=", ">=", "<="};
   
   tcalc_token** infix_tokens = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_str_tokens);
   size_t nb_infix_tokens = 0;
@@ -191,6 +192,7 @@ tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t 
     } else if ( strcmp(str_tokens[i], "*") == 0 ||
                 strcmp(str_tokens[i], "/") == 0 ||
                 strcmp(str_tokens[i], "^") == 0 || 
+                strcmp(str_tokens[i], "**") == 0 || 
                 strcmp(str_tokens[i], "%") == 0) {
       token_type = TCALC_BINARY_OPERATOR;
     } else if (strcmp(str_tokens[i], ",") == 0) {
@@ -312,9 +314,18 @@ tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, s
   if (!is_valid_tcalc_char(expr[offset])) 
     return TCALC_INVALID_ARG;
 
-	for (int s = 0; TCALC_SINGLE_TOKENS[s] != '\0'; s++) { // checking for operator and grouping symbols
+  for (size_t s = 0; TCALC_MULTI_TOKENS[s] != NULL; s++) {
+    if (tcalc_strhaspre(TCALC_MULTI_TOKENS[s], expr + offset)) {
+      size_t mlsize = strlen(TCALC_MULTI_TOKENS[s]);
+      ret_on_err(err, tcalc_strsubstr(expr, offset, offset + mlsize, out));
+      *new_offset = offset + mlsize;
+      return TCALC_OK;
+    }
+  }
+
+	for (size_t s = 0; TCALC_SINGLE_TOKENS[s] != '\0'; s++) { // checking for operator and grouping symbols
 		if (expr[offset] == TCALC_SINGLE_TOKENS[s]) {
-      if ((err = tcalc_strsubstr(expr, offset, offset + 1, out)) != TCALC_OK) return err;
+      ret_on_err(err, tcalc_strsubstr(expr, offset, offset + 1, out));
       *new_offset = offset + 1;
       return TCALC_OK;
 		}
@@ -453,6 +464,10 @@ int is_valid_tcalc_char(char ch) {
 tcalc_err tcalc_valid_token_str(const char* token) {
   if (token == NULL) return TCALC_INVALID_ARG;
   if (token[0] == '\0') return TCALC_INVALID_ARG; // empty string
+
+  for (size_t s = 0; TCALC_MULTI_TOKENS[s] != NULL; s++) {
+    if (strcmp(TCALC_MULTI_TOKENS[s], token) == 0) return TCALC_OK;
+  }
 
   if (token[1] == '\0') { // single character string
     for (int i = 0; TCALC_SINGLE_TOKENS[i] != '\0'; i++) {

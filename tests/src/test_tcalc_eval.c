@@ -6,68 +6,72 @@
 
 #include <stddef.h>
 //tcalc_err tcalc_eval_rpn(const char* rpn, double* out);
-
 double TCALC_EVAL_ASSERT_DELTA = 0.0001;
+
+
 
 void TestTCalcEvalSuccesses(CuTest *tc) {
   double res = 0.0;
-  tcalc_err err = tcalc_eval("6 * 3 + 4 * ( 9 / 3 )", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 30.0, TCALC_EVAL_ASSERT_DELTA);
+  tcalc_err err = TCALC_OK;
 
-  err = tcalc_eval("2 + 6 * (4 + 5) / 3 - 5", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 15.0, TCALC_EVAL_ASSERT_DELTA);
+  #define MAKE_SUCCESS_TEST(str, val) err = tcalc_eval(str, &res); \
+    CuAssertTrue(tc, err == TCALC_OK); \
+    CuAssertDblEquals(tc, res, val, TCALC_EVAL_ASSERT_DELTA);
 
-  err = tcalc_eval("4 - 5 / (8 - 3) * 2 + 5", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 7.0, TCALC_EVAL_ASSERT_DELTA);
+  MAKE_SUCCESS_TEST("6", 6.0);
+  MAKE_SUCCESS_TEST("600", 600.0);
+  MAKE_SUCCESS_TEST("2.53", 2.53);
+  MAKE_SUCCESS_TEST(".253", .253);
+  MAKE_SUCCESS_TEST(".253", .253);
+  MAKE_SUCCESS_TEST("0.253", .253);
+  MAKE_SUCCESS_TEST("0000.253", .253);
+  MAKE_SUCCESS_TEST("   0000.253  ", .253);
 
-  err = tcalc_eval("100 / (6 + 7 * 2) - 5", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 0.0, TCALC_EVAL_ASSERT_DELTA);
+  MAKE_SUCCESS_TEST("5 + 5", 10.0);
+  MAKE_SUCCESS_TEST("5 + .5", 5.5);
+  MAKE_SUCCESS_TEST("5 - 5", 0.0);
+  MAKE_SUCCESS_TEST("5 * 5", 25.0);
+  MAKE_SUCCESS_TEST("5 / 5", 1.0);
+  MAKE_SUCCESS_TEST("5 % 5", 0.0);
 
-  err = tcalc_eval("4 + (5 * 3 ^ 2 + 2)", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 51.0, TCALC_EVAL_ASSERT_DELTA);
-
-  err = tcalc_eval("9 - 24 / 8 * 2 + 3", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 6.0, TCALC_EVAL_ASSERT_DELTA);
-
-  err = tcalc_eval("((32 / 4) + 3) * 2", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 22.0, TCALC_EVAL_ASSERT_DELTA);
-
-  err = tcalc_eval("(3 * 5 ^ 2 / 5) - (16 - 10)", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 9.0, TCALC_EVAL_ASSERT_DELTA);
-
-  err = tcalc_eval("-10 ^ 2", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, -100.0, TCALC_EVAL_ASSERT_DELTA);
-
-  err = tcalc_eval("(-10) ^ 2", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 100.0, TCALC_EVAL_ASSERT_DELTA);
-
-  err = tcalc_eval("5ln(e)", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 5.0, TCALC_EVAL_ASSERT_DELTA);
-
-  err = tcalc_eval("2^2ln(e)", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 4.0, TCALC_EVAL_ASSERT_DELTA);
-
-  err = tcalc_eval("2pi", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
-  CuAssertDblEquals(tc, res, 6.283185, TCALC_EVAL_ASSERT_DELTA);
+  MAKE_SUCCESS_TEST("6 * 3 + 4 * ( 9 / 3 )", 30.0);
+  MAKE_SUCCESS_TEST("2 + 6 * (4 + 5) / 3 - 5", 15.0);
+  MAKE_SUCCESS_TEST("4 - 5 / (8 - 3) * 2 + 5", 7.0);
+  MAKE_SUCCESS_TEST("100 / (6 + 7 * 2) - 5", 0.0);
+  MAKE_SUCCESS_TEST("4 + (5 * 3 ^ 2 + 2)", 51.0);
+  MAKE_SUCCESS_TEST("4 + (5 * 3 ** 2 + 2)", 51.0);
+  MAKE_SUCCESS_TEST("9 - 24 / 8 * 2 + 3", 6.0);
+  MAKE_SUCCESS_TEST("((32 / 4) + 3) * 2", 22.0);
+  MAKE_SUCCESS_TEST("(3 * 5 ^ 2 / 5) - (16 - 10)", 9.0);
+  MAKE_SUCCESS_TEST("-10 ^ 2", -100.0);
+  MAKE_SUCCESS_TEST("-10 ** 2", -100.0);
+  MAKE_SUCCESS_TEST("(-10) ^ 2", 100.0);
+  MAKE_SUCCESS_TEST("(-10) ** 2", 100.0);
+  MAKE_SUCCESS_TEST("2 ** 2 ^ 2 ** 2", 65536.0);
+  MAKE_SUCCESS_TEST("5ln(e)", 5.0);
+  MAKE_SUCCESS_TEST("2^2ln(e)", 4.0);
+  MAKE_SUCCESS_TEST("2pi", 6.283185);
+  MAKE_SUCCESS_TEST("pi(2)", 6.283185);
+  MAKE_SUCCESS_TEST("e(pi)(2(4))", 68.317874);
+  
+  #undef MAKE_SUCCESS_TEST
 }
 
 void TestTCalcEvalFailures(CuTest *tc) {
-  double res;
-  tcalc_err err = tcalc_eval("1 / sin(2 * pi)", &res);
-  CuAssertTrue(tc, err == TCALC_DIVISION_BY_ZERO);
+  double res = 0.0;
+
+  CuAssertTrue(tc, tcalc_eval("1 / 0", &res) == TCALC_DIVISION_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("1 / -0", &res) == TCALC_DIVISION_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("0 / -0.0", &res) == TCALC_DIVISION_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("0 / 0.0", &res) == TCALC_DIVISION_BY_ZERO);
+
+  CuAssertTrue(tc, tcalc_eval("unknownid", &res) == TCALC_UNKNOWN_IDENTIFIER);
+
+  CuAssertTrue(tc, tcalc_eval("53.3.4", &res) != TCALC_OK);
+  CuAssertTrue(tc, tcalc_eval(".53.3", &res) != TCALC_OK);
+  CuAssertTrue(tc, tcalc_eval(".", &res) != TCALC_OK);
+  CuAssertTrue(tc, tcalc_eval("", &res) != TCALC_OK);
+  CuAssertTrue(tc, tcalc_eval("          ", &res) != TCALC_OK);
 }
 
 CuSuite* TCalcEvalGetSuite() {

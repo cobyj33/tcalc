@@ -127,21 +127,27 @@ tcalc_err tcalc_sec(double a, double* out) {
   tcalc_err err = TCALC_OK;
   double reciprocal_res;
   if ((err == tcalc_cos(a, &reciprocal_res)) != TCALC_OK) return err;
-  return tcalc_divide(1.0, reciprocal_res, out);
+  err = tcalc_divide(1.0, reciprocal_res, out);
+  if (err == TCALC_DIVISION_BY_ZERO) return TCALC_NOT_IN_DOMAIN;  
+  return err;
 }
 
 tcalc_err tcalc_csc(double a, double* out) {
   tcalc_err err = TCALC_OK;
   double reciprocal_res;
   if ((err == tcalc_sin(a, &reciprocal_res)) != TCALC_OK) return err;
-  return tcalc_divide(1.0, reciprocal_res, out);
+  err = tcalc_divide(1.0, reciprocal_res, out);
+  if (err == TCALC_DIVISION_BY_ZERO) return TCALC_NOT_IN_DOMAIN;  
+  return err;
 }
 
 tcalc_err tcalc_cot(double a, double* out) {
   tcalc_err err = TCALC_OK;
   double reciprocal_res;
   if ((err == tcalc_tan(a, &reciprocal_res)) != TCALC_OK) return err;
-  return tcalc_divide(1.0, reciprocal_res, out);
+  err = tcalc_divide(1.0, reciprocal_res, out);
+  if (err == TCALC_DIVISION_BY_ZERO) return TCALC_NOT_IN_DOMAIN;  
+  return err;
 }
 
 tcalc_err tcalc_asin(double a, double* out) {

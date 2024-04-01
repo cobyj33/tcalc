@@ -112,11 +112,24 @@ void TestTCalcStrSplitEdges(CuTest* tc) {
   CuAssertStrEquals(tc, split[4], "back");
 }
 
+void TestTCalcStrHasPrefix(CuTest* tc) {
+  CuAssertTrue(tc, tcalc_strhaspre("**", "**5+3"));
+  CuAssertTrue(tc, tcalc_strhaspre("pre", "prefix"));
+  CuAssertTrue(tc, tcalc_strhaspre("", ""));
+  CuAssertTrue(tc, tcalc_strhaspre("", "trivial"));
+
+
+  CuAssertTrue(tc, !tcalc_strhaspre("**", "*"));
+  CuAssertTrue(tc, !tcalc_strhaspre("prefix", "pre"));
+  CuAssertTrue(tc, !tcalc_strhaspre("!()", "!(trivial"));
+  CuAssertTrue(tc, !tcalc_strhaspre("trivial", ""));
+}
 
 CuSuite* TCalcStringSuite() {
   CuSuite* suite = CuSuiteNew();
   SUITE_ADD_TEST(suite, TestTCalcStrToDouble);
   SUITE_ADD_TEST(suite, TestTCalcStrSplit);
   SUITE_ADD_TEST(suite, TestTCalcStrSplitEdges);
+  SUITE_ADD_TEST(suite, TestTCalcStrHasPrefix);
   return suite;
 }

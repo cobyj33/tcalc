@@ -86,6 +86,7 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
   cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "/", 2, TCALC_LEFT_ASSOC, tcalc_divide));
   cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "%", 2, TCALC_LEFT_ASSOC, tcalc_mod));
   cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "^", 3, TCALC_RIGHT_ASSOC, tcalc_pow));
+  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "**", 3, TCALC_RIGHT_ASSOC, tcalc_pow));
 
   *out = ctx;
   return err;
