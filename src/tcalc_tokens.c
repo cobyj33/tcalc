@@ -1,3 +1,4 @@
+#include "tcalc_tokens.h"
 #include "tcalc_error.h"
 #include "tcalc_string.h"
 #include "tcalc_mem.h"

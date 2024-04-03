@@ -1,8 +1,7 @@
 #include "tcalc_tests.h"
 
 #include "tcalc_eval.h"
-
-#include "CuTest.h"
+#include "tcalc_error.h"
 
 #include <stddef.h>
 //tcalc_err tcalc_eval_rpn(const char* rpn, double* out);

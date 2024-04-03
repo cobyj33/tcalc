@@ -2,10 +2,10 @@
 #define TCALC_STRING_H
 
 #include <stddef.h>
-#include "tcalc_error.h"
+enum tcalc_err;
 
 /**
- * Taken from FreeBSD :)
+ * Taken from FreeBSD
  * Copy string src to buffer dst of size dsize.  At most dsize-1
  * chars will be copied.  Always NUL terminates (unless dsize == 0).
  * Returns strlen(src); if retval >= dsize, truncation occurred.
@@ -18,23 +18,23 @@
  * a null pointer.
 */
 size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize);
-tcalc_err tcalc_strdup(const char *src, char** out);
+enum tcalc_err tcalc_strdup(const char *src, char** out);
 
 /**
  * Note that the combined string will be allocated and assigned to *out.
 */
-tcalc_err tcalc_strcombine(const char *first, const char *second, char** out);
+enum tcalc_err tcalc_strcombine(const char *first, const char *second, char** out);
 
 int tcalc_strisint(const char*);
-tcalc_err tcalc_strtoint(const char*, int*);
+enum tcalc_err tcalc_strtoint(const char*, int*);
 
 int tcalc_strisdouble(const char*);
-tcalc_err tcalc_strtodouble(const char*, double*);
+enum tcalc_err tcalc_strtodouble(const char*, double*);
 
-tcalc_err find_in_strarr(const char**, size_t, const char*, size_t*);
+enum tcalc_err find_in_strarr(const char**, size_t, const char*, size_t*);
 int has_in_strarr(const char**, size_t, const char*);
 
-tcalc_err tcalc_strsplit(const char*, char, char***, size_t* return_size);
+enum tcalc_err tcalc_strsplit(const char*, char, char***, size_t* return_size);
 
 int tcalc_streq(const char*, const char*);
 
@@ -65,5 +65,5 @@ int tcalc_strhaspre(const char* prefix, const char* str);
  * @param end (exclusive)
  * @param out the parameter at address out is allocated with the substring upon return value TCALC_OK
 */
-tcalc_err tcalc_strsubstr(const char*, size_t, size_t, char**);
+enum tcalc_err tcalc_strsubstr(const char*, size_t, size_t, char**);
 #endif

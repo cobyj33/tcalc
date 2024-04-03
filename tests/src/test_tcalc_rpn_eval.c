@@ -1,5 +1,7 @@
-#include "CuTest.h"
 #include "tcalc_tests.h"
+
+#include "CuTest.h"
+
 #include "tcalc.h"
 #include "tcalc_eval.h"
 #include <stddef.h>

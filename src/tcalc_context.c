@@ -1,5 +1,6 @@
 #include "tcalc_context.h"
 
+#include "tcalc_error.h"
 #include "tcalc_constants.h"
 #include "tcalc_func.h"
 #include "tcalc_mem.h"

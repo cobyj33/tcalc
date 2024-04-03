@@ -1,10 +1,14 @@
-#include "CuTest.h"
 #include "tcalc_tests.h"
+
+#include "CuTest.h"
+
 #include "tcalc_context.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "tcalc_tokens.h"
 #include "tcalc_error.h"
 #include "tcalc_mem.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 void TestTCalcSimpleTokens(CuTest *tc) {
   const char* expression = "3 .4 5.0 10 + - /";

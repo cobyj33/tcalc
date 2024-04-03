@@ -1,6 +1,7 @@
 #include "tcalc.h"
 #include "tcalc_eval.h"
 #include "tcalc_context.h"
+#include "tcalc_tokens.h"
 
 #include <stdio.h>
 #include <stddef.h>
