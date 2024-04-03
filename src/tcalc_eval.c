@@ -1,6 +1,7 @@
 #include "tcalc_eval.h"
 
 #include "tcalc_context.h"
+#include "tcalc_exprtree.h"
 #include "tcalc_error.h"
 
 #include <malloc.h>
