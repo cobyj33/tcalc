@@ -7,8 +7,59 @@
 #include <errno.h>
 #include <float.h>
 
+/**
+ * Logical Functions
+*/
+int tcalc_and(int a, int b) {
+  return a && b;
+}
+
+int tcalc_or(int a, int b) {
+  return a || b;
+}
+
+int tcalc_not(int a, int b) {
+  return 
+}
+
+int tcalc_nand(int a, int b) {
+  return !(a && b);
+}
+
+int tcalc_nor(int a, int b) {
+  return !(a || b);
+}
+
+int tcalc_xor(int a, int b) {
+  return (a && !b) || (!a && b);
+}
+
+int tcalc_xnor(int a, int b) {
+  return (a && b) || (!a && !b);
+}
+
+int tcalc_matcond(int a, int b) {
+  return !a || b;
+}
+
+int tcalc_equals_l(int a, int b) {
+  return a != 0 && b != 0;
+}
+
+int tcalc_nequals_l(int a, int b) {
+  return (a == 0 && b != 0) || (a != 0 && b == 0);
+}
+
+
+/**
+ * Relational Operators
+*/
 int tcalc_equals(double a, double b) {
   return fabs(a - b) < 1e-9;
+}
+
+int tcalc_nequals(double a, double b) {
+  return !tcalc_equals(a, b);
 }
 
 int tcalc_lt(double a, double b) {

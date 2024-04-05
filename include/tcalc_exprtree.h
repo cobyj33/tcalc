@@ -7,8 +7,20 @@
 struct tcalc_token;
 struct tcalc_ctx;
 
+typedef enum tcalc_exprtype {
+  TCALC_RELATION_EXPR,
+  TCALC_ARITHMETIC_EXPR
+} tcalc_exprtype;
+
+typedef struct tcalc_algres {
+  tcalc_exprtype exprtype;
+  union {
+    double num;
+    int boolean;
+  } retval;
+} tcalc_algres;
+
 /**
- * 
  * The type of token dictates how an expression tree node should be evaluated,
  * as well as how many
  * 
@@ -39,6 +51,50 @@ typedef struct tcalc_exprtree_node {
   struct tcalc_exprtree_node** children;
   size_t nb_children;
 } tcalc_exprtree;
+
+/**
+ * tcalc_reltree_node:
+ * Defines a tree-structure of the relationship between two algebraic expressions
+ * Connects to multiple tcalc_exprtree_node instances
+*/
+typedef struct tcalc_reltree_node {
+  struct tcalc_token* token;
+  struct tcalc_exprtree_node** children;
+  size_t nb_children;
+} tcalc_reltree;
+
+/**
+ * tcalc_logtree_node:
+ * Defines a tree-structure of the relationship between two relational expressions
+ * 
+*/
+typedef struct tcalc_logtree_node {
+  struct tcalc_token* token;
+  struct tcalc_reltree_node** children;
+  size_t nb_children;
+} tcalc_logtree;
+
+typedef enum tcalc_algtree_type {
+  TCALC_ALGTREE_ARITH,
+  TCALC_ALGTREE_REL,
+  TCALC_ALGTREE_LOGIC,
+} tcalc_algtree_type;
+
+/**
+ * tcalc_algtree_node:
+ * 
+ * A n-ary tree data structure representing any sort of algebraic expression,
+ * whether that be an arithmetic expression, relational expression, or a
+ * logical expression
+*/
+typedef struct tcalc_algtree_node {
+  tcalc_algtree_type type;
+  union {
+    tcalc_exprtree* expr;
+    tcalc_reltree* rel;
+    tcalc_logtree* log;
+  } node;
+} tcalc_algtree_node;
 
 enum tcalc_exprtree_node_type {
   TCALC_EXPRTREE_TYPE_EXPRESSION,

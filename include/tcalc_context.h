@@ -10,19 +10,6 @@
 struct tcalc_token;
 struct tcalc_exprtree_node;
 
-typedef enum tcalc_exprtype {
-  TCALC_RELATION_EXPR,
-  TCALC_ARITHMETIC_EXPR
-} tcalc_exprtype;
-
-typedef struct tcalc_res {
-  tcalc_exprtype exprtype;
-  union {
-    double num;
-    int boolean;
-  } retval;
-} tcalc_res;
-
 typedef enum tcalc_assoc{
   TCALC_RIGHT_ASSOC,
   TCALC_LEFT_ASSOC,
@@ -56,8 +43,15 @@ typedef struct tcalc_relopdef {
   char* id;
   int prec;
   tcalc_assoc assoc;
-  tcalc_relation_func func;
+  tcalc_relfunc func;
 } tcalc_relopdef;
+
+typedef struct tcalc_logiopdef {
+  char* id;
+  int prec;
+  tcalc_assoc assoc;
+  tcalc_logifunc func;
+} tcalc_logopdef;
 
 typedef struct tcalc_binopdef {
   char* id;
