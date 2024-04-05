@@ -124,6 +124,7 @@ void tcalc_ctx_free(tcalc_ctx* ctx) {
   free(ctx);
 }
 
+
 tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, char* name, double val) {
   for (size_t i = 0; i < ctx->vars.len; i++) {
     if (strcmp(ctx->vars.arr[i]->id, name) == 0) {
@@ -131,11 +132,9 @@ tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, char* name, double val) {
       return TCALC_OK;
     }
   }
-
   tcalc_vardef* variable;
   tcalc_err err = tcalc_vardef_alloc(name, val, &variable);
   if (err) return err;
-
   cleanup_on_macerr(err, TCALC_VEC_PUSH(ctx->vars, variable, err));
 
   return TCALC_OK;
@@ -272,36 +271,25 @@ tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, tcalc_binop
   tcalc_ctx_getx(ctx, binops, name, out);
 }
 
-tcalc_err tcalc_vardef_alloc(char* name, double val, tcalc_vardef** out) {
-  *out = NULL;
-  tcalc_vardef* var_def = (tcalc_vardef*)malloc(sizeof(tcalc_vardef));
-  if (var_def == NULL) return TCALC_BAD_ALLOC;
-
-  tcalc_err err = tcalc_strdup(name, &var_def->id);
-  if (err) {
-    free(var_def);
-    return err;
-  }
-
-  var_def->val = val;
-  *out = var_def;
+#define tcalc_xvardef_alloc(optype, name, valval, out) \
+  *out = NULL; \
+  optype* def = (optype*)malloc(sizeof(optype)); \
+  if (def == NULL) return TCALC_BAD_ALLOC; \
+  tcalc_err err = tcalc_strdup(name, &def->id); \
+  if (err) { \
+    free(def); \
+    return err; \
+  } \
+  def->val = valval; \
+  *out = def; \
   return TCALC_OK;
+
+tcalc_err tcalc_vardef_alloc(char* name, double val, tcalc_vardef** out) {
+  tcalc_xvardef_alloc(tcalc_vardef, name, val, out);
 }
 
 tcalc_err tcalc_varldef_alloc(char* name, int boolval, tcalc_varldef** out) {
-  *out = NULL;
-  tcalc_varldef* varl = (tcalc_varldef*)malloc(sizeof(tcalc_varldef));
-  if (varl == NULL) return TCALC_BAD_ALLOC;
-
-  tcalc_err err = tcalc_strdup(name, &varl->id);
-  if (err) {
-    free(varl);
-    return err;
-  }
-
-  varl->val = boolval;
-  *out = varl;
-  return TCALC_OK;
+  tcalc_xvardef_alloc(tcalc_varldef, name, boolval, out);
 }
 
 #define tcalc_xfuncdef_alloc(tcalctype, name, func, out) \
@@ -356,36 +344,29 @@ tcalc_err tcalc_binlopdef_alloc(char* name, int prec, tcalc_assoc assoc, tcalc_b
   tcalc_xopdef_allocx(tcalc_binlopdef, name, prec, assoc, func, out)
 }
 
-#define tcalc_xvardef_free(objname) \
+#define tcalc_xdef_free(objname) \
   if (objname == NULL) return; \
   free(objname->id); \
   free(objname); \
 
 void tcalc_vardef_free(tcalc_vardef* var_def) {
-  tcalc_xvardef_free(var_def);
+  tcalc_xdef_free(var_def);
 }
 
-#define tcalc_xfuncdef_free(objname) \
-  if (objname == NULL) return; \
-  free(objname->id); \
-  free(objname); \
-
-#define tcalc_xopdef_free(objname) tcalc_xfuncdef_free(objname)
-
 void tcalc_binfuncdef_free(tcalc_binfuncdef* binary_func_def) {
-  tcalc_xfuncdef_free(binary_func_def);
+  tcalc_xdef_free(binary_func_def);
 }
 
 void tcalc_unfuncdef_free(tcalc_unfuncdef* unary_func_def) {
-  tcalc_xfuncdef_free(unary_func_def);
+  tcalc_xdef_free(unary_func_def);
 }
 
 void tcalc_binopdef_free(tcalc_binopdef* binary_op_def) {
-  tcalc_xopdef_free(binary_op_def);
+  tcalc_xdef_free(binary_op_def);
 }
 
 void tcalc_unopdef_free(tcalc_unopdef* unary_op_def) {
-  tcalc_xopdef_free(unary_op_def);
+  tcalc_xdef_free(unary_op_def);
 }
 
 #define tcalc_getxopdata(objname) \
