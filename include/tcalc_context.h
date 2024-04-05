@@ -227,7 +227,14 @@ tcalc_err tcalc_ctx_getrelop(const tcalc_ctx* ctx, const char* name, tcalc_relop
 tcalc_err tcalc_ctx_getunlop(const tcalc_ctx* ctx, const char* name, tcalc_unlopdef** out);
 tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, tcalc_binlopdef** out);
 
-tcalc_err tcalc_ctx_getopdata(const tcalc_ctx* ctx, const char* name, tcalc_opdata* out);
+
+/**
+ * Note that since a variable symbol can be defined as multiple different operator
+ * types, such as unary and binary "+", having a general function to fetch
+ * operator precedence and associativity does not serve as useful a purpose
+ * as it first seems
+*/
+// tcalc_err tcalc_ctx_getopdata(const tcalc_ctx* ctx, const char* name, tcalc_opdata* out);
 
 
 #endif

@@ -477,7 +477,3 @@ tcalc_opdata tcalc_getbinopdata(tcalc_binopdef* binary_op_def) {
 tcalc_opdata tcalc_getunopdata(tcalc_unopdef* unary_op_def) {
   tcalc_getxopdata(unary_op_def);
 }
-
-// tcalc_err tcalc_ctx_getopdata(const tcalc_ctx* ctx, const char* name, tcalc_opdata* out) {
-//   if (tcalc_ctx_hasop())
-// }
