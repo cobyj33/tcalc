@@ -66,6 +66,8 @@ int tcalc_exprtree_is_vardef(tcalc_exprtree* expr) {
  * a
 */
 tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double* out) {
+  // note that this function not allocate any data in any way
+
   tcalc_err err = TCALC_OK;
   
   switch (expr->token->type) {
@@ -74,7 +76,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
     }
     case TCALC_UNARY_OPERATOR: {
       double operand;
-      tcalc_uopdef* unary_op_def;
+      tcalc_unopdef* unary_op_def;
       ret_on_err(err, tcalc_ctx_getunop(ctx, expr->token->val, &unary_op_def));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand));
       return unary_op_def->func(operand, out);

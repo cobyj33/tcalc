@@ -6,15 +6,23 @@
 typedef tcalc_err (*tcalc_unfunc)(double, double*);
 typedef tcalc_err (*tcalc_binfunc)(double, double, double*);
 typedef int (*tcalc_relfunc)(double, double);
-typedef int (*tcalc_logifunc)(int, int);
+
+// l suffix stands for "logical" in tcalc_unlfunc and tcalc_binlfunc
+
+typedef int (*tcalc_unlfunc)(int);
+
+/**
+ * 
+*/
+typedef int (*tcalc_binlfunc)(int, int);
 
 
 /**
  * Logical Functions
 */
+int tcalc_not(int a);
 int tcalc_and(int a, int b);
 int tcalc_or(int a, int b);
-int tcalc_not(int a, int b);
 int tcalc_nand(int a, int b);
 int tcalc_nor(int a, int b);
 int tcalc_xor(int a, int b);

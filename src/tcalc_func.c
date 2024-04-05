@@ -10,16 +10,16 @@
 /**
  * Logical Functions
 */
+int tcalc_not(int a) {
+  return a == 0 ? 1 : 0;
+}
+
 int tcalc_and(int a, int b) {
   return a && b;
 }
 
 int tcalc_or(int a, int b) {
   return a || b;
-}
-
-int tcalc_not(int a, int b) {
-  return 
 }
 
 int tcalc_nand(int a, int b) {
@@ -35,6 +35,7 @@ int tcalc_xor(int a, int b) {
 }
 
 int tcalc_xnor(int a, int b) {
+  // note that xnor and equals are literally the same thing
   return (a && b) || (!a && !b);
 }
 
@@ -42,12 +43,16 @@ int tcalc_matcond(int a, int b) {
   return !a || b;
 }
 
+/**
+ * We can't just say if they are directly equal as ```a == b```, since
+ * a truthy value in C simply means that the value is not 0.
+*/
 int tcalc_equals_l(int a, int b) {
-  return a != 0 && b != 0;
+  return (a && b) || (!a && !b);
 }
 
 int tcalc_nequals_l(int a, int b) {
-  return (a == 0 && b != 0) || (a != 0 && b == 0);
+  return (a && !b) || (!a && b);
 }
 
 

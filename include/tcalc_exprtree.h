@@ -96,11 +96,6 @@ typedef struct tcalc_algtree_node {
   } node;
 } tcalc_algtree_node;
 
-enum tcalc_exprtree_node_type {
-  TCALC_EXPRTREE_TYPE_EXPRESSION,
-  TCALC_EXPRTREE_TYPE_RELATION
-};
-
 tcalc_err tcalc_exprtree_node_alloc(struct tcalc_token* token, size_t nb_children, tcalc_exprtree** out);
 void tcalc_exprtree_node_free(tcalc_exprtree* node);
 

@@ -12,7 +12,7 @@ tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, 
 
   switch (token->type) {
     case TCALC_UNARY_OPERATOR: {
-      tcalc_uopdef* unary_op_def;
+      tcalc_unopdef* unary_op_def;
       if ((err = tcalc_ctx_getunop(ctx, token->val, &unary_op_def)) != TCALC_OK) return err;
       *out = tcalc_getunopdata(unary_op_def);
       return TCALC_OK;
