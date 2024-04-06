@@ -3,10 +3,11 @@
 Logical Operators:
   Logical operators evaluate relationships between a group of
   relational or logical expressions 
+    =,
+    ==,
+    !=,
     &&,
-    &,
     ||,
-    |,
     !
 
   Examples:
