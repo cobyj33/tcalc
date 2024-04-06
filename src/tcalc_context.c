@@ -45,34 +45,10 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
   tcalc_err err = tcalc_ctx_alloc_empty(&ctx);
   if (err) return err;
 
+  // trigonometric functions
+  cleanup_on_err(err, tcalc_ctx_addtrigrad(ctx));
+
   // Default Unary Functions:
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "sin", tcalc_sin));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "cos", tcalc_cos));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "tan", tcalc_tan));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "sec", tcalc_sec));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "csc", tcalc_csc));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "cot", tcalc_cot));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "asin", tcalc_asin));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsin", tcalc_asin));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "acos", tcalc_acos));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "arccos", tcalc_acos));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "atan", tcalc_atan));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "arctan", tcalc_atan));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "asec", tcalc_asec));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsec", tcalc_asec));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "acsc", tcalc_acsc));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "arccsc", tcalc_acsc));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "acot", tcalc_acot));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "arccot", tcalc_acot));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "sinh", tcalc_sinh));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "cosh", tcalc_cosh));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "tanh", tcalc_tanh));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "asinh", tcalc_asinh));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsinh", tcalc_asinh));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "acosh", tcalc_acosh));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "arccosh", tcalc_acosh));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "atanh", tcalc_atanh));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "arctanh", tcalc_atanh));
   cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "log", tcalc_log));
   cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "ln", tcalc_ln));
   cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "exp", tcalc_exp));
@@ -87,8 +63,8 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
   cleanup_on_err(err, tcalc_ctx_addbinfunc(ctx, "pow", tcalc_pow));
 
   // Default Variables:
-  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "pi", M_PI));
-  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "e", M_E));
+  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "pi", TCALC_PI));
+  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "e", TCALC_E));
 
   // Default Logical Variables:
   cleanup_on_err(err, tcalc_ctx_addlvar(ctx, "true", 1));
@@ -134,6 +110,72 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
   cleanup:
     tcalc_ctx_free(ctx);
     return err;
+}
+
+tcalc_err tcalc_ctx_addtrigrad(tcalc_ctx* ctx) {
+  tcalc_err err = TCALC_OK;
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sin", tcalc_sin));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cos", tcalc_cos));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tan", tcalc_tan));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sec", tcalc_sec));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "csc", tcalc_csc));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cot", tcalc_cot));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asin", tcalc_asin));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsin", tcalc_asin));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acos", tcalc_acos));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccos", tcalc_acos));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "atan", tcalc_atan));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arctan", tcalc_atan));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asec", tcalc_asec));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsec", tcalc_asec));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acsc", tcalc_acsc));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccsc", tcalc_acsc));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acot", tcalc_acot));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccot", tcalc_acot));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sinh", tcalc_sinh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cosh", tcalc_cosh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tanh", tcalc_tanh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asinh", tcalc_asinh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsinh", tcalc_asinh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acosh", tcalc_acosh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccosh", tcalc_acosh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "atanh", tcalc_atanh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arctanh", tcalc_atanh));
+  ret_on_err(err, tcalc_ctx_addbinfunc(ctx, "atan2", tcalc_atan2));
+  return err;
+}
+
+tcalc_err tcalc_ctx_addtrigdeg(tcalc_ctx* ctx) {
+  tcalc_err err = TCALC_OK;
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sin", tcalc_sin_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cos", tcalc_cos_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tan", tcalc_tan_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sec", tcalc_sec_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "csc", tcalc_csc_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cot", tcalc_cot_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asin", tcalc_asin_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsin", tcalc_asin_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acos", tcalc_acos_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccos", tcalc_acos_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "atan", tcalc_atan_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arctan", tcalc_atan_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asec", tcalc_asec_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsec", tcalc_asec_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acsc", tcalc_acsc_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccsc", tcalc_acsc_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acot", tcalc_acot_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccot", tcalc_acot_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sinh", tcalc_sinh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cosh", tcalc_cosh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tanh", tcalc_tanh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asinh", tcalc_asinh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsinh", tcalc_asinh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acosh", tcalc_acosh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccosh", tcalc_acosh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "atanh", tcalc_atanh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arctanh", tcalc_atanh_deg));
+  ret_on_err(err, tcalc_ctx_addbinfunc(ctx, "atan2", tcalc_atan2_deg));
+  return err;
 }
 
 void tcalc_ctx_free(tcalc_ctx* ctx) {

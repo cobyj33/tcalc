@@ -16,5 +16,6 @@ struct tcalc_ctx;
 tcalc_err tcalc_eval_wctx(const char* infix, struct tcalc_ctx* ctx, double* out);
 tcalc_err tcalc_eval(const char* infix, double* out);
 tcalc_err tcalc_eval_rpn(const char* rpn, double* out);
+tcalc_err tcalc_eval_rpn_wctx(const char* rpn, struct tcalc_ctx* ctx, double* out);
 
 #endif

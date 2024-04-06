@@ -20,15 +20,9 @@ const char* TCALC_HELP_MESSAGE = "tcalc usage: tcalc [-h] expression \n"
 "    --exprtree: Print the expression tree of the given expression\n"
 "    --tokens: Print the tokens of the given expression\n"
 "    --rpn: Evaluate the expression as reverse-polish notation syntax\n"
-"    --tokens-as-rpn: Print the reverse-polish notation tokens of the given expression\n";
-
-int tcalc_repl();
-void tcalc_exprtree_print(tcalc_exprtree* node, size_t depth);
-int tcalc_cli_expr_print_tree(const char* expr);
-int tcalc_cli_eval(const char* expr);
-int tcalc_cli_eval_rpn(const char* expr);
-int tcalc_cli_rpn_tokenizer(const char* expr);
-int tcalc_cli_infix_tokenizer(const char* expr);
+"    --tokens-as-rpn: Print the reverse-polish notation tokens of the given expression\n"
+"    --degrees: Set trigonometric functions to be defined with degrees\n"
+"    --radians: Set trigonometric functions to be defined with radians\n";
 
 enum tcalc_cli_action {
   TCALC_CLI_PRINT_EXPRTREE,
@@ -38,14 +32,29 @@ enum tcalc_cli_action {
   TCALC_CLI_EVALUATE
 };
 
+struct eval_opts {
+  int use_rads;
+};
+
+int tcalc_repl();
+void tcalc_exprtree_print(tcalc_exprtree* node, size_t depth);
+int tcalc_cli_expr_print_tree(const char* expr);
+int tcalc_cli_eval(const char* expr, struct eval_opts eval_opts);
+int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts);
+int tcalc_cli_rpn_tokenizer(const char* expr);
+int tcalc_cli_infix_tokenizer(const char* expr);
+
 #define arg_define 43110
 #define arg_exprtree 43111
 #define arg_tokens 43112
 #define arg_tokens_as_rpn 43113
 #define arg_rpn 43114
+#define arg_degrees 43115
+#define arg_radians 43116
 
 int main(int argc, char** argv) {
   enum tcalc_cli_action action = TCALC_CLI_EVALUATE;
+  struct eval_opts eval_opts = { .use_rads = 1 };
 
   static struct option const longopts[] = {
     {"help", no_argument, NULL, 'h'},
@@ -54,6 +63,8 @@ int main(int argc, char** argv) {
     {"tokens", no_argument, NULL, arg_tokens},
     {"tokens-as-rpn", no_argument, NULL, arg_tokens_as_rpn},
     {"rpn", no_argument, NULL, arg_rpn},
+    {"degrees", no_argument, NULL, arg_degrees},
+    {"radians", no_argument, NULL, arg_radians},
     {NULL, 0, NULL, 0},
   };
 
@@ -72,6 +83,8 @@ int main(int argc, char** argv) {
       case arg_tokens: action = TCALC_CLI_PRINT_TOKENS; break;
       case arg_tokens_as_rpn: action = TCALC_CLI_PRINT_RPN_TOKENS; break;
       case arg_rpn: action = TCALC_CLI_EVALUATE_RPN; break;
+      case arg_degrees: eval_opts.use_rads = 0; break;
+      case arg_radians: eval_opts.use_rads = 1; break;
       default: {
         fputs(TCALC_HELP_MESSAGE, stderr);
         return EXIT_FAILURE;
@@ -86,16 +99,31 @@ int main(int argc, char** argv) {
     case TCALC_CLI_PRINT_EXPRTREE: return tcalc_cli_expr_print_tree(expression);
     case TCALC_CLI_PRINT_TOKENS: return tcalc_cli_infix_tokenizer(expression);
     case TCALC_CLI_PRINT_RPN_TOKENS: return tcalc_cli_rpn_tokenizer(expression);
-    case TCALC_CLI_EVALUATE_RPN: return tcalc_cli_eval_rpn(expression);
+    case TCALC_CLI_EVALUATE_RPN: return tcalc_cli_eval_rpn(expression, eval_opts);
     case TCALC_CLI_EVALUATE:
-    default: return tcalc_cli_eval(expression);
+    default: return tcalc_cli_eval(expression, eval_opts);
   }
   return EXIT_SUCCESS;
 }
 
-int tcalc_cli_eval(const char* expr) {
+int tcalc_cli_eval(const char* expr, struct eval_opts eval_opts) {
   double ans;
-  tcalc_err err = tcalc_eval(expr, &ans);
+  tcalc_ctx* ctx = NULL;
+  tcalc_err err = tcalc_ctx_alloc_default(&ctx);
+  if (err) {
+    fprintf(stderr, "[tcalc_cli_eval] TCalc error while allocating evaluation context: %s\n ", tcalc_strerrcode(err));
+    return EXIT_FAILURE;
+  }
+
+  if (!eval_opts.use_rads) {
+    err = tcalc_ctx_addtrigdeg(ctx);
+    if (err) {
+      fprintf(stderr, "[tcalc_cli_eval] TCalc error while switching to degree-trig functions: %s\n ", tcalc_strerrcode(err));
+    return EXIT_FAILURE;
+    }
+  }
+
+  err = tcalc_eval_wctx(expr, ctx, &ans);
 
   if (err) {
     fprintf(stderr, "TCalc error while evaluating expression: %s\n ", tcalc_strerrcode(err));
@@ -106,12 +134,27 @@ int tcalc_cli_eval(const char* expr) {
   return EXIT_SUCCESS;
 }
 
-int tcalc_cli_eval_rpn(const char* expr) {
+int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts) {
   double ans;
-  tcalc_err err = tcalc_eval_rpn(expr, &ans);
+  tcalc_ctx* ctx = NULL;
+  tcalc_err err = tcalc_ctx_alloc_default(&ctx);
+  if (err) {
+    fprintf(stderr, "[tcalc_cli_eval_rpn] TCalc error while allocating evaluation context: %s\n ", tcalc_strerrcode(err));
+    return EXIT_FAILURE;
+  }
+
+  if (!eval_opts.use_rads) {
+    err = tcalc_ctx_addtrigdeg(ctx);
+    if (err) {
+      fprintf(stderr, "[tcalc_cli_eval_rpn] TCalc error while switching to degree-trig functions: %s\n ", tcalc_strerrcode(err));
+    return EXIT_FAILURE;
+    }
+  }
+
+  err = tcalc_eval_rpn_wctx(expr, ctx, &ans);
 
   if (err) {
-    fprintf(stderr, "TCalc error while evaluating expression: %s\n ", tcalc_strerrcode(err));
+    fprintf(stderr, "[tcalc_cli_eval_rpn] TCalc error while evaluating expression: %s\n ", tcalc_strerrcode(err));
     return EXIT_FAILURE;
   }
 

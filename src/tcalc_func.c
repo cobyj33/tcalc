@@ -163,21 +163,34 @@ tcalc_err tcalc_abs(double a, double* out) {
   return TCALC_OK;
 }
 
+#define TCALC_TRIG_DEG_UFUNCDEF(radfuncname, degfuncname) \
+  tcalc_err degfuncname(double a, double* out) { \
+    return radfuncname(a * TCALC_DEG_TO_RAD, out); \
+  }
+
+#define TCALC_TRIG_DEG_BINFUNCDEF(radfuncname, degfuncname) \
+  tcalc_err degfuncname(double a, double b, double* out) { \
+    return radfuncname(a * TCALC_DEG_TO_RAD, b * TCALC_DEG_TO_RAD, out); \
+  }
+
 tcalc_err tcalc_sin(double a, double* out) {
   *out = sin(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_sin, tcalc_sin_deg)
 
 tcalc_err tcalc_cos(double a, double* out) {
   *out = cos(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_cos, tcalc_cos_deg)
 
 tcalc_err tcalc_tan(double a, double* out) {
-  if (tcalc_equals(fmod(a - M_PI / 2, M_PI), 0.0)) return TCALC_OVERFLOW;
+  if (tcalc_equals(fmod(a - TCALC_PI / 2, TCALC_PI), 0.0)) return TCALC_OVERFLOW;
   *out = tan(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_tan, tcalc_tan_deg)
 
 tcalc_err tcalc_sec(double a, double* out) {
   tcalc_err err = TCALC_OK;
@@ -187,6 +200,7 @@ tcalc_err tcalc_sec(double a, double* out) {
   if (err == TCALC_DIVISION_BY_ZERO) return TCALC_NOT_IN_DOMAIN;  
   return err;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_sec, tcalc_sec_deg)
 
 tcalc_err tcalc_csc(double a, double* out) {
   tcalc_err err = TCALC_OK;
@@ -196,6 +210,7 @@ tcalc_err tcalc_csc(double a, double* out) {
   if (err == TCALC_DIVISION_BY_ZERO) return TCALC_NOT_IN_DOMAIN;  
   return err;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_csc, tcalc_csc_deg)
 
 tcalc_err tcalc_cot(double a, double* out) {
   tcalc_err err = TCALC_OK;
@@ -205,35 +220,46 @@ tcalc_err tcalc_cot(double a, double* out) {
   if (err == TCALC_DIVISION_BY_ZERO) return TCALC_NOT_IN_DOMAIN;  
   return err;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_cot, tcalc_cot_deg)
 
 tcalc_err tcalc_asin(double a, double* out) {
   if (tcalc_lt(a, -1.0) || tcalc_gt(a, 1.0)) return TCALC_NOT_IN_DOMAIN;
-
   *out = asin(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_asin, tcalc_asin_deg)
 
 tcalc_err tcalc_acos(double a, double* out) {
   if (tcalc_lt(a, -1.0) || tcalc_gt(a, 1.0)) return TCALC_NOT_IN_DOMAIN;
-
   *out = acos(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_acos, tcalc_acos_deg)
 
 tcalc_err tcalc_atan(double a, double* out) {
   *out = atan(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_atan, tcalc_atan_deg)
+
+tcalc_err tcalc_atan2(double a, double b, double* out) {
+  if (tcalc_equals(a, 0.0) && tcalc_equals(b, 0.0)) return TCALC_NOT_IN_DOMAIN;
+  *out = atan2(a, b);
+  return TCALC_OK;
+}
+TCALC_TRIG_DEG_BINFUNCDEF(tcalc_atan2, tcalc_atan2_deg)
 
 tcalc_err tcalc_asec(double a, double* out) {
   if (tcalc_equals(a, 0.0)) return TCALC_NOT_IN_DOMAIN;
   return tcalc_acos(1/a, out);
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_asec, tcalc_asec_deg)
 
 tcalc_err tcalc_acsc(double a, double* out) {
   if (tcalc_equals(a, 0.0)) return TCALC_NOT_IN_DOMAIN;
   return tcalc_asin(1/a, out);
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_acsc, tcalc_acsc_deg)
 
 tcalc_err tcalc_acot(double a, double* out) {
   if (tcalc_equals(a, 0.0)) {
@@ -244,8 +270,9 @@ tcalc_err tcalc_acot(double a, double* out) {
   if (a > 0.0) {
     return tcalc_atan(1/a, out);
   }
-  return tcalc_atan(1/a + M_PI, out);
+  return tcalc_atan(1/a + TCALC_PI, out);
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_acot, tcalc_acot_deg)
 
 tcalc_err tcalc_sinh(double a, double* out) {
   errno = 0;
@@ -255,6 +282,7 @@ tcalc_err tcalc_sinh(double a, double* out) {
   if (*out == HUGE_VAL) return TCALC_OVERFLOW;
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_sinh, tcalc_sinh_deg)
 
 tcalc_err tcalc_cosh(double a, double* out) {
   errno = 0;
@@ -264,22 +292,26 @@ tcalc_err tcalc_cosh(double a, double* out) {
   if (*out == HUGE_VAL) return TCALC_OVERFLOW;
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_cosh, tcalc_cosh_deg)
 
 tcalc_err tcalc_tanh(double a, double* out) {
   *out = tanh(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_tanh, tcalc_tanh_deg)
 
 tcalc_err tcalc_asinh(double a, double* out) {
   *out = asinh(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_asinh, tcalc_asinh_deg)
 
 tcalc_err tcalc_acosh(double a, double* out) {
   if (tcalc_lt(a, 1.0)) return TCALC_NOT_IN_DOMAIN;
   *out = acosh(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_acosh, tcalc_acosh_deg)
 
 tcalc_err tcalc_atanh(double a, double* out) {
   if (tcalc_lt(a, -1.0) || tcalc_gt(a, 1.0)) return TCALC_NOT_IN_DOMAIN;
@@ -287,12 +319,13 @@ tcalc_err tcalc_atanh(double a, double* out) {
   *out = atanh(a);
   return TCALC_OK;
 }
+TCALC_TRIG_DEG_UFUNCDEF(tcalc_atanh, tcalc_atanh_deg)
 
 tcalc_err tcalc_log(double a, double* out) {
   if (tcalc_lt(a, 0.0)) return TCALC_NOT_IN_DOMAIN;
   if (tcalc_equals(a, 0.0)) return TCALC_OVERFLOW;
   
-  *out = log(a) / M_LN10;
+  *out = log(a) / TCALC_LN10;
   return TCALC_OK;
 }
 

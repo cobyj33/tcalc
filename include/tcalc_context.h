@@ -174,6 +174,9 @@ typedef struct tcalc_ctx {
 tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out);
 tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out);
 
+tcalc_err tcalc_ctx_addtrigrad(tcalc_ctx* ctx);
+tcalc_err tcalc_ctx_addtrigdeg(tcalc_ctx* ctx);
+
 void tcalc_ctx_free(tcalc_ctx* ctx);
 
 tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, const char* name, double val);
