@@ -36,7 +36,9 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
     case TCALC_UNARY_OPERATOR: return "unary operator";
     case TCALC_BINARY_OPERATOR: return "binary operator";
     case TCALC_IDENTIFIER: return "identifier";
-    // case TCALC_RELATION_OPERATOR: return "relation operator";
+    case TCALC_RELATION_OPERATOR: return "relation operator";
+    case TCALC_EQUALITY_OPERATOR: return "equality operator";
+    case TCALC_LOGICAL_OPERATOR: return "logical operator";
     case TCALC_PARAM_SEPARATOR: return "parameter separator";
     case TCALC_GROUP_START: return "group start";
     case TCALC_GROUP_END: return "group end";
