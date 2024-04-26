@@ -144,6 +144,9 @@ typedef struct tcalc_groupsymdef {
 
 tcalc_opdata tcalc_getbinopdata(tcalc_binopdef* binary_op_def);
 tcalc_opdata tcalc_getunopdata(tcalc_unopdef* unary_op_def);
+tcalc_opdata tcalc_getrelopdata(tcalc_relopdef* relop_def);
+tcalc_opdata tcalc_getunlopdata(tcalc_unlopdef* unlop_def);
+tcalc_opdata tcalc_getbinlopdata(tcalc_binlopdef* binlop_def);
 
 /**
  * Some conditions to a tcalc context:

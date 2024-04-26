@@ -24,16 +24,16 @@ typedef struct tcalc_exprval {
  * The type of token dictates how an expression tree node should be evaluated,
  * as well as how many
  * 
- * TCALC_NUMBER:
+ * TCALC_TOK_NUM:
  *  The token simply holds a number in its value string, and it can be evaluated
  *  by calling tcalc_strtodouble. The expression tree node has no children.
  * 
- * TCALC_UNARY_OPERATOR:
+ * TCALC_TOK_UNOP:
  *  The expression tree node has 1 child which must be evaluated, and then the
  *  corresponding operator in the token's value is used to determine the unary
  *  operation to perform on the evaluated child.
  * 
- * TCALC_BINARY_OPERATOR:
+ * TCALC_TOK_BINOP:
  *  The expression tree node has 2 children which must first be evaluated, and then the
  *  corresponding operator in the token's value is used to determine the binary
  *  operation to perform on the evaluated children. The evaluated children must

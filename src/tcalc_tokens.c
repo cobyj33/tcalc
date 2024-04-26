@@ -17,9 +17,9 @@
  * , - parameter separator
  * abcdefghijklmnopqrstuvwxyz - function and variable names
 */
-const char* TCALC_ALLOWED_CHARS = "0123456789. abcdefghijklmnopqrstuvwxyz,()[]+-*/^%!=<>";
-const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%";
-const char* TCALC_MULTI_TOKENS[] = {"**", NULL}; // make sure this remains null terminated
+const char* TCALC_ALLOWED_CHARS = ",()[]+-*/^%!=<>&|0123456789. abcdefghijklmnopqrstuvwxyz";
+const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%!=<>";
+const char* TCALC_MULTI_TOKENS[] = {"**", "==", "<=", ">=", "!=", "&&", "||", NULL}; // make sure this remains null terminated
 
 int is_valid_tcalc_char(char ch);
 tcalc_err tcalc_valid_token_str(const char* token);
@@ -32,16 +32,17 @@ int tcalc_is_identifier(const char* str);
 
 const char* tcalc_token_type_str(tcalc_token_type token_type) {
   switch (token_type) {
-    case TCALC_NUMBER: return "number";
-    case TCALC_UNARY_OPERATOR: return "unary operator";
-    case TCALC_BINARY_OPERATOR: return "binary operator";
-    case TCALC_IDENTIFIER: return "identifier";
-    case TCALC_RELATION_OPERATOR: return "relation operator";
-    case TCALC_EQUALITY_OPERATOR: return "equality operator";
-    case TCALC_LOGICAL_OPERATOR: return "logical operator";
-    case TCALC_PARAM_SEPARATOR: return "parameter separator";
-    case TCALC_GROUP_START: return "group start";
-    case TCALC_GROUP_END: return "group end";
+    case TCALC_TOK_NUM: return "number";
+    case TCALC_TOK_UNOP: return "unary operator";
+    case TCALC_TOK_BINOP: return "binary operator";
+    case TCALC_TOK_ID: return "identifier";
+    case TCALC_TOK_RELOP: return "relation operator";
+    case TCALC_TOK_EQOP: return "equality operator";
+    case TCALC_TOK_UNLOP: return "unary logical operator";
+    case TCALC_TOK_BINLOP: return "binary logical operator";
+    case TCALC_TOK_PSEP: return "parameter separator";
+    case TCALC_TOK_GRPSTRT: return "group start";
+    case TCALC_TOK_GRPEND: return "group end";
   }
 
   return "unknown token type";
@@ -51,11 +52,9 @@ tcalc_err tcalc_token_alloc(tcalc_token_type type, char* val, tcalc_token** out)
   if (val == NULL) return TCALC_INVALID_ARG;
 
   tcalc_token* token = (tcalc_token*)malloc(sizeof(tcalc_token));
-  if (token == NULL)
-    return TCALC_BAD_ALLOC;
+  if (token == NULL) return TCALC_BAD_ALLOC;
 
   token->type = type;
-  
   if (tcalc_strdup(val, &token->val) != TCALC_OK) {
     free(token);
     return TCALC_BAD_ALLOC;
@@ -135,13 +134,13 @@ tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_
     cleanup_on_macerr(err, TCALC_DARR_PUSH(fin_toks, nb_fin_toks, fin_toks_cap, clone, err));
 
     if (i + 1 < nb_tokens &&
-      (tokens[i]->type == TCALC_NUMBER || 
-      tokens[i]->type == TCALC_GROUP_END ||
-      (tokens[i]->type == TCALC_IDENTIFIER && tcalc_ctx_hasvar(ctx, tokens[i]->val))) &&
-      (tokens[i + 1]->type == TCALC_GROUP_START ||
-      tokens[i + 1]->type == TCALC_IDENTIFIER)) {
+      (tokens[i]->type == TCALC_TOK_NUM || 
+      tokens[i]->type == TCALC_TOK_GRPEND ||
+      (tokens[i]->type == TCALC_TOK_ID && tcalc_ctx_hasvar(ctx, tokens[i]->val))) &&
+      (tokens[i + 1]->type == TCALC_TOK_GRPSTRT ||
+      tokens[i + 1]->type == TCALC_TOK_ID)) {
         tcalc_token* mult;
-        cleanup_on_err(err, tcalc_token_alloc(TCALC_BINARY_OPERATOR, "*", &mult));
+        cleanup_on_err(err, tcalc_token_alloc(TCALC_TOK_BINOP, "*", &mult));
         cleanup_on_macerr(err, TCALC_DARR_PUSH(fin_toks, nb_fin_toks, fin_toks_cap, mult, err));
     }
   }
@@ -181,15 +180,15 @@ tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t 
     if (strcmp(str_tokens[i], "+")  == 0 || strcmp(str_tokens[i], "-") == 0) {
       
       if (i == 0) { // + and - are unary if they are the first token in an expression
-        token_type = TCALC_UNARY_OPERATOR;
-      } else if (infix_tokens[i - 1]->type == TCALC_GROUP_START) { // + and - are unary if they are the first token in a grouping symbol
-        token_type = TCALC_UNARY_OPERATOR;
-      } else if (infix_tokens[i - 1]->type == TCALC_BINARY_OPERATOR) { // + and - are unary if they follow another binary operator
-        token_type = TCALC_UNARY_OPERATOR;
-      } else if (infix_tokens[i - 1]->type == TCALC_UNARY_OPERATOR) { // + and - are unary if they follow another binary operator
-        token_type = TCALC_UNARY_OPERATOR;
+        token_type = TCALC_TOK_UNOP;
+      } else if (infix_tokens[i - 1]->type == TCALC_TOK_GRPSTRT) { // + and - are unary if they are the first token in a grouping symbol
+        token_type = TCALC_TOK_UNOP;
+      } else if (infix_tokens[i - 1]->type == TCALC_TOK_BINOP) { // + and - are unary if they follow another binary operator
+        token_type = TCALC_TOK_UNOP;
+      } else if (infix_tokens[i - 1]->type == TCALC_TOK_UNOP) { // + and - are unary if they follow another binary operator
+        token_type = TCALC_TOK_UNOP;
       } else { // in any other case, + and - are binary
-        token_type = TCALC_BINARY_OPERATOR;
+        token_type = TCALC_TOK_BINOP;
       }
 
     } else if ( strcmp(str_tokens[i], "*") == 0 ||
@@ -197,17 +196,31 @@ tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t 
                 strcmp(str_tokens[i], "^") == 0 || 
                 strcmp(str_tokens[i], "**") == 0 || 
                 strcmp(str_tokens[i], "%") == 0) {
-      token_type = TCALC_BINARY_OPERATOR;
-    } else if (strcmp(str_tokens[i], ",") == 0) {
-      token_type = TCALC_PARAM_SEPARATOR;
+      token_type = TCALC_TOK_BINOP;
     } else if (strcmp(str_tokens[i], "(") == 0 || strcmp(str_tokens[i], "[") == 0) {
-      token_type = TCALC_GROUP_START;
+      token_type = TCALC_TOK_GRPSTRT;
     } else if (strcmp(str_tokens[i], ")") == 0 || strcmp(str_tokens[i], "]") == 0) {
-      token_type = TCALC_GROUP_END;
+      token_type = TCALC_TOK_GRPEND;
+    } else if (strcmp(str_tokens[i], "==") == 0 ||
+              strcmp(str_tokens[i], "=") == 0 ||
+              strcmp(str_tokens[i], "!=") == 0) {
+      token_type = TCALC_TOK_EQOP;
+    } else if (strcmp(str_tokens[i], "<") == 0 ||
+              strcmp(str_tokens[i], "<=") == 0 ||
+              strcmp(str_tokens[i], ">") == 0 ||
+              strcmp(str_tokens[i], ">=") == 0) {
+      token_type = TCALC_TOK_RELOP;
+    } else if (strcmp(str_tokens[i], "&&") == 0 ||
+              strcmp(str_tokens[i], "||") == 0) {
+      token_type = TCALC_TOK_BINLOP;
+    } else if (strcmp(str_tokens[i], "!") == 0) {
+      token_type = TCALC_TOK_UNLOP;
+    } else if (strcmp(str_tokens[i], ",") == 0) {
+      token_type = TCALC_TOK_PSEP;
     } else if (tcalc_strisdouble(str_tokens[i])) {
-      token_type = TCALC_NUMBER;
+      token_type = TCALC_TOK_NUM;
     } else if (tcalc_is_identifier(str_tokens[i])) {
-      token_type = TCALC_IDENTIFIER;  
+      token_type = TCALC_TOK_ID;  
     } else { // could not identify token type, exit
       err = TCALC_INVALID_ARG;
       goto cleanup;
@@ -334,33 +347,6 @@ tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, s
 		}
 	}
 
-  switch (expr[offset]) {
-    case ',':
-    case '(':
-    case ')':
-    case '[':
-    case ']':
-    case '+':
-    case '-':
-    case '*':
-    case '/':
-    case '^':
-    case '%': {
-      ret_on_err(err, tcalc_strsubstr(expr, offset, offset + 1, out));
-      *new_offset = offset + 1;
-      return TCALC_OK;
-    }
-    case '=': 
-    case '<':
-    case '>':
-    case '!': { // "=", "<", ">", "!", "==", "<=", ">=", "!="
-      size_t reach = 1 + expr[offset + 1] == '=';
-      ret_on_err(err, tcalc_strsubstr(expr, offset, offset + reach, out));
-      *new_offset = offset + reach;
-      return TCALC_OK;
-    }
-  } 
-
 	if (isdigit(expr[offset]) || expr[offset] == '.') { // number checking.
 		if (expr[offset] == '.'  && !isdigit(expr[offset + 1])) { // lone decimal point
       return TCALC_INVALID_ARG;
@@ -427,11 +413,11 @@ tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_s
         strcmp(token_strings[i], "/") == 0 || 
         strcmp(token_strings[i], "^") == 0 ||
         strcmp(token_strings[i], "%") == 0) {
-      token_type = TCALC_BINARY_OPERATOR;
+      token_type = TCALC_TOK_BINOP;
     } else if (tcalc_strisdouble(token_strings[i])) {
-      token_type = TCALC_NUMBER;
+      token_type = TCALC_TOK_NUM;
     } else if (tcalc_is_identifier(token_strings[i])) {
-      token_type = TCALC_IDENTIFIER;
+      token_type = TCALC_TOK_ID;
     } else { // Could not find matching token definition
       err = TCALC_UNKNOWN_TOKEN;
       goto cleanup;
@@ -472,10 +458,8 @@ tcalc_err tcalc_valid_token_str(const char* token) {
     if (strcmp(TCALC_MULTI_TOKENS[s], token) == 0) return TCALC_OK;
   }
 
-  if (token[1] == '\0') { // single character string
-    for (int i = 0; TCALC_SINGLE_TOKENS[i] != '\0'; i++) {
-      if (token[0] == TCALC_SINGLE_TOKENS[i]) return TCALC_OK;
-    }
+  for (int i = 0; TCALC_SINGLE_TOKENS[i] != '\0'; i++) {
+    if (token[0] == TCALC_SINGLE_TOKENS[i]) return TCALC_OK;
   }
 
   if (tcalc_strisdouble(token)) return TCALC_OK;

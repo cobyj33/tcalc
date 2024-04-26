@@ -51,7 +51,7 @@ tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const tcalc_ctx* ctx, tcalc
 int tcalc_exprtree_is_vardef(tcalc_exprtree* expr) {
   if (expr == NULL) return 0;
 
-  // if (expr->token->type == TCALC_RELATION_OPERATOR) {}
+  // if (expr->token->type == TCALC_TOK_RELOP) {}
   return 1;
 }
 
@@ -71,17 +71,17 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
   tcalc_err err = TCALC_OK;
   
   switch (expr->token->type) {
-    case TCALC_NUMBER: { 
+    case TCALC_TOK_NUM: { 
       return tcalc_strtodouble(expr->token->val, out);
     }
-    case TCALC_UNARY_OPERATOR: {
+    case TCALC_TOK_UNOP: {
       double operand;
       tcalc_unopdef* unary_op_def;
       ret_on_err(err, tcalc_ctx_getunop(ctx, expr->token->val, &unary_op_def));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand));
       return unary_op_def->func(operand, out);
     }
-    case TCALC_BINARY_OPERATOR: {
+    case TCALC_TOK_BINOP: {
       double operand1, operand2;
       tcalc_binopdef* binary_op_def;
       ret_on_err(err, tcalc_ctx_getbinop(ctx, expr->token->val, &binary_op_def));
@@ -89,7 +89,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
       ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
       return binary_op_def->func(operand1, operand2, out);
     }
-    case TCALC_IDENTIFIER: {
+    case TCALC_TOK_ID: {
 
       if (tcalc_ctx_hasunfunc(ctx, expr->token->val)) {
         tcalc_unfuncdef* unary_func_def;
@@ -142,13 +142,13 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
 
   for (size_t i = 0; i < nb_tokens; i++) {
     switch (tokens[i]->type) {
-      case TCALC_NUMBER: {
+      case TCALC_TOK_NUM: {
         tcalc_exprtree* tree_node;
         cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 0, &tree_node));
         tree_stack[tree_stack_size++] = tree_node;
         break;
-      } // TCALC_NUMBER
-      case TCALC_BINARY_OPERATOR: {
+      } // TCALC_TOK_NUM
+      case TCALC_TOK_BINOP: {
         cleanup_on_err(err, err_pred(tree_stack_size < 2, TCALC_INVALID_OP));
 
         tcalc_exprtree* tree_node;
@@ -160,8 +160,8 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
         tree_stack[tree_stack_size - 2] = tree_node;
         tree_stack_size--;
         break;
-      } // TCALC_BINARY_OPERATOR
-      case TCALC_UNARY_OPERATOR: {
+      } // TCALC_TOK_BINOP
+      case TCALC_TOK_UNOP: {
         cleanup_on_err(err, err_pred(tree_stack_size < 1, TCALC_INVALID_OP));
 
         tcalc_exprtree* tree_node;
@@ -170,8 +170,8 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
         tree_node->children[0] = tree_stack[tree_stack_size - 1];
         tree_stack[tree_stack_size - 1] = tree_node;
         break;
-      } // TCALC_UNARY_OPERATOR
-      case TCALC_IDENTIFIER: {
+      } // TCALC_TOK_UNOP
+      case TCALC_TOK_ID: {
 
         if (tcalc_ctx_hasvar(ctx, tokens[i]->val)) {
 
@@ -204,7 +204,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
         }
 
         break;
-      } // TCALC_IDENTIFIER
+      } // TCALC_TOK_ID
       default: goto cleanup;
     }
   }

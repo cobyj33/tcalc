@@ -6,6 +6,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 option(TCALC_BUILD_TESTS "Build tcalc tests" OFF)
 
+message("+--------------------------------------------+")
+message("|-TCALC Configuration:------------------------")
+message("| TCALC_BUILD_TESTS: " ${TCALC_BUILD_TESTS})
+message("+--------------------------------------------+")
+
 set(TCALC_SRC_FILES
 ./src/tcalc_error.c
 ./src/tcalc_mem.c

@@ -42,16 +42,17 @@ Valid Examples:
 */
 
 typedef enum tcalc_token_type {
-  TCALC_NUMBER, // A parsable number
-  TCALC_UNARY_OPERATOR,
-  TCALC_BINARY_OPERATOR,
-  TCALC_RELATION_OPERATOR,
-  TCALC_LOGICAL_OPERATOR,
-  TCALC_EQUALITY_OPERATOR, // I thought it best to give equality it's own operator type to simplify parsing.
-  TCALC_PARAM_SEPARATOR,
-  TCALC_IDENTIFIER, // Any alphabetical word which may denote some sort of function or variable depending on a given tcalc_ctx
-  TCALC_GROUP_START, // Starting token for a grouping symbol
-  TCALC_GROUP_END // Ending token for a grouping symbol
+  TCALC_TOK_NUM, // A parsable number
+  TCALC_TOK_UNOP,
+  TCALC_TOK_BINOP,
+  TCALC_TOK_RELOP,
+  TCALC_TOK_UNLOP,
+  TCALC_TOK_BINLOP,
+  TCALC_TOK_EQOP, // I thought it best to give equality it's own operator type to simplify parsing. Note that this also applies to !=
+  TCALC_TOK_PSEP,
+  TCALC_TOK_ID, // Any alphabetical word which may denote some sort of function or variable depending on a given tcalc_ctx
+  TCALC_TOK_GRPSTRT, // Starting token for a grouping symbol
+  TCALC_TOK_GRPEND // Ending token for a grouping symbol
 } tcalc_token_type;
 
 const char* tcalc_token_type_str(tcalc_token_type token_type);

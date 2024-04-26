@@ -10,21 +10,25 @@
 tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, tcalc_opdata* out) {
   tcalc_err err = TCALC_OK;
 
+  // I LOVE MACROS!!
+  #define tcalc_ctx_get_token_xop_data(opname) { \
+      tcalc_ ## opname ## def* def; \
+      ret_on_err(err, tcalc_ctx_get##opname(ctx, token->val, &def)); \
+      *out = tcalc_get ## opname ## data(def); \
+      return TCALC_OK; \
+    }
+
   switch (token->type) {
-    case TCALC_UNARY_OPERATOR: {
-      tcalc_unopdef* unary_op_def;
-      ret_on_err(err, tcalc_ctx_getunop(ctx, token->val, &unary_op_def));
-      *out = tcalc_getunopdata(unary_op_def);
-      return TCALC_OK;
-    }
-    case TCALC_BINARY_OPERATOR: {
-      tcalc_binopdef* binary_op_def;
-      ret_on_err(err, tcalc_ctx_getbinop(ctx, token->val, &binary_op_def));
-      *out = tcalc_getbinopdata(binary_op_def);
-      return TCALC_OK;
-    }
+    case TCALC_TOK_UNOP: tcalc_ctx_get_token_xop_data(unop); break;
+    case TCALC_TOK_BINOP: tcalc_ctx_get_token_xop_data(unop); break;
+    case TCALC_TOK_EQOP: // only works cuz ==, !=, and = have the same relational and logical precedences
+    case TCALC_TOK_RELOP: tcalc_ctx_get_token_xop_data(relop); break;
+    case TCALC_TOK_UNLOP: tcalc_ctx_get_token_xop_data(unlop); break;
+    case TCALC_TOK_BINLOP: tcalc_ctx_get_token_xop_data(binlop); break;
     default: return TCALC_INVALID_ARG;
   }
+
+  #undef tcalc_ctx_get_token_xop_data
 
   return TCALC_INVALID_ARG;
 }
@@ -58,16 +62,16 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
 
   for (size_t i = 0; i < nb_infix_toks; i++) {
     switch (infix_toks[i]->type) {
-      case TCALC_NUMBER: {
+      case TCALC_TOK_NUM: {
         cleanup_on_err(err, tcalc_token_clone(infix_toks[i], &rpn_toks[rpn_toks_size]));
         rpn_toks_size++;
         break;
       }
-      case TCALC_GROUP_START: { // "(" or "["
+      case TCALC_TOK_GRPSTRT: { // "(" or "["
         opstk[opstk_size++] = infix_toks[i];
         break;
       }
-      case TCALC_GROUP_END: { // ")" or "]"
+      case TCALC_TOK_GRPEND: { // ")" or "]"
         cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_INVALID_OP));
 
         const char* opener;
@@ -99,14 +103,18 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
 
         break;
       }
-      case TCALC_UNARY_OPERATOR:
-      case TCALC_BINARY_OPERATOR: {
+      case TCALC_TOK_UNOP:
+      case TCALC_TOK_BINOP:
+      case TCALC_TOK_EQOP:
+      case TCALC_TOK_UNLOP:
+      case TCALC_TOK_BINLOP:
+      case TCALC_TOK_RELOP: {
         tcalc_opdata curr_opdata, stk_opdata;
         cleanup_on_err(err, tcalc_ctx_get_token_op_data(ctx, infix_toks[i], &curr_opdata));
 
         while (opstk_size > 0) {
           tcalc_token* stack_top = opstk[opstk_size - 1];
-          if (stack_top->type == TCALC_GROUP_START) break;
+          if (stack_top->type == TCALC_TOK_GRPSTRT) break;
 
           cleanup_on_err(err, tcalc_ctx_get_token_op_data(ctx, stack_top, &stk_opdata));
           if (curr_opdata.prec > stk_opdata.prec) break;
@@ -120,7 +128,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
         opstk[opstk_size++] = infix_toks[i];
         break;
       }
-      case TCALC_IDENTIFIER: {  
+      case TCALC_TOK_ID: {  
         if (tcalc_ctx_hasfunc(ctx, infix_toks[i]->val)) {
           opstk[opstk_size++] = infix_toks[i];
         } else if (tcalc_ctx_hasvar(ctx, infix_toks[i]->val)) {
@@ -133,10 +141,10 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
 
         break;
       }
-      case TCALC_PARAM_SEPARATOR: {
+      case TCALC_TOK_PSEP: {
         cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_INVALID_OP));
 
-        while (opstk[opstk_size - 1]->type != TCALC_GROUP_START) { // keep popping onto output until the opening grouping symbol is found
+        while (opstk[opstk_size - 1]->type != TCALC_TOK_GRPSTRT) { // keep popping onto output until the opening grouping symbol is found
           cleanup_on_err(err, tcalc_token_clone(opstk[opstk_size - 1], &rpn_toks[rpn_toks_size]));
           rpn_toks_size++;
           opstk_size--;
