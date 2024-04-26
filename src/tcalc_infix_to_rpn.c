@@ -20,7 +20,7 @@ tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, 
 
   switch (token->type) {
     case TCALC_TOK_UNOP: tcalc_ctx_get_token_xop_data(unop); break;
-    case TCALC_TOK_BINOP: tcalc_ctx_get_token_xop_data(unop); break;
+    case TCALC_TOK_BINOP: tcalc_ctx_get_token_xop_data(binop); break;
     case TCALC_TOK_EQOP: // only works cuz ==, !=, and = have the same relational and logical precedences
     case TCALC_TOK_RELOP: tcalc_ctx_get_token_xop_data(relop); break;
     case TCALC_TOK_UNLOP: tcalc_ctx_get_token_xop_data(unlop); break;

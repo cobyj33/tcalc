@@ -2,7 +2,7 @@
 #define TCALC_STRING_H
 
 #include <stddef.h>
-enum tcalc_err;
+#include <tcalc_error.h>
 
 /**
  * Taken from FreeBSD
