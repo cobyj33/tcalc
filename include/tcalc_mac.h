@@ -49,13 +49,7 @@
 */
 
 #if !defined(FUNCDINFO)
-  #if defined(__GNUC__) && __GNUC__ >= 3
-    #define FUNCDINFO __FUNCTION__
-  #elif defined(_MSC_VER) // Visual Studio
-    #define FUNCDINFO __FUNCNAME__
-  #elif defined(__cplusplus) && __cplusplus >= 201103L
-    #define FUNCDINFO __func__
-  #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 19901L
+  #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 19901L
     #define FUNCDINFO __func__
   #else
     #define FUNCDINFO ""
@@ -63,13 +57,7 @@
 #endif
 
 #if !defined(FUNCVINFO)
-  #if defined(__GNUC__) && __GNUC__ >= 3
-    #define FUNCVINFO __PRETTY_FUNCTION__
-  #elif defined(_MSC_VER) // Visual Studio
-    #define FUNCVINFO __FUNCDNAME__
-  #elif defined(__cplusplus) && __cplusplus >= 201103L
-    #define FUNCVINFO __func__
-  #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 19901L
+  #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 19901L
     #define FUNCVINFO __func__
   #else
     #define FUNCVINFO ""
@@ -77,9 +65,7 @@
 #endif
 
 #if !defined(FUNCINFO)
-  #if (defined(__cplusplus) && __cplusplus >= 201103L) || ((defined(_MSVC_LANG) && _MSVC_LANG >= 201103L))
-    #define FUNCINFO __func__
-  #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 19901L
+  #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 19901L
     #define FUNCINFO __func__
   #else
     #define FUNCINFO ""

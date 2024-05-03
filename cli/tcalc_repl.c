@@ -1,0 +1,98 @@
+#include "tcalc_cli_progs.h"
+#include "tcalc_cli_common.h"
+
+#include "tcalc_error.h"
+#include "tcalc_context.h"
+#include "tcalc_eval.h"
+#include "tcalc_string.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TCALC_REPL_INPUT_BUFFER_SIZE 4096
+
+const char* repl_entrance_text = ""
+"tcalc REPL begun:\n"
+"  Enter \"quit\", \"exit\", or \"end\" to exit.\n"
+"  Enter \"help\" to display a help text\n";
+
+const char* repl_help = ""
+"Enter \"quit\". \"exit\" or \"end\" to end the REPL session\n"
+"\n"
+"Enter a mathematical expression to be evaluated\n"
+"  Ex: \"2 + 2 * (3/2)\", \"ln(e^3)\", \"arcsin(sin(pi/2))\", \"5 / (2pi+3)\"\n"
+"\n"
+"Special Keywords (case-sensitive):\n"
+"  \"quit\", \"exit\", or \"end\": Quit the REPL\n"
+"  \"variables\": Print all defined variables\n"
+"  \"functions\": Print all defined functions\n";
+
+int tcalc_repl() {
+  fputs(repl_entrance_text, stdout);
+  char input_buffer[TCALC_REPL_INPUT_BUFFER_SIZE] = {'\0'};
+  const char* quit_strings[3] = {"quit", "exit", "end"};
+  
+  tcalc_ctx* ctx = NULL;
+  tcalc_err err = tcalc_ctx_alloc_default(&ctx);
+  if (err) {
+    fprintf(stderr, "Failed to allocate ctx for REPL... exiting: %s", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
+    goto cleanup;
+  }
+
+  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", 0.0));
+
+  while (!tcalc_str_list_has(input_buffer, quit_strings, ARRAY_SIZE(quit_strings))) {
+    fputs("> ", stdout);
+    char* input = fgets(input_buffer, TCALC_REPL_INPUT_BUFFER_SIZE, stdin);
+    if (input == NULL) {
+      fprintf(stderr, "Error reading from stdin: Exiting\n");
+      goto cleanup;
+    }
+
+
+    input[strcspn(input, "\r\n")] = '\0';
+    if (tcalc_str_list_has(input, quit_strings,  ARRAY_SIZE(quit_strings))) break;
+
+    if (strcmp(input, "help") == 0) {
+      fputs(repl_help, stdout);
+      continue;
+    }
+    else if (strcmp(input, "variables") == 0) {
+      for (size_t i = 0; i < ctx->vars.len; i++) {
+        printf("%s = %.5f\n", ctx->vars.arr[i]->id, ctx->vars.arr[i]->val);
+      }
+      continue;
+    }
+    else if (strcmp(input, "functions") == 0) {
+      for (size_t i = 0; i < ctx->unfuncs.len; i++) {
+        printf("%s%s", ctx->unfuncs.arr[i]->id, i == ctx->unfuncs.len - 1 ? "" : ", ");
+      }
+
+      for (size_t i = 0; i < ctx->binfuncs.len; i++) {
+        printf("%s%s", ctx->binfuncs.arr[i]->id, i == ctx->binfuncs.len - 1 ? "" : ", ");
+      }
+      fputs("\n", stdout);
+      continue;
+    }
+
+    double ans;
+    tcalc_err err = tcalc_eval_wctx(input, ctx, &ans);
+    if (err) {
+      fprintf(stderr, "tcalc error: %s\n", tcalc_strerrcode(err));
+      tcalc_errstk_printall();
+    } else {
+      printf("%f\n", ans);
+    }
+
+    fputs("\n", stdout);
+    cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", ans));
+  }
+
+  return EXIT_SUCCESS;
+
+  cleanup:
+    tcalc_ctx_free(ctx);
+    return EXIT_FAILURE;
+}
