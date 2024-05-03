@@ -13,30 +13,6 @@
 
 tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_exprtree** out);
 
-/**
- * General Pipeline:
- * 
- * Convert infix expression into infix tokens
- * Convert infix tokens into rpn-formatted tokens
- * Convert rpn-formatted tokens into returned expression tree
-*/
-tcalc_err tcalc_create_exprtree_infix(const char* infix, const tcalc_ctx* ctx, tcalc_exprtree** out) {
-  tcalc_token** infix_tokens;
-  size_t nb_infix_tokens;
-  tcalc_err err = tcalc_tokenize_infix_ctx(infix, ctx, &infix_tokens, &nb_infix_tokens);
-  if (err) return err;
-
-  tcalc_token** rpn_tokens;
-  size_t nb_rpn_tokens;
-  err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, ctx, &rpn_tokens, &nb_rpn_tokens);
-  TCALC_ARR_FREE_F(infix_tokens, nb_infix_tokens, tcalc_token_free);
-  if (err) return err;
-
-  err = tcalc_rpn_tokens_to_exprtree(rpn_tokens, nb_rpn_tokens, ctx, out);
-  TCALC_ARR_FREE_F(rpn_tokens, nb_rpn_tokens, tcalc_token_free);
-  return err;
-}
-
 tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const tcalc_ctx* ctx, tcalc_exprtree** out) {
   tcalc_token** tokens;
   size_t nb_tokens;
@@ -132,6 +108,15 @@ void tcalc_exprtree_free(tcalc_exprtree* head) {
   tcalc_token_free(head->token);
   free(head);
 }
+
+void tcalc_exprtree_free_children(tcalc_exprtree* head) {
+  if (head == NULL) return;
+  for (size_t i = 0; i < head->nb_children; i++) {
+    tcalc_exprtree_free(head->children[i]);
+    head->children[i] = NULL;
+  }
+}
+
 
 tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_exprtree** out) {
   tcalc_err err = TCALC_OK;
@@ -240,7 +225,7 @@ tcalc_err tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcal
   node->nb_children = nb_children;
 
   if (nb_children > 0) {
-    node->children = (tcalc_exprtree**)malloc(sizeof(tcalc_exprtree*) * nb_children);
+    node->children = (tcalc_exprtree**)calloc(nb_children, sizeof(tcalc_exprtree*));
     if (node->children == NULL) {
       tcalc_token_free(node->token);
       free(node);

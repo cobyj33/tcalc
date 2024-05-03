@@ -51,6 +51,14 @@ typedef struct tcalc_exprtree_node {
   size_t nb_children;
 } tcalc_exprtree;
 
+/**
+ * Clones the token given and allocates a children buffer of size nb_children.
+ * 
+ * All entries in the children array will be initialized to NULL.
+ * 
+ * It is safe to free the parameter token passed after calling
+ * tcalc_exprtree_node_alloc, since the given token is copied.
+*/
 tcalc_err tcalc_exprtree_node_alloc(struct tcalc_token* token, size_t nb_children, tcalc_exprtree** out);
 void tcalc_exprtree_node_free(tcalc_exprtree* node);
 
@@ -58,6 +66,14 @@ void tcalc_exprtree_node_free(tcalc_exprtree* node);
  * Free a tcalc expression tree **recursively**
 */
 void tcalc_exprtree_free(tcalc_exprtree* head);
+
+/**
+ * Free a tcalc expression tree's children **recursively** and set each
+ * child to NULL.
+ * 
+ * defined as no-op if head == NULL
+*/
+void tcalc_exprtree_free_children(tcalc_exprtree* head);
 
 /**
  * Vardef form: 

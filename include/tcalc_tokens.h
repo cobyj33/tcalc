@@ -32,6 +32,8 @@ Since names of functions and variables will definitely be disambiguous if multip
 is allowed to be represented through placing variables next to each other (xy),
 all strings of alphanumeric characters and "." characters will remain untouched.
 
+I thought it best to give equality it's own operator type to simplify parsing.
+Note that this also applies to !=
 
 Valid Examples:
 
@@ -42,17 +44,18 @@ Valid Examples:
 */
 
 typedef enum tcalc_token_type {
-  TCALC_TOK_NUM, // A parsable number
-  TCALC_TOK_UNOP,
-  TCALC_TOK_BINOP,
-  TCALC_TOK_RELOP,
-  TCALC_TOK_UNLOP,
-  TCALC_TOK_BINLOP,
-  TCALC_TOK_EQOP, // I thought it best to give equality it's own operator type to simplify parsing. Note that this also applies to !=
-  TCALC_TOK_PSEP,
-  TCALC_TOK_ID, // Any alphabetical word which may denote some sort of function or variable depending on a given tcalc_ctx
-  TCALC_TOK_GRPSTRT, // Starting token for a grouping symbol
-  TCALC_TOK_GRPEND // Ending token for a grouping symbol
+  TCALC_TOK_NUM, // A parsable number  
+  TCALC_TOK_UNOP, // unary operator ("+", "-")
+  TCALC_TOK_BINOP, // binary operator ("+", "-", "*", "/", "^", "**")
+  TCALC_TOK_RELOP, // relational (binary) operator ("<", "<=", ">", ">=")
+  TCALC_TOK_UNLOP, // unary logical operator ("!")
+  TCALC_TOK_BINLOP, // binary logical operator ("&&", "||")
+  TCALC_TOK_EQOP, // equality operator ("==", "=", "!=")
+  TCALC_TOK_PSEP, // parameter separator (",")
+  TCALC_TOK_ID, // identifier ([a-zA-Z_][a-zA-Z0-9_]*)
+  TCALC_TOK_GRPSTRT, // starting token for a pair of grouping symbols ("(")
+  TCALC_TOK_GRPEND, // ending token for a pair of grouping symbols (")")
+  TCALC_TOK_EOF // end of file
 } tcalc_token_type;
 
 const char* tcalc_token_type_str(tcalc_token_type token_type);

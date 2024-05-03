@@ -80,21 +80,21 @@ void* tcalc_xrealloc(void*, size_t);
  * data
 */
 #define TCALC_DARR_GROW(arr, size, capacity, err) do { \
-    if (capacity == 0) { \
-      arr = malloc(sizeof(*(arr))); \
-      if (arr == NULL) { \
-        err = TCALC_BAD_ALLOC; \
+    if ((capacity) == 0) { \
+      (arr) = malloc(sizeof(*(arr))); \
+      if ((arr) == NULL) { \
+        (err) = TCALC_BAD_ALLOC; \
       } else { \
-        capacity = 1; \
+        (capacity) = 1; \
       } \
-    } else if (size > capacity) { \
-      size_t new_capacity = alloc_nr(capacity) < size ? size : alloc_nr(capacity); \
-      void* realloced = realloc(arr, sizeof(*arr) * new_capacity); \
+    } else if ((size) > (capacity)) { \
+      size_t new_capacity = alloc_nr(capacity) < (size) ? (size) : alloc_nr(capacity); \
+      void* realloced = realloc((arr), sizeof(*(arr)) * new_capacity); \
       if (realloced == NULL) { \
         err = TCALC_BAD_ALLOC; \
       } else { \
-        arr = realloced; \
-        capacity = new_capacity; \
+        (arr) = realloced; \
+        (capacity) = new_capacity; \
       } \
     } \
   } while (0)
@@ -107,9 +107,9 @@ void* tcalc_xrealloc(void*, size_t);
  * err: a tcalc_err variable that will be set upon any errors
 */
 #define TCALC_DARR_PUSH(arr, size, capacity, val, err) do { \
-    TCALC_DARR_GROW(arr, size + 1, capacity, err); \
-    if (err == TCALC_OK) { \
-      arr[size++] = val; \
+    TCALC_DARR_GROW(arr, (size) + 1, capacity, err); \
+    if ((err) == TCALC_OK) { \
+      (arr)[(size)++] = (val); \
     } \
   } while (0)
 
@@ -122,16 +122,16 @@ void* tcalc_xrealloc(void*, size_t);
  * err: a tcalc_err variable that will be set upon any errors
 */
 #define TCALC_DARR_INSERT(arr, size, capacity, val, index, err) do { \
-    if (index > size || index < 0) { \
+    if (index > (size) || index < 0) { \
       err = TCALC_OUT_OF_BOUNDS; \
     } else { \
-      TCALC_DARR_GROW(arr, size + 1, capacity, err); \
+      TCALC_DARR_GROW(arr, (size) + 1, capacity, err); \
       if (err == TCALC_OK) { \
         size++; \
-        for (size_t i = index + 1; i < size + 1; i++) { \
-          arr[i] = arr[i - 1]; \
+        for (size_t i = index + 1; i < (size) + 1; i++) { \
+          (arr)[i] = (arr)[i - 1]; \
         } \
-        arr[index] = val; \
+        (arr)[index] = (val); \
       } \
     } \
   } while (0)
@@ -144,7 +144,7 @@ void* tcalc_xrealloc(void*, size_t);
  * array, 
 */
 #define TCALC_ARR_FREE_CF(arr, len, freefn) do { \
-  for (size_t i = 0; i < len; i++) { \
+  for (size_t i = 0; i < (len); i++) { \
     freefn((arr)[i]); \
   } \
 } while (0)
@@ -159,8 +159,8 @@ void* tcalc_xrealloc(void*, size_t);
  * and returns null (the same as the C standard free function)
 */
 #define TCALC_ARR_FREE_CFV(arr, len, freefnv) do { \
-  for (size_t i = 0; i < len; i++) { \
-    freefnv((void*)(arr[i])); \
+  for (size_t i = 0; i < (len); i++) { \
+    freefnv((void*)((arr)[i])); \
   } \
 } while (0)
 
@@ -170,7 +170,7 @@ void* tcalc_xrealloc(void*, size_t);
 #define TCALC_ARR_FREE_F(arr, len, freefn) do { \
     TCALC_ARR_FREE_CF(arr, len, freefn); \
     free(arr); \
-    arr = NULL; \
+    (arr) = NULL; \
   } while (0)
 
 /**
@@ -181,7 +181,7 @@ void* tcalc_xrealloc(void*, size_t);
 #define TCALC_ARR_FREE_FV(arr, len, freefnv) do { \
     TCALC_ARR_FREE_CFV(arr, len, freefnv); \
     free(arr); \
-    arr = NULL; \
+    (arr) = NULL; \
   } while (0) 
 
 #endif

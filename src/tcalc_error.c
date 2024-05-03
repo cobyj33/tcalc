@@ -40,6 +40,11 @@ const char* tcalc_strerrcode(tcalc_err err) {
     case TCALC_NOT_IN_DOMAIN: return "not in domain";
     case TCALC_UNBALANCED_GROUPING_SYMBOLS: return "unbalanced grouping symbols";
     case TCALC_UNKNOWN_TOKEN: return "unknown token";
+    case TCALC_WRONG_ARITY: return "wrong arity";
+    case TCALC_UNCLOSED_FUNC: return "unclosed function";
+    case TCALC_UNCALLED_FUNC: return "uncalled function";
+    case TCALC_MALFORMED_BINEXP: return "malformed binary expression";
+    case TCALC_MALFORMED_INPUT: return "malformed input";
     case TCALC_UNIMPLEMENTED: return "unimplemented";
     case TCALC_UNKNOWN_IDENTIFIER: return "unknown identifier";
     case TCALC_UNKNOWN: return "unknown";

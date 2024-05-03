@@ -13,7 +13,8 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
   double res = 0.0;
   tcalc_err err = TCALC_OK;
 
-  #define MAKE_SUCCESS_TEST(str, val) err = tcalc_eval(str, &res); \
+  #define MAKE_SUCCESS_TEST(str, val) \
+    err = tcalc_eval(str, &res); \
     CuAssertTrue(tc, err == TCALC_OK); \
     CuAssertDblEquals(tc, res, val, TCALC_EVAL_ASSERT_DELTA);
 

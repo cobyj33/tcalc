@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 /**
  * ()[] - Grouping symbols
@@ -43,6 +44,7 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
     case TCALC_TOK_PSEP: return "parameter separator";
     case TCALC_TOK_GRPSTRT: return "group start";
     case TCALC_TOK_GRPEND: return "group end";
+    case TCALC_TOK_EOF: return "group end";
   }
 
   return "unknown token type";
@@ -88,6 +90,8 @@ tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out
 }
 
 tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size) {
+  assert(out != NULL); assert(out_size != NULL);
+
   tcalc_err err = TCALC_OK;
   *out = NULL;
   *out_size = 0;

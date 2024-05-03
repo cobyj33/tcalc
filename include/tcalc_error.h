@@ -68,9 +68,14 @@ void tcalc_setfullerrorf(const char* format, ...);
  * TCALC_UNKNOWN - This should only be returned when there is no other way
  * for the programmer to know what error happened, such as a code block which
  * was supposed to be unreachable.
+ * 
+ * 
+ * 
+ * When adding new errors, make sure to adjust returned strings in
+ * tcalc_strerrcode
 */
 typedef enum tcalc_err {
-  TCALC_OK = 0,
+  TCALC_OK = 0, // important that this stays 0
   TCALC_OUT_OF_BOUNDS = -43110,
   TCALC_BAD_ALLOC,
   TCALC_INVALID_ARG,
@@ -84,8 +89,15 @@ typedef enum tcalc_err {
   TCALC_UNKNOWN_IDENTIFIER,
   TCALC_UNBALANCED_GROUPING_SYMBOLS,
   TCALC_UNKNOWN_TOKEN,
+  TCALC_WRONG_ARITY,
+  TCALC_UNCLOSED_FUNC,
+  TCALC_UNCALLED_FUNC,
+  TCALC_MALFORMED_BINEXP,
+  TCALC_MALFORMED_INPUT,
+
+  // add new errors above this
   TCALC_UNIMPLEMENTED,
-  TCALC_UNKNOWN
+  TCALC_UNKNOWN // TCALC_UNKNOWN MUST BE THE LAST MEMBER
 } tcalc_err;
 
 /**
@@ -102,9 +114,12 @@ typedef enum tcalc_err {
  * and returns err from whatever function ret_on_err is used in if err is not TCALC_OK
  * 
  * @param err a tcalc_err variable which will be set to what expr evaluates to
- * @param expr an expression which evaluates to a tcalc_err value.
+ * @param expr an expression which **evaluates** to a tcalc_err value.
 */
 #define ret_on_err(err, expr) if (tc_failed(err, expr)) return err
+
+
+#define reterr_on_true(err, expr, erronerr) if (expr) { err = (erronerr); return err; }
 
 /**
  * tcalc has a general pattern of a cleanup: label at the bottom of functions
@@ -147,10 +162,11 @@ typedef enum tcalc_err {
  * the given expression evaluates to true or false. 
  * 
  * @param expr the expression to evaluate. Should evaluate to a truthy or falsey value
- * @param erronerr the tcalc_err for err_pred to evaluate to if expr
- * evaluates to true
+ * @param erronerr the tcalc_err for err_pred to evaluate to **if expr evaluates to true**
 */
 #define err_pred(expr, erronerr) expr ? erronerr : TCALC_OK
+
+#define cleanup_if(err, expr, erronerr) cleanup_on_err(err, err_pred(expr, erronerr))
 
 /**
  * Return a string representation of a tcalc_err error code
