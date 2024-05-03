@@ -27,8 +27,16 @@
  * largely independent of invalid input or computational failures. 
 */
 
-#define TCALC_ERROR_MAX_SIZE 512
 
+unsigned int tcalc_errstksize();
+void tcalc_errstkclear();
+int tcalc_errstkpop();
+int tcalc_errstkadd(const char* funcname, const char* errstr);
+int tcalc_errstkaddf(const char* funcname, const char* format, ...);
+size_t tcalc_errstkpeek(char* out, size_t dsize);
+
+
+#if 0
 /**
  * Get the globally set tcalc error
  * 
@@ -54,6 +62,7 @@ void tcalc_setfullerror(const char* error);
  * it will be truncated to TCALC_ERROR_MAX_SIZE.
 */
 void tcalc_setfullerrorf(const char* format, ...);
+#endif
 
 /**
  * @brief A general error type for operations in tcalc.

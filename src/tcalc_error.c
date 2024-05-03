@@ -6,24 +6,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-char tcalc_error_string[TCALC_ERROR_MAX_SIZE] = {'\0'};
+#define TCALC_ERROR_MAX_SIZE 256
+#define TCALC_ERRSTK_MAX_SIZE 16
 
-void tcalc_getfullerror(char* out) {
-  strcpy(out, tcalc_error_string);
-}
-
-void tcalc_setfullerror(const char* error) {
-  tcalc_strlcpy(tcalc_error_string, error, TCALC_ERROR_MAX_SIZE);
-}
-
-void tcalc_setfullerrorf(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  vsnprintf(tcalc_error_string, TCALC_ERROR_MAX_SIZE, format, args);
-  tcalc_error_string[TCALC_ERROR_MAX_SIZE - 1] = '\0';
-  va_end(args);
-}
-
+unsigned int errstksize = 0;
+char errstk[TCALC_ERRSTK_MAX_SIZE][TCALC_ERROR_MAX_SIZE] = {'\0'};
 
 const char* tcalc_strerrcode(tcalc_err err) {
   switch (err) {
@@ -52,4 +39,69 @@ const char* tcalc_strerrcode(tcalc_err err) {
 
   return "unknown tcalc error";
 }
+
+unsigned int tcalc_errstksize() {
+  return errstksize;
+}
+
+void tcalc_errstkclear() {
+  errstksize = 0;
+}
+
+int tcalc_errstkadd(const char* funcname, const char* errstr) {
+  if (errstksize >= TCALC_ERRSTK_MAX_SIZE) return 0;
+  int res = snprintf(errstk[errstksize], TCALC_ERROR_MAX_SIZE, "[%s] %s", funcname, errstr);
+  
+  if (res < 0) {
+    errstk[errstksize][0] = '\0';
+    return 0;
+  }
+
+  errstksize++;
+  return 1;
+}
+
+int tcalc_errstkaddf(const char* funcname, const char* format, ...) {
+  if (errstksize >= TCALC_ERRSTK_MAX_SIZE) return 0;
+  char err[TCALC_ERROR_MAX_SIZE] = {'\0'};
+
+  va_list args;
+  va_start(args, format);
+  int success = vsnprintf(err, TCALC_ERROR_MAX_SIZE, format, args);
+  va_end(args);
+
+  if (!success) return 0;
+  return tcalc_errstkadd(funcname, err);
+}
+
+size_t tcalc_errstkpop(char* out, size_t dsize) {
+  if (errstksize == 0) return 0;
+  return tcalc_strlcpy(out, errstk[errstksize - 1], dsize);
+}
+
+int tcalc_errstkpop() {
+  if (errstksize == 0) return 0;
+  errstksize--;
+  return errstksize;
+}
+
+#if 0
+void tcalc_getfullerror(char* out) {
+  strcpy(out, tcalc_error_string);
+}
+
+void tcalc_setfullerror(const char* error) {
+  tcalc_strlcpy(tcalc_error_string, error, TCALC_ERROR_MAX_SIZE);
+}
+
+void tcalc_setfullerrorf(const char* format, ...) {
+  va_list args;
+  va_start(args, format);
+  vsnprintf(tcalc_error_string, TCALC_ERROR_MAX_SIZE, format, args);
+  tcalc_error_string[TCALC_ERROR_MAX_SIZE - 1] = '\0';
+  va_end(args);
+}
+#endif
+
+
 
