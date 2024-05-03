@@ -8,14 +8,14 @@
 #include <string.h>
 
 tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, tcalc_opdata* out) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
 
   // I LOVE MACROS!!
   #define tcalc_ctx_get_token_xop_data(opname) { \
       tcalc_ ## opname ## def* def; \
       ret_on_err(err, tcalc_ctx_get##opname(ctx, token->val, &def)); \
       *out = tcalc_get ## opname ## data(def); \
-      return TCALC_OK; \
+      return TCALC_ERR_OK; \
     }
 
   switch (token->type) {
@@ -25,12 +25,12 @@ tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, 
     case TCALC_TOK_RELOP: tcalc_ctx_get_token_xop_data(relop); break;
     case TCALC_TOK_UNLOP: tcalc_ctx_get_token_xop_data(unlop); break;
     case TCALC_TOK_BINLOP: tcalc_ctx_get_token_xop_data(binlop); break;
-    default: return TCALC_INVALID_ARG;
+    default: return TCALC_ERR_INVALID_ARG;
   }
 
   #undef tcalc_ctx_get_token_xop_data
 
-  return TCALC_INVALID_ARG;
+  return TCALC_ERR_INVALID_ARG;
 }
 
 /**
@@ -43,21 +43,21 @@ tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, 
  * Remember that the number of infix tokens and the number of rpn tokens are not
  * necessarily the same, as rpn doesn't need grouping tokens.
  * 
- * Upon returning TCALC_OK, *out is an allocated array of size *out_size. The caller
+ * Upon returning TCALC_ERR_OK, *out is an allocated array of size *out_size. The caller
  * is responsible for freeing these tokens.
 */
 tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_infix_toks, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
 
   tcalc_token** opstk = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_infix_toks);
-  if (opstk == NULL) return TCALC_BAD_ALLOC;
+  if (opstk == NULL) return TCALC_ERR_BAD_ALLOC;
   size_t opstk_size = 0;
 
   tcalc_token** rpn_toks = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_infix_toks); 
   size_t rpn_toks_size = 0;
   if (rpn_toks == NULL) {
     free(opstk);
-    return TCALC_BAD_ALLOC;
+    return TCALC_ERR_BAD_ALLOC;
   }
 
   for (size_t i = 0; i < nb_infix_toks; i++) {
@@ -72,7 +72,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
         break;
       }
       case TCALC_TOK_GRPEND: { // ")" or "]"
-        cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_INVALID_OP));
+        cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_ERR_INVALID_OP));
 
         const char* opener;
         if (strcmp(infix_toks[i]->val, ")") == 0) {
@@ -80,7 +80,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
         } else if (strcmp(infix_toks[i]->val, "]") == 0) {
           opener = "[";
         } else {
-          err = TCALC_INVALID_OP;
+          err = TCALC_ERR_INVALID_OP;
           goto cleanup;
         }
 
@@ -89,7 +89,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
           rpn_toks_size++;
           opstk_size--;
           
-          cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_INVALID_OP));
+          cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_ERR_INVALID_OP));
         }
         opstk_size--; // pop off opening grouping symbol
 
@@ -135,14 +135,14 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
           cleanup_on_err(err, tcalc_token_clone(infix_toks[i], &rpn_toks[rpn_toks_size]));
           rpn_toks_size++;
         } else {
-          err = TCALC_UNKNOWN_IDENTIFIER;
+          err = TCALC_ERR_UNKNOWN_IDENTIFIER;
           goto cleanup;
         }
 
         break;
       }
       case TCALC_TOK_PSEP: {
-        cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_INVALID_OP));
+        cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_ERR_INVALID_OP));
 
         while (opstk[opstk_size - 1]->type != TCALC_TOK_GRPSTRT) { // keep popping onto output until the opening grouping symbol is found
           cleanup_on_err(err, tcalc_token_clone(opstk[opstk_size - 1], &rpn_toks[rpn_toks_size]));
@@ -153,7 +153,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
         break;
       }
       default: {
-        err = TCALC_UNIMPLEMENTED;
+        err = TCALC_ERR_UNIMPLEMENTED;
         goto cleanup;
       }
     }
@@ -168,7 +168,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
   free(opstk);
   *out = rpn_toks;
   *out_size = rpn_toks_size;
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 
   cleanup:
     free(opstk);

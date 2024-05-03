@@ -43,7 +43,7 @@ typedef struct tcalc_exprval {
  * Every other token type is currently unimplemented :(
  * 
  * To validate a tree, evaluate it with tcalc_eval_exprtree and checking that
- * it returns TCALC_OK. 
+ * it returns TCALC_ERR_OK.
 */
 typedef struct tcalc_exprtree_node {
   struct tcalc_token* token;

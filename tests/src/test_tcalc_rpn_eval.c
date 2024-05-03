@@ -12,21 +12,21 @@ double TCALC_RPN_EVAL_ASSERT_DELTA = 0.01;
 void TestTCalcRPNEvalSuccesses(CuTest *tc) {
   double res = 0.0;
   tcalc_err err = tcalc_eval_rpn("2 4 +", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, res, 6.0, TCALC_RPN_EVAL_ASSERT_DELTA);
 
   err = tcalc_eval_rpn("52 45 +", &res);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, res, 97.0, TCALC_RPN_EVAL_ASSERT_DELTA);
 }
 
 void TestTCalcRPNEvalFailures(CuTest *tc) {
   double res = 0.0;
   tcalc_err err = tcalc_eval_rpn("2 + 4", &res);
-  CuAssertTrue(tc, err != TCALC_OK);
+  CuAssertTrue(tc, err != TCALC_ERR_OK);
 
   err = tcalc_eval_rpn("+ 52 45", &res);
-  CuAssertTrue(tc, err != TCALC_OK);
+  CuAssertTrue(tc, err != TCALC_ERR_OK);
 }
 
 CuSuite* TCalcRPNEvalGetSuite() {

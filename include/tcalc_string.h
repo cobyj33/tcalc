@@ -63,7 +63,7 @@ int tcalc_strhaspre(const char* prefix, const char* str);
  * @param src
  * @param start (inclusive)
  * @param end (exclusive)
- * @param out the parameter at address out is allocated with the substring upon return value TCALC_OK
+ * @param out the parameter at address out is allocated with the substring upon return value TCALC_ERR_OK
 */
 enum tcalc_err tcalc_strsubstr(const char*, size_t, size_t, char**);
 #endif

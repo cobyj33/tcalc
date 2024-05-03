@@ -22,7 +22,7 @@
  * 
  * The global error string is generally only set when actual lexical, syntactical, or semantical
  * errors are encountered. This is so code isn't cluttered with reporting error strings
- * for error code's like TCALC_BAD_ALLOC or TCALC_OUT_OF_BOUNDS, which generally
+ * for error code's like TCALC_ERR_BAD_ALLOC or TCALC_ERR_OUT_OF_BOUNDS, which generally
  * are more so exceptional than actual errors, as they are
  * largely independent of invalid input or computational failures. 
 */
@@ -60,12 +60,12 @@ void tcalc_setfullerrorf(const char* format, ...);
  * 
  * A note on some error types:
  * 
- * TCALC_NOT_FOUND - This should be returned from getter functions when a
+ * TCALC_ERR_NOT_FOUND - This should be returned from getter functions when a
  * value is not found. This shouldn't be returned from "contains" or "has" type
  * functions when they don't find anything, as a "contains" or "has" function
  * not finding a value is not an error, but a valid return type of false.
  * 
- * TCALC_UNKNOWN - This should only be returned when there is no other way
+ * TCALC_ERR_UNKNOWN - This should only be returned when there is no other way
  * for the programmer to know what error happened, such as a code block which
  * was supposed to be unreachable.
  * 
@@ -75,43 +75,43 @@ void tcalc_setfullerrorf(const char* format, ...);
  * tcalc_strerrcode
 */
 typedef enum tcalc_err {
-  TCALC_OK = 0, // important that this stays 0
-  TCALC_OUT_OF_BOUNDS = -43110,
-  TCALC_BAD_ALLOC,
-  TCALC_INVALID_ARG,
-  TCALC_INVALID_OP,
-  TCALC_OVERFLOW,
-  TCALC_UNDERFLOW,
-  TCALC_STOP_ITER,
-  TCALC_NOT_FOUND,
-  TCALC_DIVISION_BY_ZERO,
-  TCALC_NOT_IN_DOMAIN,
-  TCALC_UNKNOWN_IDENTIFIER,
-  TCALC_UNBALANCED_GROUPING_SYMBOLS,
-  TCALC_UNKNOWN_TOKEN,
-  TCALC_WRONG_ARITY,
-  TCALC_UNCLOSED_FUNC,
-  TCALC_UNCALLED_FUNC,
-  TCALC_MALFORMED_BINEXP,
-  TCALC_MALFORMED_INPUT,
+  TCALC_ERR_OK = 0, // important that this stays 0
+  TCALC_ERR_OUT_OF_BOUNDS = -43110,
+  TCALC_ERR_BAD_ALLOC,
+  TCALC_ERR_INVALID_ARG,
+  TCALC_ERR_INVALID_OP,
+  TCALC_ERR_OVERFLOW,
+  TCALC_ERR_UNDERFLOW,
+  TCALC_ERR_STOP_ITER,
+  TCALC_ERR_NOT_FOUND,
+  TCALC_ERR_DIVISION_BY_ZERO,
+  TCALC_ERR_NOT_IN_DOMAIN,
+  TCALC_ERR_UNKNOWN_IDENTIFIER,
+  TCALC_ERR_UNBALANCED_GROUPING_SYMBOLS,
+  TCALC_ERR_UNKNOWN_TOKEN,
+  TCALC_ERR_WRONG_ARITY,
+  TCALC_ERR_UNCLOSED_FUNC,
+  TCALC_ERR_UNCALLED_FUNC,
+  TCALC_ERR_MALFORMED_BINEXP,
+  TCALC_ERR_MALFORMED_INPUT,
 
   // add new errors above this
-  TCALC_UNIMPLEMENTED,
-  TCALC_UNKNOWN // TCALC_UNKNOWN MUST BE THE LAST MEMBER
+  TCALC_ERR_UNIMPLEMENTED,
+  TCALC_ERR_UNKNOWN // TCALC_ERR_UNKNOWN MUST BE THE LAST MEMBER
 } tcalc_err;
 
 /**
  * A macro which sets the err variable to what expr evaluates to, and also
- * evaluates to true if the expr returns an error code that is NOT TCALC_OK. 
+ * evaluates to true if the expr returns an error code that is NOT TCALC_ERR_OK.
  * 
  * @param err a tcalc_err variable which will be set to what expr evaluates to
  * @param expr an expression which evaluates to a tcalc_err value.
 */
-#define tc_failed(err, expr) ((err) = (expr)) != TCALC_OK
+#define tc_failed(err, expr) ((err) = (expr)) != TCALC_ERR_OK
 
 /**
  * ret_on_err evaluates expr, sets err to equal what expression evaluates to,
- * and returns err from whatever function ret_on_err is used in if err is not TCALC_OK
+ * and returns err from whatever function ret_on_err is used in if err is not TCALC_ERR_OK
  * 
  * @param err a tcalc_err variable which will be set to what expr evaluates to
  * @param expr an expression which **evaluates** to a tcalc_err value.
@@ -132,7 +132,7 @@ typedef enum tcalc_err {
 
 /**
  * cleanup_on_err evaluates expr, sets err to equal what expression evaluates to,
- * and jumps to a label named "cleanup" if err is not TCALC_OK. Note that this
+ * and jumps to a label named "cleanup" if err is not TCALC_ERR_OK. Note that this
  * of course means that any function cleanup_on_err is used, there should be a
  * label named "cleanup" that cleanup_on_err can actually jump to. 
  * 
@@ -158,13 +158,13 @@ typedef enum tcalc_err {
 #define cleanup_on_macerr(err, mac) do { mac; if (err) goto cleanup; } while (0)
 
 /**
- * A shorthand to evaluate to either an error or TCALC_OK depending on whether
+ * A shorthand to evaluate to either an error or TCALC_ERR_OK depending on whether
  * the given expression evaluates to true or false. 
  * 
  * @param expr the expression to evaluate. Should evaluate to a truthy or falsey value
  * @param erronerr the tcalc_err for err_pred to evaluate to **if expr evaluates to true**
 */
-#define err_pred(expr, erronerr) expr ? erronerr : TCALC_OK
+#define err_pred(expr, erronerr) expr ? erronerr : TCALC_ERR_OK
 
 #define cleanup_if(err, expr, erronerr) cleanup_on_err(err, err_pred(expr, erronerr))
 

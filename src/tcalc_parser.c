@@ -77,7 +77,7 @@ tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent);
 tcalc_err tcalc_create_exprtree_infix(const char* infix, const tcalc_ctx* ctx, tcalc_exprtree** out) {
   assert(out != NULL);
   *out = NULL;
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
 
   tcalc_pctx pctx;
   pctx.ctx = ctx;
@@ -114,14 +114,14 @@ int tcalc_token_in_operator_list(tcalc_token* token, const char** operators) {
  * @param operators a NULL-terminated array of operator strings to match.
 */
 tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char** operators, tcalc_parsefunc_func_t higher_prec_parsefunc, tcalc_exprtree** out) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* left = NULL;
   cleanup_on_err(err, higher_prec_parsefunc(pctx, &left));
 
   while (pctx->i < pctx->nb_toks && tcalc_token_in_operator_list(pctx->toks[pctx->i], operators)) {
     tcalc_token* operator = pctx->toks[pctx->i];
     pctx->i++; // consume current operator
-    cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_MALFORMED_BINEXP);
+    cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_MALFORMED_BINEXP);
 
     tcalc_exprtree *right = NULL;
     cleanup_on_err(err, higher_prec_parsefunc(pctx, &right));
@@ -142,7 +142,7 @@ tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char** operat
 
   *out = left;
 
-  return TCALC_OK;  
+  return TCALC_ERR_OK;  
   cleanup:
     *out = NULL;
     tcalc_exprtree_free(left);
@@ -165,7 +165,7 @@ tcalc_err tcalc_parsefunc_factor(tcalc_pctx* pctx, tcalc_exprtree** out) {
 
 // unary -> ( "+" | "-" )* exponentiation
 tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* unaryhead = NULL, *unarytail = NULL; //linked-list-like structure
   tcalc_exprtree* primary = NULL;
 
@@ -192,7 +192,7 @@ tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
   }
 
   *out = unaryhead;
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 
   cleanup:
     *out = NULL;
@@ -203,7 +203,7 @@ tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
 // exponentiation -> primary ( ( "^" | "**" ) exponentiation )
 tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out) {
   const char* operators[] = { "^", "**", NULL };
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* tree = NULL;
 
   cleanup_on_err(err, tcalc_parsefunc_primary(pctx, &tree));
@@ -211,7 +211,7 @@ tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out)
   if (pctx->i < pctx->nb_toks && tcalc_token_in_operator_list(pctx->toks[pctx->i], operators)) {
     tcalc_token* operator = pctx->toks[pctx->i];
     pctx->i++;
-    cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_MALFORMED_BINEXP);
+    cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_MALFORMED_BINEXP);
     
     tcalc_exprtree* rst = NULL;
     cleanup_on_err(err, tcalc_parsefunc_exponentiation(pctx, &rst)); // right recursion
@@ -238,12 +238,12 @@ tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out)
 }
 
 tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* node = NULL;
 
   // since this is the final main rule, other rules fallthrough to this rule
   // and we must bounds-check here.
-  cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_MALFORMED_INPUT);
+  cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_MALFORMED_INPUT);
 
   if (pctx->toks[pctx->i]->type == TCALC_TOK_NUM) { //number
     cleanup_on_err(err, tcalc_exprtree_node_alloc(pctx->toks[pctx->i], 0, &node));
@@ -252,7 +252,7 @@ tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out) {
     pctx->i++; // consume group start symbol
     cleanup_on_err(err, tcalc_parsefunc_expression(pctx, &node));
 
-    cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_UNBALANCED_GROUPING_SYMBOLS);
+    cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_UNBALANCED_GROUPING_SYMBOLS);
     pctx->i++; // consume group end symbol
   } else if (pctx->toks[pctx->i]->type == TCALC_TOK_ID) { // variable or function
     if (tcalc_ctx_hasvar(pctx->ctx, pctx->toks[pctx->i]->val)) { // variable
@@ -261,11 +261,11 @@ tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out) {
     } else if (tcalc_ctx_hasfunc(pctx->ctx, pctx->toks[pctx->i]->val)) { // function
       cleanup_on_err(err, tcalc_parsefunc_func(pctx, &node));
     } else {
-      err = TCALC_UNKNOWN_IDENTIFIER;
+      err = TCALC_ERR_UNKNOWN_IDENTIFIER;
       goto cleanup;
     }
   } else {
-    err = TCALC_UNKNOWN_TOKEN;
+    err = TCALC_ERR_UNKNOWN_TOKEN;
     goto cleanup;
   }
 
@@ -281,26 +281,26 @@ tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out) {
 tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out) {
   assert(pctx->i < pctx->nb_toks);
   assert(pctx->toks[pctx->i]->type == TCALC_TOK_ID);
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* funchead = NULL;
 
   size_t arity = 0;
   if (tcalc_ctx_hasunfunc(pctx->ctx, pctx->toks[pctx->i]->val)) arity = 1;
   else if (tcalc_ctx_hasbinfunc(pctx->ctx, pctx->toks[pctx->i]->val)) arity = 2;
   else {
-    err = TCALC_UNKNOWN_IDENTIFIER; // should be unreachable
+    err = TCALC_ERR_UNKNOWN_IDENTIFIER; // should be unreachable
     goto cleanup;
   }
 
   cleanup_on_err(err, tcalc_exprtree_node_alloc(pctx->toks[pctx->i], arity, &funchead));
   pctx->i++; // consume function name
 
-  cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPSTRT), TCALC_UNCALLED_FUNC);
+  cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPSTRT), TCALC_ERR_UNCALLED_FUNC);
   pctx->i++; // consume opening parentheses
   
   cleanup_on_err(err, tcalc_parsefunc_funcargs(pctx, funchead));
 
-  cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_UNCLOSED_FUNC);
+  cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_UNCLOSED_FUNC);
   pctx->i++; // consume ending parentheses
   
   *out = funchead;
@@ -314,10 +314,10 @@ tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out) {
 
 
 tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
 
   if (parent->nb_children > 0) {
-    cleanup_if(err, tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_WRONG_ARITY);
+    cleanup_if(err, tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_WRONG_ARITY);
     cleanup_on_err(err, tcalc_parsefunc_expression(pctx, &(parent->children[0])));
 
     size_t childi = 1;
@@ -327,9 +327,9 @@ tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent) {
       childi++;
     }
 
-    cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_UNCLOSED_FUNC);
-    cleanup_if(err, childi < parent->nb_children, TCALC_WRONG_ARITY);
-    cleanup_if(err, childi == parent->nb_children && !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_WRONG_ARITY);
+    cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_UNCLOSED_FUNC);
+    cleanup_if(err, childi < parent->nb_children, TCALC_ERR_WRONG_ARITY);
+    cleanup_if(err, childi == parent->nb_children && !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_WRONG_ARITY);
   }
 
   return err;

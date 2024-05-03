@@ -15,7 +15,7 @@ void TestTCalcSimpleTokens(CuTest *tc) {
   tcalc_token** tokens;
   size_t size;
   tcalc_err err = tcalc_tokenize_rpn(expression, &tokens, &size);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
 
   CuAssertIntEquals(tc, size, 7);
 

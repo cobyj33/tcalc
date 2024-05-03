@@ -83,7 +83,7 @@ void* tcalc_xrealloc(void*, size_t);
     if ((capacity) == 0) { \
       (arr) = malloc(sizeof(*(arr))); \
       if ((arr) == NULL) { \
-        (err) = TCALC_BAD_ALLOC; \
+        (err) = TCALC_ERR_BAD_ALLOC; \
       } else { \
         (capacity) = 1; \
       } \
@@ -91,7 +91,7 @@ void* tcalc_xrealloc(void*, size_t);
       size_t new_capacity = alloc_nr(capacity) < (size) ? (size) : alloc_nr(capacity); \
       void* realloced = realloc((arr), sizeof(*(arr)) * new_capacity); \
       if (realloced == NULL) { \
-        err = TCALC_BAD_ALLOC; \
+        err = TCALC_ERR_BAD_ALLOC; \
       } else { \
         (arr) = realloced; \
         (capacity) = new_capacity; \
@@ -108,7 +108,7 @@ void* tcalc_xrealloc(void*, size_t);
 */
 #define TCALC_DARR_PUSH(arr, size, capacity, val, err) do { \
     TCALC_DARR_GROW(arr, (size) + 1, capacity, err); \
-    if ((err) == TCALC_OK) { \
+    if ((err) == TCALC_ERR_OK) { \
       (arr)[(size)++] = (val); \
     } \
   } while (0)
@@ -123,10 +123,10 @@ void* tcalc_xrealloc(void*, size_t);
 */
 #define TCALC_DARR_INSERT(arr, size, capacity, val, index, err) do { \
     if (index > (size) || index < 0) { \
-      err = TCALC_OUT_OF_BOUNDS; \
+      err = TCALC_ERR_OUT_OF_BOUNDS; \
     } else { \
       TCALC_DARR_GROW(arr, (size) + 1, capacity, err); \
-      if (err == TCALC_OK) { \
+      if (err == TCALC_ERR_OK) { \
         size++; \
         for (size_t i = index + 1; i < (size) + 1; i++) { \
           (arr)[i] = (arr)[i - 1]; \

@@ -34,10 +34,10 @@ tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out) {
   // use of calloc is important here! We have to null all of the TCALC_VEC 
   // structs inside the ctx.
   tcalc_ctx* ctx = (tcalc_ctx*)calloc(1, sizeof(tcalc_ctx));
-  if (ctx == NULL) return TCALC_BAD_ALLOC;
+  if (ctx == NULL) return TCALC_ERR_BAD_ALLOC;
 
   *out = ctx;
-  return TCALC_OK; 
+  return TCALC_ERR_OK; 
 }
 
 tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
@@ -113,7 +113,7 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
 }
 
 tcalc_err tcalc_ctx_addtrigrad(tcalc_ctx* ctx) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
   ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sin", tcalc_sin));
   ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cos", tcalc_cos));
   ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tan", tcalc_tan));
@@ -146,7 +146,7 @@ tcalc_err tcalc_ctx_addtrigrad(tcalc_ctx* ctx) {
 }
 
 tcalc_err tcalc_ctx_addtrigdeg(tcalc_ctx* ctx) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
   ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sin", tcalc_sin_deg));
   ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cos", tcalc_cos_deg));
   ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tan", tcalc_tan_deg));
@@ -197,14 +197,14 @@ void tcalc_ctx_free(tcalc_ctx* ctx) {
   for (size_t i = 0; i < vec.len; i++) { \
     if (strcmp(vec.arr[i]->id, varname) == 0) { \
       vec.arr[i]->val = varval; \
-      return TCALC_OK; \
+      return TCALC_ERR_OK; \
     } \
   } \
   deftype* def; \
   tcalc_err err = def_alloc(varname, varval, &def); \
   if (err) return err; \
   cleanup_on_macerr(err, TCALC_VEC_PUSH(vec, def, err)); \
-  return TCALC_OK; \
+  return TCALC_ERR_OK; \
   cleanup: \
     def_free(def); \
     return err; \
@@ -222,14 +222,14 @@ tcalc_err tcalc_ctx_addlvar(tcalc_ctx* ctx, const char* name, int val) {
   for (size_t i = 0; i < vec.len; i++) { \
     if (strcmp(vec.arr[i]->id, funcname) == 0) { \
       vec.arr[i]->func = funcptr; \
-      return TCALC_OK; \
+      return TCALC_ERR_OK; \
     } \
   } \
   deftype* def; \
   tcalc_err err = def_alloc(funcname, funcptr, &def); \
   if (err) return err; \
   cleanup_on_macerr(err, TCALC_VEC_PUSH(vec, def, err)); \
-  return TCALC_OK; \
+  return TCALC_ERR_OK; \
   cleanup: \
     def_free(def); \
     return err;
@@ -250,14 +250,14 @@ tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, tcalc_binfunc f
       vec.arr[i]->prec = prec_; \
       vec.arr[i]->assoc = assoc_; \
       vec.arr[i]->func = funcptr; \
-      return TCALC_OK; \
+      return TCALC_ERR_OK; \
     } \
   } \
   deftype* def; \
   tcalc_err err = def_alloc(opid, prec_, assoc_, funcptr, &def); \
   if (err) return err; \
   cleanup_on_macerr(err, TCALC_VEC_PUSH(vec, def, err)); \
-  return TCALC_OK; \
+  return TCALC_ERR_OK; \
   cleanup: \
     def_free(def); \
     return err;
@@ -346,10 +346,10 @@ int tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name) {
   for (size_t i = 0; i < vec.len; i++) { \
     if (strcmp(vec.arr[i]->id, idname) == 0) { \
       *out = vec.arr[i]; \
-      return TCALC_OK; \
+      return TCALC_ERR_OK; \
     } \
   } \
-  return TCALC_NOT_FOUND;
+  return TCALC_ERR_NOT_FOUND;
 
 tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, tcalc_vardef** out) {
   tcalc_ctx_getx(ctx->vars, name, out);
@@ -391,7 +391,7 @@ tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, tcalc_binl
 #define tcalc_xvardef_alloc(optype, name, valval, out) \
   *out = NULL; \
   optype* def = (optype*)malloc(sizeof(optype)); \
-  if (def == NULL) return TCALC_BAD_ALLOC; \
+  if (def == NULL) return TCALC_ERR_BAD_ALLOC; \
   tcalc_err err = tcalc_strdup(name, &def->id); \
   if (err) { \
     free(def); \
@@ -399,7 +399,7 @@ tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, tcalc_binl
   } \
   def->val = valval; \
   *out = def; \
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 
 tcalc_err tcalc_vardef_alloc(const char* name, double val, tcalc_vardef** out) {
   tcalc_xvardef_alloc(tcalc_vardef, name, val, out);
@@ -412,7 +412,7 @@ tcalc_err tcalc_lvardef_alloc(const char* name, int boolval, tcalc_lvardef** out
 #define tcalc_xfuncdef_alloc(tcalctype, name, func, out) \
   *out = NULL; \
   tcalctype* def = (tcalctype*)malloc(sizeof(tcalctype)); \
-  if (def == NULL) return TCALC_BAD_ALLOC; \
+  if (def == NULL) return TCALC_ERR_BAD_ALLOC; \
   tcalc_err err = tcalc_strdup(name, &def->id); \
   if (err) { \
     free(def); \
@@ -420,7 +420,7 @@ tcalc_err tcalc_lvardef_alloc(const char* name, int boolval, tcalc_lvardef** out
   } \
   def->func = func; \
   *out = def; \
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 
 tcalc_err tcalc_binfuncdef_alloc(const char* name, tcalc_binfunc func, tcalc_binfuncdef** out) {
   tcalc_xfuncdef_alloc(tcalc_binfuncdef, name, func, out)
@@ -433,7 +433,7 @@ tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_unfunc func, tcalc_unfun
 #define tcalc_xopdef_allocx(optype, name, prec, assoc, func, out) \
   *out = NULL; \
   optype* def = (optype*)malloc(sizeof(optype)); \
-  if (def == NULL) return TCALC_BAD_ALLOC; \
+  if (def == NULL) return TCALC_ERR_BAD_ALLOC; \
   tcalc_err err = tcalc_strdup(name, &def->id); \
   if (err) { \
     free(def); \
@@ -443,7 +443,7 @@ tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_unfunc func, tcalc_unfun
   def->assoc = assoc; \
   def->func = func; \
   *out = def; \
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 
 tcalc_err tcalc_binopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func, tcalc_binopdef** out) {
   tcalc_xopdef_allocx(tcalc_binopdef, name, prec, assoc, func, out)

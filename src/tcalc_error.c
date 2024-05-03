@@ -27,27 +27,27 @@ void tcalc_setfullerrorf(const char* format, ...) {
 
 const char* tcalc_strerrcode(tcalc_err err) {
   switch (err) {
-    case TCALC_OK: return "ok";
-    case TCALC_OUT_OF_BOUNDS: return "out of bounds";
-    case TCALC_BAD_ALLOC: return "bad alloc";
-    case TCALC_INVALID_ARG: return "invalid argument";
-    case TCALC_INVALID_OP: return "invalid opertion";
-    case TCALC_OVERFLOW: return "overflow";
-    case TCALC_UNDERFLOW: return "underflow";
-    case TCALC_STOP_ITER: return "stop iteration";
-    case TCALC_NOT_FOUND: return "not found";
-    case TCALC_DIVISION_BY_ZERO: return "division by zero";
-    case TCALC_NOT_IN_DOMAIN: return "not in domain";
-    case TCALC_UNBALANCED_GROUPING_SYMBOLS: return "unbalanced grouping symbols";
-    case TCALC_UNKNOWN_TOKEN: return "unknown token";
-    case TCALC_WRONG_ARITY: return "wrong arity";
-    case TCALC_UNCLOSED_FUNC: return "unclosed function";
-    case TCALC_UNCALLED_FUNC: return "uncalled function";
-    case TCALC_MALFORMED_BINEXP: return "malformed binary expression";
-    case TCALC_MALFORMED_INPUT: return "malformed input";
-    case TCALC_UNIMPLEMENTED: return "unimplemented";
-    case TCALC_UNKNOWN_IDENTIFIER: return "unknown identifier";
-    case TCALC_UNKNOWN: return "unknown";
+    case TCALC_ERR_OK: return "ok";
+    case TCALC_ERR_OUT_OF_BOUNDS: return "out of bounds";
+    case TCALC_ERR_BAD_ALLOC: return "bad alloc";
+    case TCALC_ERR_INVALID_ARG: return "invalid argument";
+    case TCALC_ERR_INVALID_OP: return "invalid opertion";
+    case TCALC_ERR_OVERFLOW: return "overflow";
+    case TCALC_ERR_UNDERFLOW: return "underflow";
+    case TCALC_ERR_STOP_ITER: return "stop iteration";
+    case TCALC_ERR_NOT_FOUND: return "not found";
+    case TCALC_ERR_DIVISION_BY_ZERO: return "division by zero";
+    case TCALC_ERR_NOT_IN_DOMAIN: return "not in domain";
+    case TCALC_ERR_UNBALANCED_GROUPING_SYMBOLS: return "unbalanced grouping symbols";
+    case TCALC_ERR_UNKNOWN_TOKEN: return "unknown token";
+    case TCALC_ERR_WRONG_ARITY: return "wrong arity";
+    case TCALC_ERR_UNCLOSED_FUNC: return "unclosed function";
+    case TCALC_ERR_UNCALLED_FUNC: return "uncalled function";
+    case TCALC_ERR_MALFORMED_BINEXP: return "malformed binary expression";
+    case TCALC_ERR_MALFORMED_INPUT: return "malformed input";
+    case TCALC_ERR_UNIMPLEMENTED: return "unimplemented";
+    case TCALC_ERR_UNKNOWN_IDENTIFIER: return "unknown identifier";
+    case TCALC_ERR_UNKNOWN: return "unknown";
   }
 
   return "unknown tcalc error";

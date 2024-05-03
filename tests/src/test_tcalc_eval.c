@@ -11,11 +11,11 @@ double TCALC_EVAL_ASSERT_DELTA = 0.0001;
 
 void TestTCalcEvalSuccesses(CuTest *tc) {
   double res = 0.0;
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
 
   #define MAKE_SUCCESS_TEST(str, val) \
     err = tcalc_eval(str, &res); \
-    CuAssertTrue(tc, err == TCALC_OK); \
+    CuAssertTrue(tc, err == TCALC_ERR_OK); \
     CuAssertDblEquals(tc, res, val, TCALC_EVAL_ASSERT_DELTA);
 
   MAKE_SUCCESS_TEST("6", 6.0);
@@ -60,18 +60,18 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
 void TestTCalcEvalFailures(CuTest *tc) {
   double res = 0.0;
 
-  CuAssertTrue(tc, tcalc_eval("1 / 0", &res) == TCALC_DIVISION_BY_ZERO);
-  CuAssertTrue(tc, tcalc_eval("1 / -0", &res) == TCALC_DIVISION_BY_ZERO);
-  CuAssertTrue(tc, tcalc_eval("0 / -0.0", &res) == TCALC_DIVISION_BY_ZERO);
-  CuAssertTrue(tc, tcalc_eval("0 / 0.0", &res) == TCALC_DIVISION_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("1 / 0", &res) == TCALC_ERR_DIVISION_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("1 / -0", &res) == TCALC_ERR_DIVISION_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("0 / -0.0", &res) == TCALC_ERR_DIVISION_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("0 / 0.0", &res) == TCALC_ERR_DIVISION_BY_ZERO);
 
-  CuAssertTrue(tc, tcalc_eval("unknownid", &res) == TCALC_UNKNOWN_IDENTIFIER);
+  CuAssertTrue(tc, tcalc_eval("unknownid", &res) == TCALC_ERR_UNKNOWN_IDENTIFIER);
 
-  CuAssertTrue(tc, tcalc_eval("53.3.4", &res) != TCALC_OK);
-  CuAssertTrue(tc, tcalc_eval(".53.3", &res) != TCALC_OK);
-  CuAssertTrue(tc, tcalc_eval(".", &res) != TCALC_OK);
-  CuAssertTrue(tc, tcalc_eval("", &res) != TCALC_OK);
-  CuAssertTrue(tc, tcalc_eval("          ", &res) != TCALC_OK);
+  CuAssertTrue(tc, tcalc_eval("53.3.4", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval(".53.3", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval(".", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval("", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval("          ", &res) != TCALC_ERR_OK);
 }
 
 CuSuite* TCalcEvalGetSuite() {

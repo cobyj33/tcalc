@@ -55,30 +55,30 @@ size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize)
 
 tcalc_err tcalc_strdup(const char *src, char** out) {
     *out = (char*)malloc(sizeof(char) * (strlen(src) + 1));  // Space for length plus nul
-    if (*out == NULL) return TCALC_BAD_ALLOC;          // No memory
+    if (*out == NULL) return TCALC_ERR_BAD_ALLOC;          // No memory
     strcpy(*out, src);                      // Copy the characters
-    return TCALC_OK;                            // Return the new string
+    return TCALC_ERR_OK;                            // Return the new string
 }
 
 tcalc_err tcalc_strcombine(const char *first, const char *second, char** out) {
   *out = (char*)calloc((strlen(first) + strlen(second) + 1), sizeof(char));
-  if (*out == NULL) return TCALC_BAD_ALLOC;
+  if (*out == NULL) return TCALC_ERR_BAD_ALLOC;
   strcpy(*out, first);
   strcat(*out, second);
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 }
 
 tcalc_err tcalc_strsubstr(const char* src, size_t start, size_t end, char** out) {
   size_t len = end - start;
   *out = (char*)malloc(sizeof(char) * (len + 1));
-  if (*out == NULL) return TCALC_BAD_ALLOC;
+  if (*out == NULL) return TCALC_ERR_BAD_ALLOC;
 
   tcalc_strlcpy(*out, src + start, len + 1);
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 }
 
 tcalc_err tcalc_strsplit(const char* str, char split, char*** out, size_t* out_size) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
   TCALC_VEC(char*) strings = TCALC_VEC_INIT;
 
   size_t start = 0;
@@ -105,7 +105,7 @@ tcalc_err tcalc_strsplit(const char* str, char split, char*** out, size_t* out_s
 
   *out = strings.arr;
   *out_size = strings.len;
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 
   cleanup:
     TCALC_VEC_FREE_F(strings, free);
@@ -116,25 +116,25 @@ tcalc_err find_in_strarr(const char** list, size_t list_len, const char* search,
   for (size_t i = 0; i < list_len; i++) {
     if (strcmp(list[i], search) == 0) {
       *out = i;
-      return TCALC_OK;
+      return TCALC_ERR_OK;
     }
   }
-  return TCALC_NOT_FOUND;
+  return TCALC_ERR_NOT_FOUND;
 }
 
 int has_in_strarr(const char** list, size_t list_len, const char* search) {
   size_t dummy;
-  return find_in_strarr(list, list_len, search, &dummy) == TCALC_OK;
+  return find_in_strarr(list, list_len, search, &dummy) == TCALC_ERR_OK;
 }
 
 int tcalc_strisint(const char* str) {
   int dummyout;
-  return tcalc_strtoint(str, &dummyout) == TCALC_OK;
+  return tcalc_strtoint(str, &dummyout) == TCALC_ERR_OK;
 }
 
 int tcalc_strisdouble(const char* str) {
   double dummyout;
-  return tcalc_strtodouble(str, &dummyout) == TCALC_OK;
+  return tcalc_strtodouble(str, &dummyout) == TCALC_ERR_OK;
 }
 
 tcalc_err tcalc_strtodouble(const char* str, double* out)
@@ -142,18 +142,18 @@ tcalc_err tcalc_strtodouble(const char* str, double* out)
   *out = 0.0;
 
   if (str == NULL)
-    return TCALC_INVALID_ARG;
+    return TCALC_ERR_INVALID_ARG;
   if (str[0] == '\0')
-    return TCALC_INVALID_ARG;
+    return TCALC_ERR_INVALID_ARG;
 
 
   if (str[0] == '-' || str[0] == '+')  {
     if (str[1] == '.') {
       if (!isdigit(str[2]))
-        return TCALC_INVALID_ARG;
+        return TCALC_ERR_INVALID_ARG;
     }
     else if (!isdigit(str[1])) {
-      return TCALC_INVALID_ARG;
+      return TCALC_ERR_INVALID_ARG;
     }
   }
 
@@ -163,11 +163,11 @@ tcalc_err tcalc_strtodouble(const char* str, double* out)
 
   for (int i = str[0] == '-' || str[0] == '+' ? 1 : 0; str[i] != '\0'; i++) {
     if (str[i] == '.') {
-      if (foundDecimal) return TCALC_INVALID_ARG;
+      if (foundDecimal) return TCALC_ERR_INVALID_ARG;
       foundDecimal = 1;
     } else if (isdigit(str[i])) {
       if (*out >= (DBL_MAX - 9) / 10) {
-        return sign == -1 ? TCALC_UNDERFLOW : TCALC_OVERFLOW;
+        return sign == -1 ? TCALC_ERR_UNDERFLOW : TCALC_ERR_OVERFLOW;
       }
       
       if (foundDecimal) {
@@ -179,25 +179,25 @@ tcalc_err tcalc_strtodouble(const char* str, double* out)
       }
 
     } else {
-      return TCALC_INVALID_ARG;
+      return TCALC_ERR_INVALID_ARG;
     }
   }
 
   *out *= sign;
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 }
 
 tcalc_err tcalc_strtoint(const char* str, int* out)
 {
   *out = 0;
   if (str == NULL)
-    return TCALC_INVALID_ARG;
+    return TCALC_ERR_INVALID_ARG;
   if (str[0] == '\0')
-    return TCALC_INVALID_ARG;
+    return TCALC_ERR_INVALID_ARG;
 
   if (str[0] == '-' || str[0] == '+') { // handles edge case of the str only being "-"
     if (!isdigit(str[1])) {
-      return TCALC_INVALID_ARG;
+      return TCALC_ERR_INVALID_ARG;
     }
   }
 
@@ -205,16 +205,16 @@ tcalc_err tcalc_strtoint(const char* str, int* out)
 
   for (int i = str[0] == '-' || str[0] == '+' ? 1 : 0; str[i] != '\0'; i++) {
     if (!isdigit(str[i]))
-      return TCALC_INVALID_ARG;
+      return TCALC_ERR_INVALID_ARG;
     if (*out >= (INT_MAX - 9) / 10)
-      return sign == -1 ? TCALC_UNDERFLOW : TCALC_OVERFLOW;
+      return sign == -1 ? TCALC_ERR_UNDERFLOW : TCALC_ERR_OVERFLOW;
 
     *out *= 10;
     *out += str[i] - '0';
   }
 
   *out *= sign;
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 }
 
 int tcalc_streq(const char* a, const char* b) {

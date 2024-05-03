@@ -7,39 +7,39 @@
 void TestTCalcStrToDouble(CuTest* tc) {
   double out;
   tcalc_err err = tcalc_strtodouble("2.34", &out);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 2.34, TCALC_DBL_ASSERT_DELTA);
   
   err = tcalc_strtodouble("234.", &out);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 234.0, TCALC_DBL_ASSERT_DELTA);
 
   err = tcalc_strtodouble(".549", &out);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 0.549, TCALC_DBL_ASSERT_DELTA);
 
   err = tcalc_strtodouble(".034", &out);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 34.0, TCALC_DBL_ASSERT_DELTA);
 
   err = tcalc_strtodouble("2349.", &out);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 2349.0, TCALC_DBL_ASSERT_DELTA);
 
   err = tcalc_strtodouble("0234.", &out);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 234.0, TCALC_DBL_ASSERT_DELTA);
 
   err = tcalc_strtodouble("-23434", &out);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, -23434, TCALC_DBL_ASSERT_DELTA);
 
   err = tcalc_strtodouble("-234.", &out);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, -234, TCALC_DBL_ASSERT_DELTA);
 
   err = tcalc_strtodouble("-.249", &out);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, -0.249, TCALC_DBL_ASSERT_DELTA);
 }
 
@@ -50,7 +50,7 @@ void TestTCalcStrSplit(CuTest* tc) {
   char** split;
   size_t split_size;
   tcalc_err err = tcalc_strsplit(to_split, ' ', &split, &split_size);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertIntEquals(tc, split_size, 13);
 
   CuAssertStrEquals(tc, split[0], "This");
@@ -78,7 +78,7 @@ void TestTCalcStrSplitEdges(CuTest* tc) {
   char ** split;
   size_t split_size;
   tcalc_err err = tcalc_strsplit(packed_left_right, ' ', &split, &split_size);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertIntEquals(tc, split_size, 7);
 
   CuAssertStrEquals(tc, split[0], "No");
@@ -91,7 +91,7 @@ void TestTCalcStrSplitEdges(CuTest* tc) {
   
   TCALC_ARR_FREE_F(split, split_size, free);
   err = tcalc_strsplit(packed_left, ' ', &split, &split_size);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertIntEquals(tc, split_size, 5);
 
   CuAssertStrEquals(tc, split[0], "No");
@@ -102,7 +102,7 @@ void TestTCalcStrSplitEdges(CuTest* tc) {
 
   TCALC_ARR_FREE_F(split, split_size, free);
   err = tcalc_strsplit(packed_right, ' ', &split, &split_size);
-  CuAssertTrue(tc, err == TCALC_OK);
+  CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertIntEquals(tc, split_size, 5);
 
   CuAssertStrEquals(tc, split[0], "No");

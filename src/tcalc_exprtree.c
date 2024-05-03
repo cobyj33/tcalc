@@ -44,7 +44,7 @@ int tcalc_exprtree_is_vardef(tcalc_exprtree* expr) {
 tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double* out) {
   // note that this function not allocate any data in any way
 
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
   
   switch (expr->token->type) {
     case TCALC_TOK_NUM: { 
@@ -90,14 +90,14 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
         tcalc_ctx_getvar(ctx, expr->token->val, &vardef);
 
         *out = vardef->val;
-        return TCALC_OK;
+        return TCALC_ERR_OK;
       } else {
-        return TCALC_UNKNOWN_IDENTIFIER;
+        return TCALC_ERR_UNKNOWN_IDENTIFIER;
       }
       
     }
     default: {
-      return TCALC_INVALID_ARG;
+      return TCALC_ERR_INVALID_ARG;
     }
   }
 }
@@ -119,10 +119,10 @@ void tcalc_exprtree_free_children(tcalc_exprtree* head) {
 
 
 tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_exprtree** out) {
-  tcalc_err err = TCALC_OK;
+  tcalc_err err = TCALC_ERR_OK;
 
   tcalc_exprtree** tree_stack = (tcalc_exprtree**)malloc(sizeof(tcalc_exprtree*) * nb_tokens);
-  if (tree_stack == NULL) return TCALC_BAD_ALLOC;
+  if (tree_stack == NULL) return TCALC_ERR_BAD_ALLOC;
   size_t tree_stack_size = 0; 
 
   for (size_t i = 0; i < nb_tokens; i++) {
@@ -134,7 +134,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
         break;
       } // TCALC_TOK_NUM
       case TCALC_TOK_BINOP: {
-        cleanup_on_err(err, err_pred(tree_stack_size < 2, TCALC_INVALID_OP));
+        cleanup_on_err(err, err_pred(tree_stack_size < 2, TCALC_ERR_INVALID_OP));
 
         tcalc_exprtree* tree_node;
         cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 2, &tree_node));
@@ -147,7 +147,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
         break;
       } // TCALC_TOK_BINOP
       case TCALC_TOK_UNOP: {
-        cleanup_on_err(err, err_pred(tree_stack_size < 1, TCALC_INVALID_OP));
+        cleanup_on_err(err, err_pred(tree_stack_size < 1, TCALC_ERR_INVALID_OP));
 
         tcalc_exprtree* tree_node;
         cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 1, &tree_node));
@@ -165,7 +165,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
           tree_stack[tree_stack_size++] = tree_node;
 
         } else if (tcalc_ctx_hasbinfunc(ctx, tokens[i]->val)) {
-          cleanup_on_err(err, tree_stack_size < 2 ? TCALC_INVALID_OP : TCALC_OK);
+          cleanup_on_err(err, tree_stack_size < 2 ? TCALC_ERR_INVALID_OP : TCALC_ERR_OK);
 
           tcalc_exprtree* tree_node;
           cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 2, &tree_node));
@@ -176,7 +176,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
           tree_stack[tree_stack_size - 2] = tree_node;
           tree_stack_size--;
         } else if (tcalc_ctx_hasunfunc(ctx, tokens[i]->val)) {
-          cleanup_on_err(err, tree_stack_size < 1 ? TCALC_INVALID_OP : TCALC_OK);
+          cleanup_on_err(err, tree_stack_size < 1 ? TCALC_ERR_INVALID_OP : TCALC_ERR_OK);
 
           tcalc_exprtree* tree_node;
           cleanup_on_err(err, tcalc_exprtree_node_alloc(tokens[i], 1, &tree_node));
@@ -184,7 +184,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
           tree_node->children[0] = tree_stack[tree_stack_size - 1];
           tree_stack[tree_stack_size - 1] = tree_node;
         } else {
-          err = TCALC_UNKNOWN_IDENTIFIER;
+          err = TCALC_ERR_UNKNOWN_IDENTIFIER;
           goto cleanup;
         }
 
@@ -194,11 +194,11 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
     }
   }
 
-  err = TCALC_OK;
+  err = TCALC_ERR_OK;
   if (tree_stack_size == 1) {
     *out = tree_stack[0];
   } else {
-    err = TCALC_INVALID_ARG;
+    err = TCALC_ERR_INVALID_ARG;
     goto cleanup;
   }
 
@@ -214,9 +214,9 @@ tcalc_err tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcal
   tcalc_err err;
   
   tcalc_exprtree* node = (tcalc_exprtree*)malloc(sizeof(tcalc_exprtree));
-  if (node == NULL) return TCALC_BAD_ALLOC;
+  if (node == NULL) return TCALC_ERR_BAD_ALLOC;
   
-  if ((err = tcalc_token_clone(token, &node->token)) != TCALC_OK) {
+  if ((err = tcalc_token_clone(token, &node->token)) != TCALC_ERR_OK) {
     free(node);
     return err;
   }
@@ -229,12 +229,12 @@ tcalc_err tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcal
     if (node->children == NULL) {
       tcalc_token_free(node->token);
       free(node);
-      return TCALC_BAD_ALLOC;
+      return TCALC_ERR_BAD_ALLOC;
     }
   }
 
   *out = node;
-  return TCALC_OK;
+  return TCALC_ERR_OK;
 }
 
 void tcalc_exprtree_node_free(tcalc_exprtree* node) {
