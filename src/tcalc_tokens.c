@@ -3,6 +3,7 @@
 #include "tcalc_string.h"
 #include "tcalc_mem.h"
 #include "tcalc_context.h"
+#include "tcalc_mac.h"
 
 #include <stddef.h>
 #include <ctype.h>
@@ -95,6 +96,12 @@ tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc
   tcalc_err err = TCALC_ERR_OK;
   *out = NULL;
   *out_size = 0;
+
+  err = tcalc_are_groupsyms_balanced(expr);
+  if (err) {
+    tcalc_errstkaddf(FUNCDINFO, "Unbalanced grouping symbols");
+    return err;
+  }
 
   ret_on_err(err, tcalc_are_groupsyms_balanced(expr));
 

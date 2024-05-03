@@ -47,7 +47,7 @@ add_library(cutest SHARED ${CMAKE_SOURCE_DIR}/lib/cutest-1.5/CuTest.c)
 target_include_directories(cutest PUBLIC ${CMAKE_SOURCE_DIR}/lib/cutest-1.5)
 set_target_properties(cutest PROPERTIES C_STANDARD 99)
 
-add_executable(tcalc_cli ${CMAKE_SOURCE_DIR}/cli/tcalc.c)
+add_executable(tcalc_cli ${CMAKE_SOURCE_DIR}/cli/tcalc_cli.c ${CMAKE_SOURCE_DIR}/cli/tcalc_cli_common.c)
 set_property(TARGET tcalc_cli PROPERTY OUTPUT_NAME tcalc)
 target_link_libraries(tcalc_cli PRIVATE tcalc)
 set_target_properties(tcalc_cli PROPERTIES C_STANDARD 99)

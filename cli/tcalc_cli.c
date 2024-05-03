@@ -1,3 +1,5 @@
+#include "tcalc_cli_common.h"
+
 #include "tcalc.h"
 #include "tcalc_exprtree.h"
 #include "tcalc_eval.h"
@@ -10,7 +12,7 @@
 #include <getopt.h>
 #include <string.h>
 
-#define TCAPC_EXPRTREE_PRINT_MAX_DEPTH 20
+#define TCALC_EXPRTREE_PRINT_MAX_DEPTH 20
 
 const char* TCALC_HELP_MESSAGE = "tcalc usage: tcalc [-h] expression \n"
 "\n"
@@ -37,7 +39,7 @@ struct eval_opts {
 };
 
 int tcalc_repl();
-void tcalc_exprtree_print(tcalc_exprtree* node, size_t depth);
+void tcalc_exprtree_print(tcalc_exprtree* node, unsigned int depth);
 int tcalc_cli_expr_print_tree(const char* expr);
 int tcalc_cli_eval(const char* expr, struct eval_opts eval_opts);
 int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts);
@@ -112,6 +114,7 @@ int tcalc_cli_eval(const char* expr, struct eval_opts eval_opts) {
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   if (err) {
     fprintf(stderr, "[tcalc_cli_eval] TCalc error while allocating evaluation context: %s\n ", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     return EXIT_FAILURE;
   }
 
@@ -119,7 +122,8 @@ int tcalc_cli_eval(const char* expr, struct eval_opts eval_opts) {
     err = tcalc_ctx_addtrigdeg(ctx);
     if (err) {
       fprintf(stderr, "[tcalc_cli_eval] TCalc error while switching to degree-trig functions: %s\n ", tcalc_strerrcode(err));
-    return EXIT_FAILURE;
+      tcalc_errstk_printall();
+      return EXIT_FAILURE;
     }
   }
 
@@ -127,6 +131,7 @@ int tcalc_cli_eval(const char* expr, struct eval_opts eval_opts) {
 
   if (err) {
     fprintf(stderr, "TCalc error while evaluating expression: %s\n ", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     return EXIT_FAILURE;
   }
 
@@ -140,6 +145,7 @@ int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts) {
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   if (err) {
     fprintf(stderr, "[tcalc_cli_eval_rpn] TCalc error while allocating evaluation context: %s\n ", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     return EXIT_FAILURE;
   }
 
@@ -147,7 +153,8 @@ int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts) {
     err = tcalc_ctx_addtrigdeg(ctx);
     if (err) {
       fprintf(stderr, "[tcalc_cli_eval_rpn] TCalc error while switching to degree-trig functions: %s\n ", tcalc_strerrcode(err));
-    return EXIT_FAILURE;
+      tcalc_errstk_printall();
+      return EXIT_FAILURE;
     }
   }
 
@@ -155,6 +162,7 @@ int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts) {
 
   if (err) {
     fprintf(stderr, "[tcalc_cli_eval_rpn] TCalc error while evaluating expression: %s\n ", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     return EXIT_FAILURE;
   }
 
@@ -183,6 +191,7 @@ int tcalc_repl() {
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   if (err) {
     fprintf(stderr, "Failed to allocate ctx for REPL... exiting: %s", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     goto cleanup;
   }
 
@@ -226,6 +235,7 @@ int tcalc_repl() {
     tcalc_err err = tcalc_eval_wctx(input, ctx, &ans);
     if (err) {
       fprintf(stderr, "tcalc error: %s\n", tcalc_strerrcode(err));
+      tcalc_errstk_printall();
     } else {
       printf("%f\n", ans);
     }
@@ -246,6 +256,7 @@ int tcalc_cli_expr_print_tree(const char* expr) {
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   if (err) {
     fprintf(stderr, "TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     return EXIT_FAILURE;
   }
 
@@ -255,6 +266,7 @@ int tcalc_cli_expr_print_tree(const char* expr) {
 
   if (err) {
     fprintf(stderr, "TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     return EXIT_FAILURE;
   }
 
@@ -263,15 +275,18 @@ int tcalc_cli_expr_print_tree(const char* expr) {
   return EXIT_SUCCESS;
 }
 
-void tcalc_exprtree_print(tcalc_exprtree* node, size_t depth) {
-  if (depth > TCAPC_EXPRTREE_PRINT_MAX_DEPTH) return;
-
-  for (int i = 0; i < depth; i++)
+void tcalc_exprtree_print(tcalc_exprtree* node, unsigned int depth) {
+  for (unsigned int i = 0; i < depth; i++)
     fputs("|___", stdout);
-  printf("%s\n", node->token->val);
+  
+  if (depth < TCALC_EXPRTREE_PRINT_MAX_DEPTH) {
+    printf("%s\n", node->token->val);
 
-  for (size_t i = 0; i < node->nb_children; i++) {
-    tcalc_exprtree_print(node->children[i], depth + 1);
+    for (size_t i = 0; i < node->nb_children; i++) {
+      tcalc_exprtree_print(node->children[i], depth + 1);
+    }
+  } else {
+    fputs("...", stdout);
   }
 }
 
@@ -286,18 +301,21 @@ int tcalc_cli_rpn_tokenizer(const char* expr) {
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   if (err) {
     fprintf(stderr, "Error while allocating tcalc ctx: %s\n", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     exitcode = EXIT_FAILURE; goto cleanup;
   }
 
   err = tcalc_tokenize_infix_ctx(expr, ctx, &infix_tokens, &nb_infix_tokens);
   if (err) {
     fprintf(stderr, "Error while tokenizing expr: %s\n ", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     exitcode = EXIT_FAILURE; goto cleanup;
   }
 
   err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, ctx, &rpn_tokens, &nb_rpn_tokens);
   if (err) {
     fprintf(stderr, "Error while converting infix syntax to rpn syntax: %s\n", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     exitcode = EXIT_FAILURE; goto cleanup;
   }
 
@@ -326,6 +344,7 @@ int tcalc_cli_infix_tokenizer(const char* expr) {
   tcalc_err err = tcalc_tokenize_infix(expr, &tokens, &nb_tokens);
   if (err) {
     printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
+    tcalc_errstk_printall();
     return EXIT_FAILURE;
   }
 
@@ -342,4 +361,3 @@ int tcalc_cli_infix_tokenizer(const char* expr) {
   TCALC_ARR_FREE_F(tokens, nb_tokens, tcalc_token_free);
   return EXIT_SUCCESS;
 }
-

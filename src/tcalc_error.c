@@ -51,7 +51,7 @@ void tcalc_errstkclear() {
 int tcalc_errstkadd(const char* funcname, const char* errstr) {
   if (errstksize >= TCALC_ERRSTK_MAX_SIZE) return 0;
   int res = snprintf(errstk[errstksize], TCALC_ERROR_MAX_SIZE, "[%s] %s", funcname, errstr);
-  
+
   if (res < 0) {
     errstk[errstksize][0] = '\0';
     return 0;
@@ -74,12 +74,12 @@ int tcalc_errstkaddf(const char* funcname, const char* format, ...) {
   return tcalc_errstkadd(funcname, err);
 }
 
-size_t tcalc_errstkpop(char* out, size_t dsize) {
+size_t tcalc_errstkpeek(char* out, size_t dsize) {
   if (errstksize == 0) return 0;
   return tcalc_strlcpy(out, errstk[errstksize - 1], dsize);
 }
 
-int tcalc_errstkpop() {
+unsigned int tcalc_errstkpop() {
   if (errstksize == 0) return 0;
   errstksize--;
   return errstksize;

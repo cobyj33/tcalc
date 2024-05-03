@@ -1,6 +1,7 @@
 #ifndef TCALC_ERROR_H
 #define TCALC_ERROR_H
 
+#include <stddef.h>
 
 /**
  * tcalc_error.h - Error handling in tcalc
@@ -28,11 +29,13 @@
 */
 
 
-unsigned int tcalc_errstksize();
 void tcalc_errstkclear();
-int tcalc_errstkpop();
+unsigned int tcalc_errstksize();
+unsigned int tcalc_errstkpop();
+
 int tcalc_errstkadd(const char* funcname, const char* errstr);
 int tcalc_errstkaddf(const char* funcname, const char* format, ...);
+
 size_t tcalc_errstkpeek(char* out, size_t dsize);
 
 
