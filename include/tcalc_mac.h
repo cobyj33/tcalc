@@ -4,14 +4,14 @@
 
 /* Branch prediction */
 #if (defined(__GNUC__) && __GNUC__ >= 3) || defined(__clang__)
-# define tcalc_likely(p)     __builtin_expect(!!(p), 1)
-# define tcalc_unlikely(p)   __builtin_expect(!!(p), 0)
+# define TCALC_LIKELY(p)     __builtin_expect(!!(p), 1)
+# define TCALC_UNLIKELY(p)   __builtin_expect(!!(p), 0)
 #elif defined(_MSC_VER)
-# define tcalc_likely(p)     (!!(p))
-# define tcalc_unlikely(p)   (!!(p))
+# define TCALC_LIKELY(p)     (!!(p))
+# define TCALC_UNLIKELY(p)   (!!(p))
 #else
-# define tcalc_likely(p)     (!!(p))
-# define tcalc_unlikely(p)   (!!(p))
+# define TCALC_LIKELY(p)     (!!(p))
+# define TCALC_UNLIKELY(p)   (!!(p))
 #endif
 
 /**
