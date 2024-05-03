@@ -36,9 +36,9 @@ const char* tcalc_strerrcode(tcalc_err err) {
     case TCALC_ERR_UNDERFLOW: return "underflow";
     case TCALC_ERR_STOP_ITER: return "stop iteration";
     case TCALC_ERR_NOT_FOUND: return "not found";
-    case TCALC_ERR_DIVISION_BY_ZERO: return "division by zero";
+    case TCALC_ERR_DIV_BY_ZERO: return "division by zero";
     case TCALC_ERR_NOT_IN_DOMAIN: return "not in domain";
-    case TCALC_ERR_UNBALANCED_GROUPING_SYMBOLS: return "unbalanced grouping symbols";
+    case TCALC_ERR_UNBAL_GRPSYMS: return "unbalanced grouping symbols";
     case TCALC_ERR_UNKNOWN_TOKEN: return "unknown token";
     case TCALC_ERR_WRONG_ARITY: return "wrong arity";
     case TCALC_ERR_UNCLOSED_FUNC: return "unclosed function";
@@ -46,7 +46,7 @@ const char* tcalc_strerrcode(tcalc_err err) {
     case TCALC_ERR_MALFORMED_BINEXP: return "malformed binary expression";
     case TCALC_ERR_MALFORMED_INPUT: return "malformed input";
     case TCALC_ERR_UNIMPLEMENTED: return "unimplemented";
-    case TCALC_ERR_UNKNOWN_IDENTIFIER: return "unknown identifier";
+    case TCALC_ERR_UNKNOWN_ID: return "unknown identifier";
     case TCALC_ERR_UNKNOWN: return "unknown";
   }
 

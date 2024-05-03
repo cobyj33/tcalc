@@ -92,7 +92,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
         *out = vardef->val;
         return TCALC_ERR_OK;
       } else {
-        return TCALC_ERR_UNKNOWN_IDENTIFIER;
+        return TCALC_ERR_UNKNOWN_ID;
       }
       
     }
@@ -184,7 +184,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
           tree_node->children[0] = tree_stack[tree_stack_size - 1];
           tree_stack[tree_stack_size - 1] = tree_node;
         } else {
-          err = TCALC_ERR_UNKNOWN_IDENTIFIER;
+          err = TCALC_ERR_UNKNOWN_ID;
           goto cleanup;
         }
 

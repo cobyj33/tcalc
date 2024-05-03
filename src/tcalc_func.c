@@ -118,7 +118,7 @@ tcalc_err tcalc_multiply(double a, double b, double* out) {
 }
 
 tcalc_err tcalc_divide(double a, double b, double* out) {
-  if (tcalc_equals(b, 0)) return TCALC_ERR_DIVISION_BY_ZERO;
+  if (tcalc_equals(b, 0)) return TCALC_ERR_DIV_BY_ZERO;
   // TODO: Possibly more overflow and underflow?
 
   *out =  a / b;
@@ -197,7 +197,7 @@ tcalc_err tcalc_sec(double a, double* out) {
   double reciprocal_res;
   if ((err == tcalc_cos(a, &reciprocal_res)) != TCALC_ERR_OK) return err;
   err = tcalc_divide(1.0, reciprocal_res, out);
-  if (err == TCALC_ERR_DIVISION_BY_ZERO) return TCALC_ERR_NOT_IN_DOMAIN;  
+  if (err == TCALC_ERR_DIV_BY_ZERO) return TCALC_ERR_NOT_IN_DOMAIN;  
   return err;
 }
 TCALC_TRIG_DEG_UFUNCDEF(tcalc_sec, tcalc_sec_deg)
@@ -207,7 +207,7 @@ tcalc_err tcalc_csc(double a, double* out) {
   double reciprocal_res;
   if ((err == tcalc_sin(a, &reciprocal_res)) != TCALC_ERR_OK) return err;
   err = tcalc_divide(1.0, reciprocal_res, out);
-  if (err == TCALC_ERR_DIVISION_BY_ZERO) return TCALC_ERR_NOT_IN_DOMAIN;  
+  if (err == TCALC_ERR_DIV_BY_ZERO) return TCALC_ERR_NOT_IN_DOMAIN;  
   return err;
 }
 TCALC_TRIG_DEG_UFUNCDEF(tcalc_csc, tcalc_csc_deg)
@@ -217,7 +217,7 @@ tcalc_err tcalc_cot(double a, double* out) {
   double reciprocal_res;
   if ((err == tcalc_tan(a, &reciprocal_res)) != TCALC_ERR_OK) return err;
   err = tcalc_divide(1.0, reciprocal_res, out);
-  if (err == TCALC_ERR_DIVISION_BY_ZERO) return TCALC_ERR_NOT_IN_DOMAIN;  
+  if (err == TCALC_ERR_DIV_BY_ZERO) return TCALC_ERR_NOT_IN_DOMAIN;  
   return err;
 }
 TCALC_TRIG_DEG_UFUNCDEF(tcalc_cot, tcalc_cot_deg)

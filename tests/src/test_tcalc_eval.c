@@ -60,12 +60,12 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
 void TestTCalcEvalFailures(CuTest *tc) {
   double res = 0.0;
 
-  CuAssertTrue(tc, tcalc_eval("1 / 0", &res) == TCALC_ERR_DIVISION_BY_ZERO);
-  CuAssertTrue(tc, tcalc_eval("1 / -0", &res) == TCALC_ERR_DIVISION_BY_ZERO);
-  CuAssertTrue(tc, tcalc_eval("0 / -0.0", &res) == TCALC_ERR_DIVISION_BY_ZERO);
-  CuAssertTrue(tc, tcalc_eval("0 / 0.0", &res) == TCALC_ERR_DIVISION_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("1 / 0", &res) == TCALC_ERR_DIV_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("1 / -0", &res) == TCALC_ERR_DIV_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("0 / -0.0", &res) == TCALC_ERR_DIV_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval("0 / 0.0", &res) == TCALC_ERR_DIV_BY_ZERO);
 
-  CuAssertTrue(tc, tcalc_eval("unknownid", &res) == TCALC_ERR_UNKNOWN_IDENTIFIER);
+  CuAssertTrue(tc, tcalc_eval("unknownid", &res) == TCALC_ERR_UNKNOWN_ID);
 
   CuAssertTrue(tc, tcalc_eval("53.3.4", &res) != TCALC_ERR_OK);
   CuAssertTrue(tc, tcalc_eval(".53.3", &res) != TCALC_ERR_OK);

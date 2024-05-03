@@ -163,7 +163,7 @@ tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_
  * Tokenize infix expression and assign token types to each token.
  * 
  * tcalc_tokenize_infix checks for balanced grouping symbols and returns
- * TCALC_ERR_UNBALANCED_GROUPING_SYMBOLS error upon imbalanced grouping symbols.
+ * TCALC_ERR_UNBAL_GRPSYMS error upon imbalanced grouping symbols.
  * 
  * 
  * tcalc_tokenize_infix serves to identify and resolve unary negative and positive signs
@@ -496,8 +496,8 @@ tcalc_err tcalc_are_groupsyms_balanced(const char* expr) {
       }
       case ')':
       case ']': {
-        cleanup_on_err(err, err_pred(stack_size == 0, TCALC_ERR_UNBALANCED_GROUPING_SYMBOLS));
-        cleanup_on_err(err, err_pred(stack[stack_size - 1] != corresponding[(int)expr[i]], TCALC_ERR_UNBALANCED_GROUPING_SYMBOLS));
+        cleanup_on_err(err, err_pred(stack_size == 0, TCALC_ERR_UNBAL_GRPSYMS));
+        cleanup_on_err(err, err_pred(stack[stack_size - 1] != corresponding[(int)expr[i]], TCALC_ERR_UNBAL_GRPSYMS));
         stack_size--;
         break;
       }
@@ -505,7 +505,7 @@ tcalc_err tcalc_are_groupsyms_balanced(const char* expr) {
   }
 
   free(stack);
-  return stack_size == 0 ? TCALC_ERR_OK : TCALC_ERR_UNBALANCED_GROUPING_SYMBOLS;
+  return stack_size == 0 ? TCALC_ERR_OK : TCALC_ERR_UNBAL_GRPSYMS;
 
   cleanup:
     free(stack);

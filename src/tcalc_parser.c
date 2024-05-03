@@ -252,7 +252,7 @@ tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out) {
     pctx->i++; // consume group start symbol
     cleanup_on_err(err, tcalc_parsefunc_expression(pctx, &node));
 
-    cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_UNBALANCED_GROUPING_SYMBOLS);
+    cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_UNBAL_GRPSYMS);
     pctx->i++; // consume group end symbol
   } else if (pctx->toks[pctx->i]->type == TCALC_TOK_ID) { // variable or function
     if (tcalc_ctx_hasvar(pctx->ctx, pctx->toks[pctx->i]->val)) { // variable
@@ -261,7 +261,7 @@ tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out) {
     } else if (tcalc_ctx_hasfunc(pctx->ctx, pctx->toks[pctx->i]->val)) { // function
       cleanup_on_err(err, tcalc_parsefunc_func(pctx, &node));
     } else {
-      err = TCALC_ERR_UNKNOWN_IDENTIFIER;
+      err = TCALC_ERR_UNKNOWN_ID;
       goto cleanup;
     }
   } else {
@@ -288,7 +288,7 @@ tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out) {
   if (tcalc_ctx_hasunfunc(pctx->ctx, pctx->toks[pctx->i]->val)) arity = 1;
   else if (tcalc_ctx_hasbinfunc(pctx->ctx, pctx->toks[pctx->i]->val)) arity = 2;
   else {
-    err = TCALC_ERR_UNKNOWN_IDENTIFIER; // should be unreachable
+    err = TCALC_ERR_UNKNOWN_ID; // should be unreachable
     goto cleanup;
   }
 

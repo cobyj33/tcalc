@@ -135,7 +135,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
           cleanup_on_err(err, tcalc_token_clone(infix_toks[i], &rpn_toks[rpn_toks_size]));
           rpn_toks_size++;
         } else {
-          err = TCALC_ERR_UNKNOWN_IDENTIFIER;
+          err = TCALC_ERR_UNKNOWN_ID;
           goto cleanup;
         }
 
