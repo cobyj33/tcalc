@@ -5,6 +5,7 @@
 #include "tcalc_context.h"
 #include "tcalc_eval.h"
 #include "tcalc_string.h"
+#include "tcalc_mac.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,13 +36,10 @@ int tcalc_repl() {
   
   tcalc_ctx* ctx = NULL;
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
-  if (err) {
-    fprintf(stderr, "Failed to allocate ctx for REPL... exiting: %s", tcalc_strerrcode(err));
-    tcalc_errstk_printall();
-    goto cleanup;
-  }
+  TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to allocate ctx for REPL... exiting: %s", FUNCDINFO, tcalc_strerrcode(err))
 
-  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", 0.0));
+  err = tcalc_ctx_addvar(ctx, "ans", 0.0);
+  TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to set ans variable on tcalc ctx.. exiting: %s", FUNCDINFO, tcalc_strerrcode(err))
 
   while (!tcalc_str_list_has(input_buffer, quit_strings, ARRAY_SIZE(quit_strings))) {
     fputs("> ", stdout);
@@ -53,7 +51,8 @@ int tcalc_repl() {
 
 
     input[strcspn(input, "\r\n")] = '\0';
-    if (tcalc_str_list_has(input, quit_strings,  ARRAY_SIZE(quit_strings))) break;
+    if (tcalc_str_list_has(input, quit_strings,  ARRAY_SIZE(quit_strings)))
+      break;
 
     if (strcmp(input, "help") == 0) {
       fputs(repl_help, stdout);

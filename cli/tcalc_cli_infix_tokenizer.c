@@ -14,11 +14,7 @@ int tcalc_cli_infix_tokenizer(const char* expr) {
   size_t nb_tokens;
   
   tcalc_err err = tcalc_tokenize_infix(expr, &tokens, &nb_tokens);
-  if (err) {
-    printf("TCalc Error Occured: %s\n ", tcalc_strerrcode(err));
-    tcalc_errstk_printall();
-    return EXIT_FAILURE;
-  }
+  TCALC_CLI_CHECK_ERR(err, "[%s] tcalc error: %s\n ", tcalc_strerrcode(err));
 
   for (size_t i = 0; i < nb_tokens; i++) {
     printf("{type: %s, value: '%s'}, ", tcalc_token_type_str(tokens[i]->type),  tokens[i]->val);

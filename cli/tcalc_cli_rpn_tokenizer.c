@@ -5,13 +5,13 @@
 #include "tcalc_context.h"
 #include "tcalc_tokens.h"
 #include "tcalc_exprtree.h"
+#include "tcalc_mac.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 
 int tcalc_cli_rpn_tokenizer(const char* expr) {
-  int exitcode = EXIT_SUCCESS;
   tcalc_ctx* ctx = NULL;
   tcalc_token** infix_tokens = NULL;
   tcalc_token** rpn_tokens = NULL;
@@ -19,29 +19,21 @@ int tcalc_cli_rpn_tokenizer(const char* expr) {
   size_t nb_rpn_tokens = 0;
 
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
-  if (err) {
-    fprintf(stderr, "Error while allocating tcalc ctx: %s\n", tcalc_strerrcode(err));
-    tcalc_errstk_printall();
-    exitcode = EXIT_FAILURE; goto cleanup;
-  }
+  TCALC_CLI_CLEANUP_ERR(err, "[%s] Error while allocating tcalc ctx: %s\n", FUNCDINFO, tcalc_strerrcode(err))
 
   err = tcalc_tokenize_infix_ctx(expr, ctx, &infix_tokens, &nb_infix_tokens);
-  if (err) {
-    fprintf(stderr, "Error while tokenizing expr: %s\n ", tcalc_strerrcode(err));
-    tcalc_errstk_printall();
-    exitcode = EXIT_FAILURE; goto cleanup;
-  }
+  TCALC_CLI_CLEANUP_ERR(err, "[%s] Error while tokenizing expr: %s\n", FUNCDINFO, tcalc_strerrcode(err))
 
   err = tcalc_infix_tokens_to_rpn_tokens(infix_tokens, nb_infix_tokens, ctx, &rpn_tokens, &nb_rpn_tokens);
-  if (err) {
-    fprintf(stderr, "Error while converting infix syntax to rpn syntax: %s\n", tcalc_strerrcode(err));
-    tcalc_errstk_printall();
-    exitcode = EXIT_FAILURE; goto cleanup;
-  }
+  TCALC_CLI_CLEANUP_ERR(err, "[%s] Error while converting infix syntax to rpn syntax: %s\n", FUNCDINFO, tcalc_strerrcode(err))
 
   for (size_t i = 0; i < nb_rpn_tokens; i++) {
-    printf("{type: %s, value: '%s'}%s", tcalc_token_type_str(rpn_tokens[i]->type),  rpn_tokens[i]->val, i == nb_rpn_tokens - 1 ? "" : ", ");
+    printf("{type: %s, value: '%s'}%s",
+      tcalc_token_type_str(rpn_tokens[i]->type), 
+      rpn_tokens[i]->val,
+      i == nb_rpn_tokens - 1 ? "" : ", ");
   }
+
   fputs("\n\n", stdout);
 
   for (size_t i = 0; i < nb_rpn_tokens; i++) {
@@ -54,5 +46,5 @@ int tcalc_cli_rpn_tokenizer(const char* expr) {
     TCALC_ARR_FREE_F(rpn_tokens, nb_rpn_tokens, tcalc_token_free);
     tcalc_ctx_free(ctx);
 
-    return exitcode;
+    return err ? EXIT_FAILURE : EXIT_SUCCESS;
 }
