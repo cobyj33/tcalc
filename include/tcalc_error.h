@@ -119,7 +119,7 @@ typedef enum tcalc_err {
  * @param err a tcalc_err variable which will be set to what expr evaluates to
  * @param expr an expression which evaluates to a tcalc_err value.
 */
-#define tc_failed(err, expr) ((err) = (expr)) != TCALC_ERR_OK
+#define tc_failed(err, expr) (((err) = (expr)) != TCALC_ERR_OK)
 
 /**
  * ret_on_err evaluates expr, sets err to equal what expression evaluates to,
@@ -128,10 +128,10 @@ typedef enum tcalc_err {
  * @param err a tcalc_err variable which will be set to what expr evaluates to
  * @param expr an expression which **evaluates** to a tcalc_err value.
 */
-#define ret_on_err(err, expr) if (tc_failed(err, expr)) return err
+#define ret_on_err(err, expr) if (tc_failed(err, expr)) return (err)
 
 
-#define reterr_on_true(err, expr, erronerr) if (expr) { err = (erronerr); return err; }
+#define reterr_on_true(err, expr, err_on_true) if (expr) { (err) = (err_on_true); return (err); }
 
 /**
  * tcalc has a general pattern of a cleanup: label at the bottom of functions
@@ -174,11 +174,11 @@ typedef enum tcalc_err {
  * the given expression evaluates to true or false.
  *
  * @param expr the expression to evaluate. Should evaluate to a truthy or falsey value
- * @param erronerr the tcalc_err for err_pred to evaluate to **if expr evaluates to true**
+ * @param err_on_true the tcalc_err for err_pred to evaluate to **if expr evaluates to true**
 */
-#define err_pred(expr, erronerr) expr ? erronerr : TCALC_ERR_OK
+#define err_pred(expr, err_on_true) ((expr) ? (err_on_true) : TCALC_ERR_OK)
 
-#define cleanup_if(err, expr, erronerr) cleanup_on_err(err, err_pred(expr, erronerr))
+#define cleanup_if(err, expr, err_on_true) cleanup_on_err(err, err_pred(expr, err_on_true))
 
 /**
  * Return a string representation of a tcalc_err error code
