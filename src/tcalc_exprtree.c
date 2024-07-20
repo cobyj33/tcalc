@@ -34,10 +34,10 @@ int tcalc_exprtree_is_vardef(tcalc_exprtree* expr) {
 
 /**
  * Detailed explanation of how an expression tree is evaluated
- * 
+ *
  * If the token type is  number:
- *  - simply read the number value in the 
- * 
+ *  - simply read the number value in the
+ *
  * If the token type is a unary operator
  * a
 */
@@ -45,9 +45,9 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
   // note that this function not allocate any data in any way
 
   tcalc_err err = TCALC_ERR_OK;
-  
+
   switch (expr->token->type) {
-    case TCALC_TOK_NUM: { 
+    case TCALC_TOK_NUM: {
       return tcalc_strtodouble(expr->token->val, out);
     }
     case TCALC_TOK_UNOP: {
@@ -70,7 +70,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
       if (tcalc_ctx_hasunfunc(ctx, expr->token->val)) {
         tcalc_unfuncdef* unary_func_def;
         tcalc_ctx_getunfunc(ctx, expr->token->val, &unary_func_def);
-        
+
         double operand;
         ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand));
 
@@ -83,7 +83,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
         double operand2;
         ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand1));
         ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
-      
+
         return binary_func_def->func(operand1, operand2, out);
       } else if (tcalc_ctx_hasvar(ctx, expr->token->val)) {
         tcalc_vardef* vardef;
@@ -94,7 +94,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, double
       } else {
         return TCALC_ERR_UNKNOWN_ID;
       }
-      
+
     }
     default: {
       return TCALC_ERR_INVALID_ARG;
@@ -123,7 +123,7 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
 
   tcalc_exprtree** tree_stack = (tcalc_exprtree**)malloc(sizeof(tcalc_exprtree*) * nb_tokens);
   if (tree_stack == NULL) return TCALC_ERR_BAD_ALLOC;
-  size_t tree_stack_size = 0; 
+  size_t tree_stack_size = 0;
 
   for (size_t i = 0; i < nb_tokens; i++) {
     switch (tokens[i]->type) {
@@ -212,10 +212,10 @@ tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, c
 
 tcalc_err tcalc_exprtree_node_alloc(tcalc_token* token, size_t nb_children, tcalc_exprtree** out) {
   tcalc_err err;
-  
+
   tcalc_exprtree* node = (tcalc_exprtree*)malloc(sizeof(tcalc_exprtree));
   if (node == NULL) return TCALC_ERR_BAD_ALLOC;
-  
+
   if ((err = tcalc_token_clone(token, &node->token)) != TCALC_ERR_OK) {
     free(node);
     return err;

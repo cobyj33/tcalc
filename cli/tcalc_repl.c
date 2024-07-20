@@ -33,7 +33,7 @@ int tcalc_repl() {
   fputs(repl_entrance_text, stdout);
   char input_buffer[TCALC_REPL_INPUT_BUFFER_SIZE] = {'\0'};
   const char* quit_strings[3] = {"quit", "exit", "end"};
-  
+
   tcalc_ctx* ctx = NULL;
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to allocate ctx for REPL... exiting: %s", FUNCDINFO, tcalc_strerrcode(err))

@@ -8,15 +8,15 @@
 
 /**
  * Notes about memory:
- * 
+ *
  * All freeing functions should be defined to take a NULL pointer as a valid
  * argument. Freeing functions should never fail and therefore should never
  * return a tcalc_err value. This greatly simplifies code using any freeing
  * function since there is no null-checks that have to be used by other code
  * before using freeing functions, and the cleanup: label pattern can work
- * from anywhere within the function after allocated or soon-to-be-allocated 
+ * from anywhere within the function after allocated or soon-to-be-allocated
  * variables have been defined.
- * 
+ *
  * Most special types have specific alloc and free functions. For simplicity,
  * and at least as of now, all types which have specific alloc and free functions
  * should only be constructed using these functions.
@@ -28,11 +28,11 @@
 
 /**
  * Extended malloc function which aborts the program on malloc failure
- * 
+ *
  * Note that this may not be the best way to handle malloc failures in general
  * code, as interactive sessions could terminate unexpectedly which may have
  * been truly recoverable with more graceful methods.
- * 
+ *
  * @param size the size in bytes that the allocated memory block should be
  * @returns A guaranteed non-NULL pointer to the allocated memory block
 */
@@ -40,12 +40,12 @@ void* tcalc_xmalloc(size_t);
 
 /**
  * Extended calloc function which aborts the program on malloc failure
- * 
+ *
  * Note that this may not be the best way to handle malloc failures in general
  * code, as interactive sessions could terminate unexpectedly which may have
  * been truly recoverable with more graceful methods.
- * 
- * @param nmemb the number of members to allocate 
+ *
+ * @param nmemb the number of members to allocate
  * @param memsize the size of a single member of the type wanted to be allocated
  * @returns A guaranteed non-NULL pointer to the allocated memory block of the
  * size memsize * nmemb. All of the bytes in the function will be initialized to 0.
@@ -53,11 +53,11 @@ void* tcalc_xmalloc(size_t);
 void* tcalc_xcalloc(size_t, size_t);
 /**
  * Extended realloc function which aborts the program on malloc failure
- * 
+ *
  * Note that this may not be the best way to handle malloc failures in general
  * code, as interactive sessions could terminate unexpectedly which may have
  * been truly recoverable with more graceful methods.
- * 
+ *
  * @param ptr The pointer that should be reallocated. This pointer could be
  * allocated with the C standard malloc or tcalc_xmalloc
  * @param size the size in bytes that the new memory block should be
@@ -66,16 +66,16 @@ void* tcalc_xcalloc(size_t, size_t);
 void* tcalc_xrealloc(void*, size_t);
 
 /**
- * 
- * 
+ *
+ *
  * arr: The pointer to the array to perform possible growth on
  * size: The size to which the array should fit into
  * capacity: The current capacity of the array
  * err: a tcalc_err variable that will be set upon any errors
- * 
+ *
  * the capacity variable will be updated to the current array's capacity if
  * reallocated, or will stay the same under no reallocation
- * 
+ *
  * the arr variable will be altered, if reallocated, to point to the reallocated
  * data
 */
@@ -138,10 +138,10 @@ void* tcalc_xrealloc(void*, size_t);
 
 /**
  * Free the contents of an array with dynamically allocated members with a callback
- * 
+ *
  * Free the contents of the array with a specific freeing function. The freeing
  * function should take one pointer which is the same type as that stored in the
- * array, 
+ * array,
 */
 #define TCALC_ARR_FREE_CF(arr, len, freefn) do { \
   for (size_t i = 0; i < (len); i++) { \
@@ -151,10 +151,10 @@ void* tcalc_xrealloc(void*, size_t);
 
 /**
  * Free the contents of an array with dynamically allocated members with a callback
- * 
+ *
  * This is different from TCALC_ARR_FREE_CF, since the members will be casted to void*
  * first when feeding into the free function
- * 
+ *
  * the signautre of the freeing function takes one void pointer as an argument
  * and returns null (the same as the C standard free function)
 */
@@ -175,13 +175,13 @@ void* tcalc_xrealloc(void*, size_t);
 
 /**
  * Free a dynamically allocated array and all of its contents, freeing the
- * contents with a callback where each member of the array will first be 
+ * contents with a callback where each member of the array will first be
  * casted to void*.
 */
 #define TCALC_ARR_FREE_FV(arr, len, freefnv) do { \
     TCALC_ARR_FREE_CFV(arr, len, freefnv); \
     free(arr); \
     (arr) = NULL; \
-  } while (0) 
+  } while (0)
 
 #endif

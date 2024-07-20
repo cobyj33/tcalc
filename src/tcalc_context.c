@@ -31,13 +31,13 @@ void tcalc_unlopdef_free(tcalc_unlopdef* unl_op_def);
 void tcalc_binlopdef_free(tcalc_binlopdef* binl_op_def);
 
 tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out) {
-  // use of calloc is important here! We have to null all of the TCALC_VEC 
+  // use of calloc is important here! We have to null all of the TCALC_VEC
   // structs inside the ctx.
   tcalc_ctx* ctx = (tcalc_ctx*)calloc(1, sizeof(tcalc_ctx));
   if (ctx == NULL) return TCALC_ERR_BAD_ALLOC;
 
   *out = ctx;
-  return TCALC_ERR_OK; 
+  return TCALC_ERR_OK;
 }
 
 tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
@@ -94,9 +94,9 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
   cleanup_on_err(err, tcalc_ctx_addrelop(ctx, "=", 5, TCALC_RIGHT_ASSOC, tcalc_equals));
   cleanup_on_err(err, tcalc_ctx_addrelop(ctx, "==", 5, TCALC_RIGHT_ASSOC, tcalc_equals));
   cleanup_on_err(err, tcalc_ctx_addrelop(ctx, "!=", 5, TCALC_RIGHT_ASSOC, tcalc_nequals));
-  
 
-  
+
+
   // Default Logical Binary Operators:
   cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, "=", 5, TCALC_RIGHT_ASSOC, tcalc_equals_l));
   cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, "==", 5, TCALC_RIGHT_ASSOC, tcalc_equals_l));
@@ -301,7 +301,7 @@ int tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name) {
 
 int tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name) {
   return tcalc_ctx_hasbinop(ctx, name) || tcalc_ctx_hasunop(ctx, name) ||
-  tcalc_ctx_hasrelop(ctx, name) || tcalc_ctx_hasunlop(ctx, name) || 
+  tcalc_ctx_hasrelop(ctx, name) || tcalc_ctx_hasunlop(ctx, name) ||
   tcalc_ctx_hasbinlop(ctx, name);
 }
 

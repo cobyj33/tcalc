@@ -34,7 +34,7 @@ int tcalc_cli_print_exprtree(const char* expr) {
 void tcalc_exprtree_print(tcalc_exprtree* node, unsigned int depth) {
   for (unsigned int i = 0; i < depth; i++)
     fputs("|___", stdout);
-  
+
   if (depth < TCALC_EXPRTREE_PRINT_MAX_DEPTH) {
     printf("%s\n", node->token->val);
 

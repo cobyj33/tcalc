@@ -127,8 +127,8 @@ tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc
 }
 
 /**
- * 
- * 
+ *
+ *
  * Responsibilities:
  * - Insert shorthand multiplication logic
  *   - Essentially, if a number preceeds an identifier or grouping symbol, append a multiplication token after that number
@@ -145,7 +145,7 @@ tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_
     cleanup_on_macerr(err, TCALC_DARR_PUSH(fin_toks, nb_fin_toks, fin_toks_cap, clone, err));
 
     if (i + 1 < nb_tokens &&
-      (tokens[i]->type == TCALC_TOK_NUM || 
+      (tokens[i]->type == TCALC_TOK_NUM ||
       tokens[i]->type == TCALC_TOK_GRPEND ||
       (tokens[i]->type == TCALC_TOK_ID && tcalc_ctx_hasvar(ctx, tokens[i]->val))) &&
       (tokens[i + 1]->type == TCALC_TOK_GRPSTRT ||
@@ -166,21 +166,21 @@ tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_
 }
 
 /**
- * 
+ *
  * Tokenize infix expression and assign token types to each token.
- * 
+ *
  * tcalc_tokenize_infix checks for balanced grouping symbols and returns
  * TCALC_ERR_UNBAL_GRPSYMS error upon imbalanced grouping symbols.
- * 
- * 
+ *
+ *
  * tcalc_tokenize_infix serves to identify and resolve unary negative and positive signs
  * before they are processed.
- * 
+ *
 */
 tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size) {
   tcalc_err err = TCALC_ERR_OK;
   // const char* relation_op_tokens[8] = {"=", "<", ">", "!", "==", "!=", ">=", "<="};
-  
+
   tcalc_token** infix_tokens = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_str_tokens);
   size_t nb_infix_tokens = 0;
   if (infix_tokens == NULL) { return TCALC_ERR_BAD_ALLOC; }
@@ -189,7 +189,7 @@ tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t 
     tcalc_token_type token_type;
 
     if (strcmp(str_tokens[i], "+")  == 0 || strcmp(str_tokens[i], "-") == 0) {
-      
+
       if (i == 0) { // + and - are unary if they are the first token in an expression
         token_type = TCALC_TOK_UNOP;
       } else if (infix_tokens[i - 1]->type == TCALC_TOK_GRPSTRT) { // + and - are unary if they are the first token in a grouping symbol
@@ -204,8 +204,8 @@ tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t 
 
     } else if ( strcmp(str_tokens[i], "*") == 0 ||
                 strcmp(str_tokens[i], "/") == 0 ||
-                strcmp(str_tokens[i], "^") == 0 || 
-                strcmp(str_tokens[i], "**") == 0 || 
+                strcmp(str_tokens[i], "^") == 0 ||
+                strcmp(str_tokens[i], "**") == 0 ||
                 strcmp(str_tokens[i], "%") == 0) {
       token_type = TCALC_TOK_BINOP;
     } else if (strcmp(str_tokens[i], "(") == 0 || strcmp(str_tokens[i], "[") == 0) {
@@ -231,7 +231,7 @@ tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t 
     } else if (tcalc_strisdouble(str_tokens[i])) {
       token_type = TCALC_TOK_NUM;
     } else if (tcalc_is_identifier(str_tokens[i])) {
-      token_type = TCALC_TOK_ID;  
+      token_type = TCALC_TOK_ID;
     } else { // could not identify token type, exit
       err = TCALC_ERR_INVALID_ARG;
       goto cleanup;
@@ -253,27 +253,27 @@ tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t 
 
 /**
  * Call and gather all tokens from subsequent calls to tcalc_next_math_strtoken
- * and return them in an array to *out. 
- * 
+ * and return them in an array to *out.
+ *
  * *out will be allocated with a size of *out_size by tcalc_tokenize_infix_strtokens
  * upon returning TCALC_ERR_OK. If TCALC_ERR_OK is not returned, then *out has not been
  * allocated and does not have to be freed.
- * 
+ *
  * This function does NOT check for balanced parenthesis, or any other syntactical
  * errors in that matter. Some other examples of syntactical errors not checked
- * are unknown functions or variables. 
- * 
+ * are unknown functions or variables.
+ *
  * Lexical errors like miswritten numbers or unknown operators/symbols are seen
  * as errors, as according to tcalc_next_math_strtoken.
- * 
+ *
  * Examples:
- * 
+ *
  * "32+-34*(5 * 101)"
  * "32", "+", "-", "34", "*", "(", "5", "*", "101", ")"
- * 
+ *
  * "3+sin(43)"
  * "3", "+", "sin", "(", "43", ")"
- * 
+ *
  * "     [45 ^ (3 / 2)] *   +11"
  * "[", "45", "^", "(", "3", "/", "2", ")", "]", "*", "+", "11"
 */
@@ -302,30 +302,30 @@ tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* 
 
 /**
  * Simple iterable tokenizing function
- * 
+ *
  * Only the characters in the string "0123456789. abcdefghijklmnopqrstuvwxyz()[]+-*\/^%"
  * will be recognized (except the backslash ofc). Any other character being present will return an error.
- * 
+ *
  * All +, -, /, *, ^, %, [, ,], (, ) tokens are immediately read and returned.
  * This even applies to negative numbers. A "-34" will be returned as two separate
  * tokens upon subsequent calls: "-" and "34"
- * 
+ *
  * All strings of alphabetical lowercase letters will be grouped and returned as one.
- * 
+ *
  * All whitespace is ignored
- * 
+ *
  * TCALC_ERR_STOP_ITER is returned when the end of the expression has been reached.
  * If TCALC_ERR_STOP_ITER is returned, then *out is not allocated.
- * 
+ *
  * TCALC_ERR_OK is returned when a token has been successfully read to *out.
- * 
+ *
  * Any other error code is an actual lexing error and should be treated as such.
- * 
+ *
  * This function should really never be called directly, and should be used through
  * tcalc_tokenize_infix_strtokens instead
- * 
+ *
  * Examples:
- * 
+ *
  * "32+-34*(5 * 101)"
  * "32", "+", "-", "34", "*", "(", "5", "*", "101", ")"
 */
@@ -338,7 +338,7 @@ tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, s
   if (expr[offset] == '\0')
     return TCALC_ERR_STOP_ITER;
 
-  if (!is_valid_tcalc_char(expr[offset])) 
+  if (!is_valid_tcalc_char(expr[offset]))
     return TCALC_ERR_INVALID_ARG;
 
   for (size_t s = 0; TCALC_MULTI_TOKENS[s] != NULL; s++) {
@@ -374,7 +374,7 @@ tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, s
 
       offset++;
 		}
-		
+
     ret_on_err(err, tcalc_strsubstr(expr, num_start, offset, out));
     *new_offset = offset;
     return TCALC_ERR_OK;
@@ -390,15 +390,15 @@ tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, s
     *new_offset = offset;
     return TCALC_ERR_OK;
   }
-	
+
 	return TCALC_ERR_STOP_ITER; // this SHOULD be unreachable
 }
 
 /**
- * 
- * 
+ *
+ *
  * @param out allocate and return a list of tcalc_token objects based on expr param
- * @param out_size 
+ * @param out_size
 */
 tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_size) {
   *out_size = 0;
@@ -419,9 +419,9 @@ tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_s
     tcalc_token_type token_type;
 
     if (strcmp(token_strings[i], "-") == 0 ||
-        strcmp(token_strings[i], "+") == 0 || 
-        strcmp(token_strings[i], "*") == 0 || 
-        strcmp(token_strings[i], "/") == 0 || 
+        strcmp(token_strings[i], "+") == 0 ||
+        strcmp(token_strings[i], "*") == 0 ||
+        strcmp(token_strings[i], "/") == 0 ||
         strcmp(token_strings[i], "^") == 0 ||
         strcmp(token_strings[i], "%") == 0) {
       token_type = TCALC_TOK_BINOP;
@@ -458,7 +458,7 @@ int is_valid_tcalc_char(char ch) {
 }
 
 /**
- * 
+ *
  * returns TCALC_ERR_OK on success and TCALC_ERR_INVALID_ARG on error.
 */
 tcalc_err tcalc_valid_token_str(const char* token) {
@@ -485,7 +485,7 @@ tcalc_err tcalc_valid_token_str(const char* token) {
 */
 tcalc_err tcalc_are_groupsyms_balanced(const char* expr) {
   tcalc_err err = TCALC_ERR_OK;
-  
+
   char* stack = NULL;
   size_t stack_size = 0;
   size_t stack_capacity = 0;
@@ -525,7 +525,7 @@ int tcalc_is_identifier(const char* str) {
     if (!islower(str[i])) {
       is_identifier = 0;
       break;
-    } 
+    }
   }
 
   return is_identifier;

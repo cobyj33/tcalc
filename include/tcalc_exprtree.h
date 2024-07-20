@@ -23,25 +23,25 @@ typedef struct tcalc_exprval {
 /**
  * The type of token dictates how an expression tree node should be evaluated,
  * as well as how many
- * 
+ *
  * TCALC_TOK_NUM:
  *  The token simply holds a number in its value string, and it can be evaluated
  *  by calling tcalc_strtodouble. The expression tree node has no children.
- * 
+ *
  * TCALC_TOK_UNOP:
  *  The expression tree node has 1 child which must be evaluated, and then the
  *  corresponding operator in the token's value is used to determine the unary
  *  operation to perform on the evaluated child.
- * 
+ *
  * TCALC_TOK_BINOP:
  *  The expression tree node has 2 children which must first be evaluated, and then the
  *  corresponding operator in the token's value is used to determine the binary
  *  operation to perform on the evaluated children. The evaluated children must
  *  be called with the binary expression in order, as some binary operations like
  *  division and subtraction are not associative.
- * 
+ *
  * Every other token type is currently unimplemented :(
- * 
+ *
  * To validate a tree, evaluate it with tcalc_eval_exprtree and checking that
  * it returns TCALC_ERR_OK.
 */
@@ -53,9 +53,9 @@ typedef struct tcalc_exprtree_node {
 
 /**
  * Clones the token given and allocates a children buffer of size nb_children.
- * 
+ *
  * All entries in the children array will be initialized to NULL.
- * 
+ *
  * It is safe to free the parameter token passed after calling
  * tcalc_exprtree_node_alloc, since the given token is copied.
 */
@@ -70,13 +70,13 @@ void tcalc_exprtree_free(tcalc_exprtree* head);
 /**
  * Free a tcalc expression tree's children **recursively** and set each
  * child to NULL.
- * 
+ *
  * defined as no-op if head == NULL
 */
 void tcalc_exprtree_free_children(tcalc_exprtree* head);
 
 /**
- * Vardef form: 
+ * Vardef form:
  *  <variable> "=" expression
 */
 int tcalc_exprtree_is_vardef(tcalc_exprtree* expr);

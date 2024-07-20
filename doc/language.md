@@ -12,7 +12,7 @@ switch to a more scientific-computing-based number system, probably
 with the [GNU GMP](https://gmplib.org/) and
 [GNU MPFR](https://www.mpfr.org/) libraries.
 
-Booleans are not treated as either 0s or 1s, and are not 
+Booleans are not treated as either 0s or 1s, and are not
 
 ## Numbers
 
@@ -75,7 +75,7 @@ Booleans are not treated as either 0s or 1s, and are not
 - &&
 - ||
 
-> NOTE: Still trying to figure out if = and == should be different 
+> NOTE: Still trying to figure out if = and == should be different
 >
 >
 >
@@ -110,7 +110,7 @@ x + 5
 > 13 // x + 3;
 ```
 
-Functions can be set with the func([ arg1 [, argn]* ]) := 
+Functions can be set with the func([ arg1 [, argn]* ]) :=
 
 ```tcalc
 f(x) := x + 3;
@@ -126,7 +126,7 @@ definition changes, the variable additionally changes
 
 ```abnf
 
-expression := 
+expression :=
 
 
 ```

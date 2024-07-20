@@ -132,7 +132,7 @@ tcalc_err tcalc_strsplit(const char* str, char split, char*** out, size_t* out_s
   while (str[end] != '\0') {
     while (str[end] != split && str[end] != '\0')
       end++;
-    
+
     char* substr;
     cleanup_on_err(err, tcalc_strsubstr(str, start, end, &substr));
     cleanup_on_macerr(err, TCALC_VEC_PUSH(strings, substr, err));
@@ -215,13 +215,13 @@ tcalc_err tcalc_strtodouble(const char* str, double* out)
       if (*out >= (DBL_MAX - 9) / 10) {
         return sign == -1 ? TCALC_ERR_UNDERFLOW : TCALC_ERR_OVERFLOW;
       }
-      
+
       if (foundDecimal) {
         *out = *out + (str[i] - '0') * decimalMultiplier;
         decimalMultiplier /= 10.0;
       }
       else {
-        *out = *out * 10.0 + (str[i] - '0'); 
+        *out = *out * 10.0 + (str[i] - '0');
       }
 
     } else {

@@ -15,7 +15,7 @@ set(TCALC_LIB_SRC_FILES
 ${CMAKE_SOURCE_DIR}/src/tcalc_context.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_error.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_eval.c
-${CMAKE_SOURCE_DIR}/src/tcalc_exit.c 
+${CMAKE_SOURCE_DIR}/src/tcalc_exit.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_exprtree.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_func.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_infix_to_rpn.c

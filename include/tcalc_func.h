@@ -12,7 +12,7 @@ typedef int (*tcalc_relfunc)(double, double);
 typedef int (*tcalc_unlfunc)(int);
 
 /**
- * 
+ *
 */
 typedef int (*tcalc_binlfunc)(int, int);
 

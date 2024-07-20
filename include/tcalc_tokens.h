@@ -44,7 +44,7 @@ Valid Examples:
 */
 
 typedef enum tcalc_token_type {
-  TCALC_TOK_NUM, // A parsable number  
+  TCALC_TOK_NUM, // A parsable number
   TCALC_TOK_UNOP, // unary operator ("+", "-")
   TCALC_TOK_BINOP, // binary operator ("+", "-", "*", "/", "^", "**")
   TCALC_TOK_RELOP, // relational (binary) operator ("<", "<=", ">", ">=")

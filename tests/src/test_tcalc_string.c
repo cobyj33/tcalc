@@ -9,7 +9,7 @@ void TestTCalcStrToDouble(CuTest* tc) {
   tcalc_err err = tcalc_strtodouble("2.34", &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 2.34, TCALC_DBL_ASSERT_DELTA);
-  
+
   err = tcalc_strtodouble("234.", &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 234.0, TCALC_DBL_ASSERT_DELTA);
@@ -66,7 +66,7 @@ void TestTCalcStrSplit(CuTest* tc) {
   CuAssertStrEquals(tc, split[10], "yo");
   CuAssertStrEquals(tc, split[11], "yo");
   CuAssertStrEquals(tc, split[12], "yooo");
-  
+
   TCALC_ARR_FREE_F(split, split_size, free);
 }
 
@@ -88,7 +88,7 @@ void TestTCalcStrSplitEdges(CuTest* tc) {
   CuAssertStrEquals(tc, split[4], "front");
   CuAssertStrEquals(tc, split[5], "or");
   CuAssertStrEquals(tc, split[6], "back");
-  
+
   TCALC_ARR_FREE_F(split, split_size, free);
   err = tcalc_strsplit(packed_left, ' ', &split, &split_size);
   CuAssertTrue(tc, err == TCALC_ERR_OK);

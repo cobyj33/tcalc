@@ -57,17 +57,17 @@ tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out);
 tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out);
 
 /**
- * 
+ *
  * @param parent the expression tree node to attach parameter arguments to.
- * 
+ *
  * The arity of the parsed function arguments is expected to be equal to the
- * 
+ *
 */
 tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent);
 
 /**
  * General Pipeline:
- * 
+ *
  * Convert infix expression into infix tokens
  * Convert infix tokens into rpn-formatted tokens
  * Convert rpn-formatted tokens into returned expression tree
@@ -110,7 +110,7 @@ int tcalc_token_in_operator_list(tcalc_token* token, const char** operators) {
 /**
  * General function for parsing grammar rules for infix binary operators
  * with the grammar "higher_precedence_nonterminal binary_operators higher_precedence_nonterminal"
- * 
+ *
  * @param operators a NULL-terminated array of operator strings to match.
 */
 tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char** operators, tcalc_parsefunc_func_t higher_prec_parsefunc, tcalc_exprtree** out) {
@@ -125,11 +125,11 @@ tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char** operat
 
     tcalc_exprtree *right = NULL;
     cleanup_on_err(err, higher_prec_parsefunc(pctx, &right));
-    
+
     tcalc_exprtree* temp = NULL;
     if (tc_failed(err, tcalc_exprtree_node_alloc(operator, 2, &temp))) {
       // since right has not yet been added to the left subtree,  we would need
-      // to free it before jumping to cleanup 
+      // to free it before jumping to cleanup
       tcalc_exprtree_free(right);
       goto cleanup;
     }
@@ -142,7 +142,7 @@ tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char** operat
 
   *out = left;
 
-  return TCALC_ERR_OK;  
+  return TCALC_ERR_OK;
   cleanup:
     *out = NULL;
     tcalc_exprtree_free(left);
@@ -160,7 +160,7 @@ tcalc_err tcalc_parsefunc_term(tcalc_pctx* pctx, tcalc_exprtree** out) {
 
 tcalc_err tcalc_parsefunc_factor(tcalc_pctx* pctx, tcalc_exprtree** out) {
   const char* operators[] = { "*", "/", "%", NULL };
-  return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_unary, out); 
+  return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_unary, out);
 }
 
 // unary -> ( "+" | "-" )* exponentiation
@@ -184,7 +184,7 @@ tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
   }
 
   cleanup_on_err(err, tcalc_parsefunc_exponentiation(pctx, &primary));
-  
+
   if (unarytail != NULL) {
     unarytail->children[0] = primary;
   } else {
@@ -212,7 +212,7 @@ tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out)
     tcalc_token* operator = pctx->toks[pctx->i];
     pctx->i++;
     cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_MALFORMED_BINEXP);
-    
+
     tcalc_exprtree* rst = NULL;
     cleanup_on_err(err, tcalc_parsefunc_exponentiation(pctx, &rst)); // right recursion
 
@@ -297,12 +297,12 @@ tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out) {
 
   cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPSTRT), TCALC_ERR_UNCALLED_FUNC);
   pctx->i++; // consume opening parentheses
-  
+
   cleanup_on_err(err, tcalc_parsefunc_funcargs(pctx, funchead));
 
   cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_UNCLOSED_FUNC);
   pctx->i++; // consume ending parentheses
-  
+
   *out = funchead;
   return err;
 
@@ -350,7 +350,7 @@ int tcalc_pctx_isnexttype(tcalc_pctx* pctx, tcalc_token_type type){
 int tcalc_pctx_consumeiftype(tcalc_pctx* pctx, tcalc_token_type type) {
   if (tcalc_pctx_isnexttype(pctx, type)) {
     pctx->i++;
-    return 1; 
+    return 1;
   }
   return 0;
 }

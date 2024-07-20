@@ -13,7 +13,7 @@
 int tcalc_cli_infix_tokenizer(const char* expr) {
   tcalc_token** tokens;
   size_t nb_tokens;
-  
+
   tcalc_err err = tcalc_tokenize_infix(expr, &tokens, &nb_tokens);
   TCALC_CLI_CHECK_ERR(err, "[%s] tcalc error: %s\n ", FUNCDINFO, tcalc_strerrcode(err));
 

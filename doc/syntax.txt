@@ -2,7 +2,7 @@
 
 Logical Operators:
   Logical operators evaluate relationships between a group of
-  relational or logical expressions 
+  relational or logical expressions
     =,
     ==,
     !=,
@@ -19,7 +19,7 @@ Logical Operators:
   Wrong Examples:
     5 && 5
     5 || 2 == 3
-    3 < y || y + 3 
+    3 < y || y + 3
     !pi
 
 Relational Operators:
@@ -41,7 +41,7 @@ Relational Operators:
 
   Wrong Examples:
     5 = (y = 3 && x = 4)
-    4 < y < 
+    4 < y <
 
 Arithmetic Operators:
   Arithmetic operators dictate operations between numerical values

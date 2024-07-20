@@ -8,7 +8,7 @@ struct tcalc_ctx;
 
 /**
  * tcalc_eval.h - the main meat
- * 
+ *
  * This is basically all the real application of tcalc is. Everything else is to
  * make these two functions work well. They're quite simple to be honest, they do math.
 */

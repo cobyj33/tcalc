@@ -29,7 +29,7 @@ int tcalc_cli_rpn_tokenizer(const char* expr) {
 
   for (size_t i = 0; i < nb_rpn_tokens; i++) {
     printf("{type: %s, value: '%s'}%s",
-      tcalc_token_type_str(rpn_tokens[i]->type), 
+      tcalc_token_type_str(rpn_tokens[i]->type),
       rpn_tokens[i]->val,
       i == nb_rpn_tokens - 1 ? "" : ", ");
   }

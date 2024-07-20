@@ -12,20 +12,20 @@ struct tcalc_exprtree_node;
 
 /**
  * Notes on precedence:
- * 
+ *
  * A higher precedence value means that that operation will take place before
  * operations of lower precedence values. For example, if multiplication has
  * a precedence value of 3, exponentiation has a precedence value of 4, and
  * addition has a precedence value of 2, exponentiation always comes first, then
  * multiplication, then addition when evaluating an expression within the same
  * grouping symbols.
- * 
+ *
  */
 
 /**
  * Precedence Rankings (Non-Numerical):
  * (\ before an operator is just an escape btw)
- * 
+ *
  * Highest Precedence, Handled First
  * ---------------------
  * "^", "**" (Exponentiation)
@@ -33,7 +33,7 @@ struct tcalc_exprtree_node;
  * "-" (Unary Minus)
  * "!" (Logical NOT)
  * ---------------------
- * "*" (Multiplication) 
+ * "*" (Multiplication)
  * "/" (Division)
  * "%" (Modulus)
  * ---------------------
@@ -150,12 +150,12 @@ tcalc_opdata tcalc_getbinlopdata(tcalc_binlopdef* binlop_def);
 
 /**
  * Some conditions to a tcalc context:
- * 
+ *
  * Unary function identifiers must only contain alphabetical characters
  * Binary function identifiers must only contain alphabetical characters
  * Variable identifiers must only contain aphabetical characters
- * 
- * Symbols and identifiers must NOT be the same across the tcalc_ctx 
+ *
+ * Symbols and identifiers must NOT be the same across the tcalc_ctx
  * - The only exception to the above rule is that unary operators and binary
  *   operators can have the same symbol identifiers. This should be taken with
  *   salt though, as the tokenizer will disambiguate itself which + or -
@@ -214,7 +214,7 @@ int tcalc_ctx_haslvar(const tcalc_ctx* ctx, const char* name);
 
 /**
  * Note that out must be NON-NULL
- * 
+ *
  * tcalc_ctx_get_x functions will not return an error whenever the same given
  * context and name parameters return truthy from their corresponding
  * tcalc_ctx_has_x functions (if tcalc_ctx_has_x returns true, tcalc_ctx_get_x

@@ -1,4 +1,4 @@
-#ifndef TCALC_STRING_H 
+#ifndef TCALC_STRING_H
 #define TCALC_STRING_H
 
 #include <stddef.h>
@@ -9,10 +9,10 @@
  * Copy string src to buffer dst of size dsize.  At most dsize-1
  * chars will be copied.  Always NUL terminates (unless dsize == 0).
  * Returns strlen(src); if retval >= dsize, truncation occurred.
- * 
+ *
  * "Note that room for the NUL should be included in [dsize]."
  *  - FreeBSD Library Functions Manual (https://man.freebsd.org/cgi/man.cgi?query=strlcpy&sektion=3)
- * 
+ *
  * Doesn't return tcalc_err, because it's just gonna sigsev if it
  * fails. I had to have done something stupid for this to actually fail like pass
  * a null pointer.
@@ -26,7 +26,7 @@ size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize);
  * will be copied.  Always NUL terminates (unless dsize <= strlen(dst)).
  * Returns strlen(src) + MIN(dsize, strlen(initial dst)).
  * If retval >= dsize, truncation occurred.
- * 
+ *
  * "Note that room for the NUL should be included in [dsize]."
  *  - FreeBSD Library Functions Manual (https://man.freebsd.org/cgi/man.cgi?query=strlcpy&sektion=3)
  */
@@ -56,24 +56,24 @@ int tcalc_str_list_has(const char* input, const char** list, size_t count);
 
 /**
  * Find if one string has the prefix given by another string.
- * 
+ *
  * I use this over strncmp, as strncmp will stop when either string null terminates
  * or it reaches a maximum of the length passed. This doesn't work well for
  * prefixes though, since strncmp moreso tells that both strings share the same
  * prefix, not that one string has a certain prefix.
- * 
+ *
  * For example:
  *  strncmp("**", "**5 + 3", 2) and strncmp("**", "*", 2) eval to 0, so we can't
- *  use strncmp to find if the second string begins with "**" reliably or not  
- * 
+ *  use strncmp to find if the second string begins with "**" reliably or not
+ *
  * Returns: 1 if str has the prefix prefix, 0 otherwise
- * 
+ *
  * prefix and str must NOT be NULL
 */
 int tcalc_strhaspre(const char* prefix, const char* str);
 
 /**
- * 
+ *
  * @param src
  * @param start (inclusive)
  * @param end (exclusive)

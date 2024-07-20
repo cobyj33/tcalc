@@ -37,12 +37,12 @@ tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, 
  * Implementation of the shunting yard algorithm to reorder infix-formatted
  * tokens into an rpn-style. Used for further processing of tokens and to help
  * the ease of creating an AST tree from tokens later on.
- * 
+ *
  * https://en.wikipedia.org/wiki/Shunting_yard_algorithm
- * 
+ *
  * Remember that the number of infix tokens and the number of rpn tokens are not
  * necessarily the same, as rpn doesn't need grouping tokens.
- * 
+ *
  * Upon returning TCALC_ERR_OK, *out is an allocated array of size *out_size. The caller
  * is responsible for freeing these tokens.
 */
@@ -53,7 +53,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
   if (opstk == NULL) return TCALC_ERR_BAD_ALLOC;
   size_t opstk_size = 0;
 
-  tcalc_token** rpn_toks = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_infix_toks); 
+  tcalc_token** rpn_toks = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_infix_toks);
   size_t rpn_toks_size = 0;
   if (rpn_toks == NULL) {
     free(opstk);
@@ -88,7 +88,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
           cleanup_on_err(err, tcalc_token_clone(opstk[opstk_size - 1], &rpn_toks[rpn_toks_size]));
           rpn_toks_size++;
           opstk_size--;
-          
+
           cleanup_on_err(err, err_pred(opstk_size == 0, TCALC_ERR_INVALID_OP));
         }
         opstk_size--; // pop off opening grouping symbol
@@ -128,7 +128,7 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
         opstk[opstk_size++] = infix_toks[i];
         break;
       }
-      case TCALC_TOK_ID: {  
+      case TCALC_TOK_ID: {
         if (tcalc_ctx_hasfunc(ctx, infix_toks[i]->val)) {
           opstk[opstk_size++] = infix_toks[i];
         } else if (tcalc_ctx_hasvar(ctx, infix_toks[i]->val)) {

@@ -53,7 +53,7 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
   MAKE_SUCCESS_TEST("2pi", 6.283185);
   MAKE_SUCCESS_TEST("pi(2)", 6.283185);
   MAKE_SUCCESS_TEST("e(pi)(2(4))", 68.317874);
-  
+
   #undef MAKE_SUCCESS_TEST
 }
 
