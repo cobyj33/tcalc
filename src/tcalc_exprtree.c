@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 
-tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_exprtree** out);
+static tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_exprtree** out);
 
 tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const tcalc_ctx* ctx, tcalc_exprtree** out) {
   tcalc_token** tokens;
@@ -118,7 +118,7 @@ void tcalc_exprtree_free_children(tcalc_exprtree* head) {
 }
 
 
-tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_exprtree** out) {
+static tcalc_err tcalc_rpn_tokens_to_exprtree(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_exprtree** out) {
   tcalc_err err = TCALC_ERR_OK;
 
   tcalc_exprtree** tree_stack = (tcalc_exprtree**)malloc(sizeof(tcalc_exprtree*) * nb_tokens);

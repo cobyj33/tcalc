@@ -48,13 +48,13 @@ typedef struct tcalc_pctx {
 
 typedef tcalc_err (tcalc_parsefunc_func_t)(tcalc_pctx*, tcalc_exprtree**);
 
-tcalc_err tcalc_parsefunc_expression(tcalc_pctx* pctx, tcalc_exprtree** out);
-tcalc_err tcalc_parsefunc_term(tcalc_pctx* pctx, tcalc_exprtree** out);
-tcalc_err tcalc_parsefunc_factor(tcalc_pctx* pctx, tcalc_exprtree** out);
-tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out);
-tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out);
-tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out);
-tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_expression(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_term(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_factor(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out);
 
 /**
  *
@@ -63,7 +63,7 @@ tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out);
  * The arity of the parsed function arguments is expected to be equal to the
  *
 */
-tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent);
+static tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent);
 
 /**
  * General Pipeline:
@@ -91,21 +91,14 @@ tcalc_err tcalc_create_exprtree_infix(const char* infix, const tcalc_ctx* ctx, t
   return err;
 }
 
-int tcalc_pctx_isnextstr(tcalc_pctx* pctx, const char* str);
-int tcalc_pctx_isnexttype(tcalc_pctx* pctx, tcalc_token_type type);
-int tcalc_pctx_consumeiftype(tcalc_pctx* pctx, tcalc_token_type type);
-tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx,  const char** operators, tcalc_parsefunc_func_t higher_prec_parsefunc, tcalc_exprtree** out);
+static int tcalc_pctx_isnextstr(tcalc_pctx* pctx, const char* str);
+static int tcalc_pctx_isnexttype(tcalc_pctx* pctx, tcalc_token_type type);
+static tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx,  const char** operators, tcalc_parsefunc_func_t higher_prec_parsefunc, tcalc_exprtree** out);
 
 /**
  * @param operators a NULL-terminated array of operator strings to match.
 */
-int tcalc_token_in_operator_list(tcalc_token* token, const char** operators) {
-  for (unsigned int i = 0; operators[i] != NULL; i++) {
-    if (strcmp(token->val, operators[i]) == 0)
-      return 1;
-  }
-  return 0;
-}
+static int tcalc_token_in_operator_list(tcalc_token* token, const char** operators);
 
 /**
  * General function for parsing grammar rules for infix binary operators
@@ -113,7 +106,7 @@ int tcalc_token_in_operator_list(tcalc_token* token, const char** operators) {
  *
  * @param operators a NULL-terminated array of operator strings to match.
 */
-tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char** operators, tcalc_parsefunc_func_t higher_prec_parsefunc, tcalc_exprtree** out) {
+static tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char** operators, tcalc_parsefunc_func_t higher_prec_parsefunc, tcalc_exprtree** out) {
   tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* left = NULL;
   cleanup_on_err(err, higher_prec_parsefunc(pctx, &left));
@@ -149,22 +142,22 @@ tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char** operat
     return err;
 }
 
-tcalc_err tcalc_parsefunc_expression(tcalc_pctx* pctx, tcalc_exprtree** out) {
+static tcalc_err tcalc_parsefunc_expression(tcalc_pctx* pctx, tcalc_exprtree** out) {
   return tcalc_parsefunc_term(pctx, out);
 }
 
-tcalc_err tcalc_parsefunc_term(tcalc_pctx* pctx, tcalc_exprtree** out) {
+static tcalc_err tcalc_parsefunc_term(tcalc_pctx* pctx, tcalc_exprtree** out) {
   const char* operators[] = { "+", "-", NULL };
   return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_factor, out);
 }
 
-tcalc_err tcalc_parsefunc_factor(tcalc_pctx* pctx, tcalc_exprtree** out) {
+static tcalc_err tcalc_parsefunc_factor(tcalc_pctx* pctx, tcalc_exprtree** out) {
   const char* operators[] = { "*", "/", "%", NULL };
   return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_unary, out);
 }
 
 // unary -> ( "+" | "-" )* exponentiation
-tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
+static tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
   tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* unaryhead = NULL, *unarytail = NULL; //linked-list-like structure
   tcalc_exprtree* primary = NULL;
@@ -201,7 +194,7 @@ tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
 }
 
 // exponentiation -> primary ( ( "^" | "**" ) exponentiation )
-tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out) {
+static tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out) {
   const char* operators[] = { "^", "**", NULL };
   tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* tree = NULL;
@@ -237,7 +230,7 @@ tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out)
     return err;
 }
 
-tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out) {
+static tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out) {
   tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* node = NULL;
 
@@ -278,7 +271,7 @@ tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out) {
     return err;
 }
 
-tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out) {
+static tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out) {
   assert(pctx->i < pctx->nb_toks);
   assert(pctx->toks[pctx->i]->type == TCALC_TOK_ID);
   tcalc_err err = TCALC_ERR_OK;
@@ -313,7 +306,7 @@ tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out) {
 }
 
 
-tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent) {
+static tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent) {
   tcalc_err err = TCALC_ERR_OK;
 
   if (parent->nb_children > 0) {
@@ -339,18 +332,18 @@ tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent) {
     return err;
 }
 
-int tcalc_pctx_isnextstr(tcalc_pctx* pctx, const char* str) {
+static int tcalc_pctx_isnextstr(tcalc_pctx* pctx, const char* str) {
   return pctx->i < pctx->nb_toks && strcmp(pctx->toks[pctx->i]->val, str) == 0;
 }
 
-int tcalc_pctx_isnexttype(tcalc_pctx* pctx, tcalc_token_type type){
+static int tcalc_pctx_isnexttype(tcalc_pctx* pctx, tcalc_token_type type){
   return pctx->i < pctx->nb_toks && pctx->toks[pctx->i]->type == type;
 }
 
-int tcalc_pctx_consumeiftype(tcalc_pctx* pctx, tcalc_token_type type) {
-  if (tcalc_pctx_isnexttype(pctx, type)) {
-    pctx->i++;
-    return 1;
+static int tcalc_token_in_operator_list(tcalc_token* token, const char** operators) {
+  for (unsigned int i = 0; operators[i] != NULL; i++) {
+    if (strcmp(token->val, operators[i]) == 0)
+      return 1;
   }
   return 0;
 }

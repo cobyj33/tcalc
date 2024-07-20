@@ -23,14 +23,14 @@ const char* TCALC_ALLOWED_CHARS = ",()[]+-*/^%!=<>&|0123456789. abcdefghijklmnop
 const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%!=<>";
 const char* TCALC_MULTI_TOKENS[] = {"**", "==", "<=", ">=", "!=", "&&", "||", NULL}; // make sure this remains null terminated
 
-int is_valid_tcalc_char(char ch);
-tcalc_err tcalc_valid_token_str(const char* token);
-tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
-int tcalc_are_groupsyms_balanced(const char* expr);
-tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size);
-tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size);
-tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size);
-int tcalc_is_identifier(const char* str);
+static int is_valid_tcalc_char(char ch);
+static tcalc_err tcalc_valid_token_str(const char* token);
+static tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
+static int tcalc_are_groupsyms_balanced(const char* expr);
+static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size);
+static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size);
+static tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size);
+static int tcalc_is_identifier(const char* str);
 
 const char* tcalc_token_type_str(tcalc_token_type token_type) {
   switch (token_type) {
@@ -133,7 +133,7 @@ tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc
  * - Insert shorthand multiplication logic
  *   - Essentially, if a number preceeds an identifier or grouping symbol, append a multiplication token after that number
 */
-tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size) {
+static tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size) {
   tcalc_err err = TCALC_ERR_OK;
   tcalc_token** fin_toks = NULL;
   size_t nb_fin_toks = 0;
@@ -177,7 +177,7 @@ tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_
  * before they are processed.
  *
 */
-tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size) {
+static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size) {
   tcalc_err err = TCALC_ERR_OK;
   // const char* relation_op_tokens[8] = {"=", "<", ">", "!", "==", "!=", ">=", "<="};
 
@@ -277,7 +277,7 @@ tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t 
  * "     [45 ^ (3 / 2)] *   +11"
  * "[", "45", "^", "(", "3", "/", "2", ")", "]", "*", "+", "11"
 */
-tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size) {
+static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size) {
   tcalc_err err = TCALC_ERR_OK;
   *out_size = 0;
   char** token_buffer = NULL;
@@ -329,7 +329,7 @@ tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* 
  * "32+-34*(5 * 101)"
  * "32", "+", "-", "34", "*", "(", "5", "*", "101", ")"
 */
-tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, size_t* new_offset) {
+static tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, size_t* new_offset) {
   tcalc_err err;
   size_t offset = start;
 
@@ -450,7 +450,7 @@ tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_s
     return err;
 }
 
-int is_valid_tcalc_char(char ch) {
+static int is_valid_tcalc_char(char ch) {
 	for (int i = 0; TCALC_ALLOWED_CHARS[i] != '\0'; i++)
 		if (TCALC_ALLOWED_CHARS[i] == ch)
 			return 1;
@@ -461,7 +461,7 @@ int is_valid_tcalc_char(char ch) {
  *
  * returns TCALC_ERR_OK on success and TCALC_ERR_INVALID_ARG on error.
 */
-tcalc_err tcalc_valid_token_str(const char* token) {
+static tcalc_err tcalc_valid_token_str(const char* token) {
   if (token == NULL) return TCALC_ERR_INVALID_ARG;
   if (token[0] == '\0') return TCALC_ERR_INVALID_ARG; // empty string
 
@@ -483,7 +483,7 @@ tcalc_err tcalc_valid_token_str(const char* token) {
 /**
  * There's probably a better way to implement this but whatever
 */
-tcalc_err tcalc_are_groupsyms_balanced(const char* expr) {
+static tcalc_err tcalc_are_groupsyms_balanced(const char* expr) {
   tcalc_err err = TCALC_ERR_OK;
 
   char* stack = NULL;
@@ -519,7 +519,7 @@ tcalc_err tcalc_are_groupsyms_balanced(const char* expr) {
     return err;
 }
 
-int tcalc_is_identifier(const char* str) {
+static int tcalc_is_identifier(const char* str) {
   int is_identifier = 1;
   for (size_t i = 0; str[i] != '\0'; i++) {
     if (!islower(str[i])) {

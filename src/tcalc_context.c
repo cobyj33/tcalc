@@ -10,25 +10,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-tcalc_err tcalc_vardef_alloc(const char* name, double val, tcalc_vardef** out);
-tcalc_err tcalc_lvardef_alloc(const char* name, int boolval, tcalc_lvardef** out);
-tcalc_err tcalc_binfuncdef_alloc(const char* name, tcalc_binfunc func, tcalc_binfuncdef** out);
-tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_unfunc func, tcalc_unfuncdef** out);
-tcalc_err tcalc_binopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func, tcalc_binopdef** out);
-tcalc_err tcalc_unopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_unfunc func, tcalc_unopdef** out);
-tcalc_err tcalc_relopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_relfunc func, tcalc_relopdef** out);
-tcalc_err tcalc_unlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_unlfunc func, tcalc_unlopdef** out);
-tcalc_err tcalc_binlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_binlfunc func, tcalc_binlopdef** out);
+static tcalc_err tcalc_vardef_alloc(const char* name, double val, tcalc_vardef** out);
+static tcalc_err tcalc_lvardef_alloc(const char* name, int boolval, tcalc_lvardef** out);
+static tcalc_err tcalc_binfuncdef_alloc(const char* name, tcalc_binfunc func, tcalc_binfuncdef** out);
+static tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_unfunc func, tcalc_unfuncdef** out);
+static tcalc_err tcalc_binopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func, tcalc_binopdef** out);
+static tcalc_err tcalc_unopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_unfunc func, tcalc_unopdef** out);
+static tcalc_err tcalc_relopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_relfunc func, tcalc_relopdef** out);
+static tcalc_err tcalc_unlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_unlfunc func, tcalc_unlopdef** out);
+static tcalc_err tcalc_binlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_binlfunc func, tcalc_binlopdef** out);
 
-void tcalc_vardef_free(tcalc_vardef* var_def);
-void tcalc_lvardef_free(tcalc_lvardef* var_def);
-void tcalc_binfuncdef_free(tcalc_binfuncdef* binary_func_def);
-void tcalc_unfuncdef_free(tcalc_unfuncdef* unary_func_def);
-void tcalc_binopdef_free(tcalc_binopdef* binary_op_def);
-void tcalc_unopdef_free(tcalc_unopdef* unary_op_def);
-void tcalc_relopdef_free(tcalc_relopdef* rel_op_def);
-void tcalc_unlopdef_free(tcalc_unlopdef* unl_op_def);
-void tcalc_binlopdef_free(tcalc_binlopdef* binl_op_def);
+static void tcalc_vardef_free(tcalc_vardef* var_def);
+static void tcalc_lvardef_free(tcalc_lvardef* var_def);
+static void tcalc_binfuncdef_free(tcalc_binfuncdef* binary_func_def);
+static void tcalc_unfuncdef_free(tcalc_unfuncdef* unary_func_def);
+static void tcalc_binopdef_free(tcalc_binopdef* binary_op_def);
+static void tcalc_unopdef_free(tcalc_unopdef* unary_op_def);
+static void tcalc_relopdef_free(tcalc_relopdef* rel_op_def);
+static void tcalc_unlopdef_free(tcalc_unlopdef* unl_op_def);
+static void tcalc_binlopdef_free(tcalc_binlopdef* binl_op_def);
 
 tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out) {
   // use of calloc is important here! We have to null all of the TCALC_VEC
@@ -401,11 +401,11 @@ tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, tcalc_binl
   *out = def; \
   return TCALC_ERR_OK;
 
-tcalc_err tcalc_vardef_alloc(const char* name, double val, tcalc_vardef** out) {
+static tcalc_err tcalc_vardef_alloc(const char* name, double val, tcalc_vardef** out) {
   tcalc_xvardef_alloc(tcalc_vardef, name, val, out);
 }
 
-tcalc_err tcalc_lvardef_alloc(const char* name, int boolval, tcalc_lvardef** out) {
+static tcalc_err tcalc_lvardef_alloc(const char* name, int boolval, tcalc_lvardef** out) {
   tcalc_xvardef_alloc(tcalc_lvardef, name, boolval, out);
 }
 
@@ -422,11 +422,11 @@ tcalc_err tcalc_lvardef_alloc(const char* name, int boolval, tcalc_lvardef** out
   *out = def; \
   return TCALC_ERR_OK;
 
-tcalc_err tcalc_binfuncdef_alloc(const char* name, tcalc_binfunc func, tcalc_binfuncdef** out) {
+static tcalc_err tcalc_binfuncdef_alloc(const char* name, tcalc_binfunc func, tcalc_binfuncdef** out) {
   tcalc_xfuncdef_alloc(tcalc_binfuncdef, name, func, out)
 }
 
-tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_unfunc func, tcalc_unfuncdef** out) {
+static tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_unfunc func, tcalc_unfuncdef** out) {
   tcalc_xfuncdef_alloc(tcalc_unfuncdef, name, func, out)
 }
 
@@ -445,23 +445,23 @@ tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_unfunc func, tcalc_unfun
   *out = def; \
   return TCALC_ERR_OK;
 
-tcalc_err tcalc_binopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func, tcalc_binopdef** out) {
+static tcalc_err tcalc_binopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func, tcalc_binopdef** out) {
   tcalc_xopdef_allocx(tcalc_binopdef, name, prec, assoc, func, out)
 }
 
-tcalc_err tcalc_unopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_unfunc func, tcalc_unopdef** out) {
+static tcalc_err tcalc_unopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_unfunc func, tcalc_unopdef** out) {
   tcalc_xopdef_allocx(tcalc_unopdef, name, prec, assoc, func, out)
 }
 
-tcalc_err tcalc_unlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_unlfunc func, tcalc_unlopdef** out) {
+static tcalc_err tcalc_unlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_unlfunc func, tcalc_unlopdef** out) {
   tcalc_xopdef_allocx(tcalc_unlopdef, name, prec, assoc, func, out)
 }
 
-tcalc_err tcalc_binlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_binlfunc func, tcalc_binlopdef** out) {
+static tcalc_err tcalc_binlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_binlfunc func, tcalc_binlopdef** out) {
   tcalc_xopdef_allocx(tcalc_binlopdef, name, prec, assoc, func, out)
 }
 
-tcalc_err tcalc_relopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_relfunc func, tcalc_relopdef** out) {
+static tcalc_err tcalc_relopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_relfunc func, tcalc_relopdef** out) {
   tcalc_xopdef_allocx(tcalc_relopdef, name, prec, assoc, func, out)
 }
 
@@ -470,39 +470,39 @@ tcalc_err tcalc_relopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tc
   free(objname->id); \
   free(objname); \
 
-void tcalc_vardef_free(tcalc_vardef* var_def) {
+static void tcalc_vardef_free(tcalc_vardef* var_def) {
   tcalc_xdef_free(var_def);
 }
 
-void tcalc_lvardef_free(tcalc_lvardef* lvar_def) {
+static void tcalc_lvardef_free(tcalc_lvardef* lvar_def) {
   tcalc_xdef_free(lvar_def)
 }
 
-void tcalc_binfuncdef_free(tcalc_binfuncdef* binary_func_def) {
+static void tcalc_binfuncdef_free(tcalc_binfuncdef* binary_func_def) {
   tcalc_xdef_free(binary_func_def);
 }
 
-void tcalc_unfuncdef_free(tcalc_unfuncdef* unary_func_def) {
+static void tcalc_unfuncdef_free(tcalc_unfuncdef* unary_func_def) {
   tcalc_xdef_free(unary_func_def);
 }
 
-void tcalc_binopdef_free(tcalc_binopdef* binary_op_def) {
+static void tcalc_binopdef_free(tcalc_binopdef* binary_op_def) {
   tcalc_xdef_free(binary_op_def);
 }
 
-void tcalc_unopdef_free(tcalc_unopdef* unary_op_def) {
+static void tcalc_unopdef_free(tcalc_unopdef* unary_op_def) {
   tcalc_xdef_free(unary_op_def);
 }
 
-void tcalc_relopdef_free(tcalc_relopdef* rel_op_def) {
+static void tcalc_relopdef_free(tcalc_relopdef* rel_op_def) {
   tcalc_xdef_free(rel_op_def);
 }
 
-void tcalc_unlopdef_free(tcalc_unlopdef* unl_op_def) {
+static void tcalc_unlopdef_free(tcalc_unlopdef* unl_op_def) {
   tcalc_xdef_free(unl_op_def);
 }
 
-void tcalc_binlopdef_free(tcalc_binlopdef* binl_op_def) {
+static void tcalc_binlopdef_free(tcalc_binlopdef* binl_op_def) {
   tcalc_xdef_free(binl_op_def);
 }
 
