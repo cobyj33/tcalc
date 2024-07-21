@@ -106,6 +106,7 @@ typedef enum tcalc_err {
   TCALC_ERR_UNCALLED_FUNC,
   TCALC_ERR_MALFORMED_BINEXP,
   TCALC_ERR_MALFORMED_INPUT,
+  TCALC_ERR_BAD_CAST,
 
   // add new errors above this
   TCALC_ERR_UNIMPLEMENTED,

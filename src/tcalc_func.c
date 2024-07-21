@@ -11,7 +11,7 @@
  * Logical Functions
 */
 int tcalc_not(int a) {
-  return a == 0 ? 1 : 0;
+  return !a;
 }
 
 int tcalc_and(int a, int b) {

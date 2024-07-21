@@ -23,6 +23,8 @@ ${CMAKE_SOURCE_DIR}/src/tcalc_mem.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_parser.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_string.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_tokens.c
+${CMAKE_SOURCE_DIR}/src/tcalc_val.c
+${CMAKE_SOURCE_DIR}/src/tcalc_val_func.c
 )
 
 set(TCALC_CLI_SRC_FILES

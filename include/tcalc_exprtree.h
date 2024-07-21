@@ -12,14 +12,6 @@ typedef enum tcalc_exprtype {
   TCALC_ARITHMETIC_EXPR
 } tcalc_exprtype;
 
-typedef struct tcalc_exprval {
-  tcalc_exprtype exprtype;
-  union {
-    double num;
-    int boolean;
-  } retval;
-} tcalc_algres;
-
 /**
  * The type of token dictates how an expression tree node should be evaluated,
  * as well as how many
