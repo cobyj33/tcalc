@@ -94,8 +94,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
       } else if (tcalc_ctx_hasvar(ctx, expr->token->val)) {
         tcalc_vardef* vardef;
         tcalc_ctx_getvar(ctx, expr->token->val, &vardef);
-
-        *out = TCALC_VAL_INIT_NUM(vardef->val);
+        *out = vardef->val;
         return TCALC_ERR_OK;
       } else {
         return TCALC_ERR_UNKNOWN_ID;

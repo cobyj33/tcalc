@@ -30,7 +30,7 @@ typedef struct tcalc_val {
     } \
   }
 
-#define TCALC_VAL_INIT_BOOL(_bool_expr_) \
+#define TCALC_VAL_INIT_BOOL(_boolean_expr_) \
   (struct tcalc_val){ \
     .type = TCALC_VALTYPE_BOOL, \
     .as = { \

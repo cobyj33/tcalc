@@ -38,7 +38,7 @@ int tcalc_repl() {
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to allocate ctx for REPL... exiting: %s", FUNCDINFO, tcalc_strerrcode(err))
 
-  err = tcalc_ctx_addvar(ctx, "ans", 0.0);
+  err = tcalc_ctx_addvar(ctx, "ans", TCALC_VAL_INIT_NUM(0.0));
   TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to set ans variable on tcalc ctx.. exiting: %s", FUNCDINFO, tcalc_strerrcode(err))
 
   while (!tcalc_str_list_has(input_buffer, quit_strings, ARRAY_SIZE(quit_strings))) {
@@ -60,7 +60,11 @@ int tcalc_repl() {
     }
     else if (strcmp(input, "variables") == 0) {
       for (size_t i = 0; i < ctx->vars.len; i++) {
-        printf("%s = %.5f\n", ctx->vars.arr[i]->id, ctx->vars.arr[i]->val);
+        const tcalc_vardef* var = ctx->vars.arr[i];
+        fputs(var->id, stdout);
+        fputs(" = ", stdout);
+        tcalc_val_fput(var->val, stdout);
+        fputc('\n', stdout);
       }
       continue;
     }
@@ -87,11 +91,7 @@ int tcalc_repl() {
     }
 
     fputs("\n", stdout);
-    // TODO: when tcalc_vardef and tcalc_lvardef are combined, change this
-    // so that 'ans' can be a boolean
-    if (ans.type == TCALC_VALTYPE_NUM) {
-      cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", ans.as.num));
-    }
+    cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", ans));
   }
 
   return EXIT_SUCCESS;

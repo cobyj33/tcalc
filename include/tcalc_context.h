@@ -67,13 +67,8 @@ typedef enum tcalc_assoc{
 
 typedef struct tcalc_vardef {
   char* id;
-  double val;
+  struct tcalc_val val;
 } tcalc_vardef;
-
-typedef struct tcalc_lvardef {
-  char* id;
-  int val;
-} tcalc_lvardef;
 
 typedef struct tcalc_opdata {
   int prec;
@@ -167,7 +162,6 @@ typedef struct tcalc_ctx {
   TCALC_VEC(tcalc_unfuncdef*) unfuncs; // Defined Unary Functions
   TCALC_VEC(tcalc_binfuncdef*) binfuncs; // Defined Binary Functions
   TCALC_VEC(tcalc_vardef*) vars; // Defined Variables
-  TCALC_VEC(tcalc_lvardef*) lvars; // Defined Logical Variables
   TCALC_VEC(tcalc_unopdef*) unops; // Defined Unary Operators
   TCALC_VEC(tcalc_binopdef*) binops; // Defined Binary Operators
   TCALC_VEC(tcalc_relopdef*) relops; // Defined Relational (Binary) Operators
@@ -183,8 +177,7 @@ tcalc_err tcalc_ctx_addtrigdeg(tcalc_ctx* ctx);
 
 void tcalc_ctx_free(tcalc_ctx* ctx);
 
-tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, const char* name, double val);
-tcalc_err tcalc_ctx_addlvar(tcalc_ctx* ctx, const char* name, int val);
+tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, const char* name, struct tcalc_val val);
 tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, const char* name, tcalc_val_unfunc func);
 tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, tcalc_val_binfunc func);
 tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_unfunc func);
@@ -211,7 +204,6 @@ int tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name);
 int tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name);
 
 int tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name);
-int tcalc_ctx_haslvar(const tcalc_ctx* ctx, const char* name);
 
 /**
  * Note that out must be NON-NULL
@@ -222,7 +214,6 @@ int tcalc_ctx_haslvar(const tcalc_ctx* ctx, const char* name);
  * will not return an error)
 */
 tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, tcalc_vardef** out);
-tcalc_err tcalc_ctx_getlvar(const tcalc_ctx* ctx, const char* name, tcalc_lvardef** out);
 
 
 tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, tcalc_unfuncdef** out);
