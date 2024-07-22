@@ -10,16 +10,11 @@ typedef int (*tcalc_relfunc)(double, double);
 // l suffix stands for "logical" in tcalc_unlfunc and tcalc_binlfunc
 
 typedef int (*tcalc_unlfunc)(int);
-
-/**
- *
-*/
 typedef int (*tcalc_binlfunc)(int, int);
 
 
-/**
- * Logical Functions
-*/
+// Logical Functions
+
 int tcalc_not(int a);
 int tcalc_and(int a, int b);
 int tcalc_or(int a, int b);
@@ -31,9 +26,8 @@ int tcalc_matcond(int a, int b);
 int tcalc_equals_l(int a, int b);
 int tcalc_nequals_l(int a, int b);
 
-/**
- * Relational Functions
-*/
+// Relational Functions
+
 int tcalc_equals(double a, double b);
 int tcalc_nequals(double a, double b);
 int tcalc_lt(double a, double b);
@@ -42,9 +36,8 @@ int tcalc_gt(double a, double b);
 int tcalc_gteq(double a, double b);
 
 
-/**
- * Unary functions:
-*/
+// Unary functions
+
 tcalc_err tcalc_ceil(double a, double* out);
 tcalc_err tcalc_floor(double a, double* out);
 tcalc_err tcalc_round(double a, double* out);
@@ -52,9 +45,7 @@ tcalc_err tcalc_abs(double a, double* out);
 
 
 
-/**
- * Radian Trigonometric Functions
-*/
+// Radian Trigonometric Functions
 
 tcalc_err tcalc_sin(double a, double* out);
 tcalc_err tcalc_cos(double a, double* out);
@@ -78,9 +69,8 @@ tcalc_err tcalc_asinh(double a, double* out);
 tcalc_err tcalc_acosh(double a, double* out);
 tcalc_err tcalc_atanh(double a, double* out);
 
-/**
- * Degree trigonometric functions
-*/
+// Degree trigonometric functions
+
 tcalc_err tcalc_sin_deg(double a, double* out);
 tcalc_err tcalc_cos_deg(double a, double* out);
 tcalc_err tcalc_tan_deg(double a, double* out);
@@ -113,9 +103,8 @@ tcalc_err tcalc_cbrt(double a, double* out);
 tcalc_err tcalc_ln(double a, double* out);
 tcalc_err tcalc_exp(double a, double* out);
 
-/**
- * Binary functions:
-*/
+// Binary functions:
+
 tcalc_err tcalc_add(double a, double b, double* out);
 tcalc_err tcalc_subtract(double a, double b, double* out);
 tcalc_err tcalc_multiply(double a, double b, double* out);

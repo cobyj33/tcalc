@@ -5,6 +5,7 @@
 #include "tcalc_error.h"
 
 struct tcalc_ctx;
+struct tcalc_val;
 
 /**
  * tcalc_eval.h - the main meat
@@ -13,9 +14,10 @@ struct tcalc_ctx;
  * make these two functions work well. They're quite simple to be honest, they do math.
 */
 
-tcalc_err tcalc_eval_wctx(const char* infix, struct tcalc_ctx* ctx, double* out);
-tcalc_err tcalc_eval(const char* infix, double* out);
-tcalc_err tcalc_eval_rpn(const char* rpn, double* out);
-tcalc_err tcalc_eval_rpn_wctx(const char* rpn, struct tcalc_ctx* ctx, double* out);
+tcalc_err tcalc_eval_wctx(const char* infix, const struct tcalc_ctx* ctx, struct tcalc_val* out);
+tcalc_err tcalc_eval(const char* infix, struct tcalc_val* out);
+
+tcalc_err tcalc_eval_rpn_wctx(const char* rpn, const struct tcalc_ctx* ctx, struct tcalc_val* out);
+tcalc_err tcalc_eval_rpn(const char* rpn, struct tcalc_val* out);
 
 #endif

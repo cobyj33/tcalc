@@ -76,17 +76,22 @@ int tcalc_repl() {
       continue;
     }
 
-    double ans;
+    tcalc_val ans;
     tcalc_err err = tcalc_eval_wctx(input, ctx, &ans);
     if (err) {
       fprintf(stderr, "tcalc error: %s\n", tcalc_strerrcode(err));
       tcalc_errstk_printall();
     } else {
-      printf("%f\n", ans);
+      tcalc_val_fput(ans, stdout);
+      fputc('\n', stdout);
     }
 
     fputs("\n", stdout);
-    cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", ans));
+    // TODO: when tcalc_vardef and tcalc_lvardef are combined, change this
+    // so that 'ans' can be a boolean
+    if (ans.type == TCALC_VALTYPE_NUM) {
+      cleanup_on_err(err, tcalc_ctx_addvar(ctx, "ans", ans.as.num));
+    }
   }
 
   return EXIT_SUCCESS;

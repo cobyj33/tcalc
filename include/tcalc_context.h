@@ -4,6 +4,7 @@
 #include "tcalc_error.h"
 #include "tcalc_func.h"
 #include "tcalc_vec.h"
+#include "tcalc_val_func.h"
 
 #include <stddef.h>
 
@@ -87,7 +88,7 @@ typedef struct tcalc_opdata {
 typedef struct tcalc_exprvardef {
   char* id;
   struct tcalc_exprtree_node* expr;
-  char* dependencies;
+  const char* dependencies;
 } tcalc_exprvardef;
 
 
@@ -95,46 +96,46 @@ typedef struct tcalc_unopdef {
   char* id;
   int prec;
   tcalc_assoc assoc;
-  tcalc_unfunc func;
+  tcalc_val_unfunc func;
 } tcalc_unopdef;
 
 typedef struct tcalc_binopdef {
   char* id;
   int prec;
   tcalc_assoc assoc;
-  tcalc_binfunc func;
+  tcalc_val_binfunc func;
 } tcalc_binopdef;
 
 typedef struct tcalc_relopdef {
   char* id;
   int prec;
   tcalc_assoc assoc;
-  tcalc_relfunc func;
+  tcalc_val_relfunc func;
 } tcalc_relopdef;
 
 typedef struct tcalc_unlopdef {
   char* id;
   int prec;
   tcalc_assoc assoc;
-  tcalc_unlfunc func;
+  tcalc_val_unlfunc func;
 } tcalc_unlopdef;
 
 typedef struct tcalc_binlopdef {
   char* id;
   int prec;
   tcalc_assoc assoc;
-  tcalc_binlfunc func;
+  tcalc_val_binlfunc func;
 } tcalc_binlopdef;
 
 
 typedef struct tcalc_unfuncdef {
   char* id;
-  tcalc_unfunc func;
+  tcalc_val_unfunc func;
 } tcalc_unfuncdef;
 
 typedef struct tcalc_binfuncdef {
-  char* id;
-  tcalc_binfunc func;
+  const char* id;
+  tcalc_val_binfunc func;
 } tcalc_binfuncdef;
 
 typedef struct tcalc_groupsymdef {
@@ -184,13 +185,13 @@ void tcalc_ctx_free(tcalc_ctx* ctx);
 
 tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, const char* name, double val);
 tcalc_err tcalc_ctx_addlvar(tcalc_ctx* ctx, const char* name, int val);
-tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, const char* name, tcalc_unfunc func);
-tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, tcalc_binfunc func);
-tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_unfunc func);
-tcalc_err tcalc_ctx_addbinop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_binfunc func);
-tcalc_err tcalc_ctx_addrelop(tcalc_ctx* ctx,const char* name, int prec, tcalc_assoc assoc, tcalc_relfunc func);
-tcalc_err tcalc_ctx_addunlop(tcalc_ctx* ctx,const char* name, int prec, tcalc_assoc assoc, tcalc_unlfunc func);
-tcalc_err tcalc_ctx_addbinlop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_binlfunc func);
+tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, const char* name, tcalc_val_unfunc func);
+tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, tcalc_val_binfunc func);
+tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_unfunc func);
+tcalc_err tcalc_ctx_addbinop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_binfunc func);
+tcalc_err tcalc_ctx_addrelop(tcalc_ctx* ctx,const char* name, int prec, tcalc_assoc assoc, tcalc_val_relfunc func);
+tcalc_err tcalc_ctx_addunlop(tcalc_ctx* ctx,const char* name, int prec, tcalc_assoc assoc, tcalc_val_unlfunc func);
+tcalc_err tcalc_ctx_addbinlop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_binlfunc func);
 
 /**
  * Note that tcalc_ctx_hasid does not apply to operations, but only

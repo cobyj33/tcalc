@@ -2,21 +2,21 @@
 
 #include "tcalc_eval.h"
 #include "tcalc_error.h"
+#include "tcalc_val.h"
 
 #include <stddef.h>
 //tcalc_err tcalc_eval_rpn(const char* rpn, double* out);
-double TCALC_EVAL_ASSERT_DELTA = 0.0001;
-
-
+#define TCALC_EVAL_ASSERT_DELTA 0.0001
 
 void TestTCalcEvalSuccesses(CuTest *tc) {
-  double res = 0.0;
+  tcalc_val res = TCALC_VAL_INIT_NUM(0.0);
   tcalc_err err = TCALC_ERR_OK;
 
   #define MAKE_SUCCESS_TEST(str, val) \
     err = tcalc_eval(str, &res); \
     CuAssertTrue(tc, err == TCALC_ERR_OK); \
-    CuAssertDblEquals(tc, res, val, TCALC_EVAL_ASSERT_DELTA);
+    CuAssertTrue(tc, res.type == TCALC_VALTYPE_NUM); \
+    CuAssertDblEquals(tc, res.as.num, val, TCALC_EVAL_ASSERT_DELTA);
 
   MAKE_SUCCESS_TEST("6", 6.0);
   MAKE_SUCCESS_TEST("600", 600.0);
@@ -58,7 +58,7 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
 }
 
 void TestTCalcEvalFailures(CuTest *tc) {
-  double res = 0.0;
+  tcalc_val res = TCALC_VAL_INIT_NUM(0.0);
 
   CuAssertTrue(tc, tcalc_eval("1 / 0", &res) == TCALC_ERR_DIV_BY_ZERO);
   CuAssertTrue(tc, tcalc_eval("1 / -0", &res) == TCALC_ERR_DIV_BY_ZERO);

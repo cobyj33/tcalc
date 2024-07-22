@@ -6,6 +6,7 @@
 
 struct tcalc_token;
 struct tcalc_ctx;
+struct tcalc_val;
 
 typedef enum tcalc_exprtype {
   TCALC_RELATION_EXPR,
@@ -77,6 +78,6 @@ tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const struct tcalc_ctx* ctx
 tcalc_err tcalc_create_exprtree_infix(const char* infix, const struct tcalc_ctx* ctx, tcalc_exprtree** out);
 tcalc_err tcalc_infix_tokens_to_rpn_tokens(struct tcalc_token** tokens, size_t nb_tokens, const struct tcalc_ctx* ctx, struct tcalc_token*** out, size_t* out_size);
 
-tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const struct tcalc_ctx* ctx, double* out);
+tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const struct tcalc_ctx* ctx, struct tcalc_val* out);
 
 #endif

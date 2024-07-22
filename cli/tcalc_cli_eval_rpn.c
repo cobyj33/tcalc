@@ -5,12 +5,13 @@
 #include "tcalc_context.h"
 #include "tcalc_eval.h"
 #include "tcalc_mac.h"
+#include "tcalc_val.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts) {
-  double ans;
+  tcalc_val ans;
   tcalc_ctx* ctx = NULL;
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   TCALC_CLI_CHECK_ERR(err, "[%s] TCalc error while allocating evaluation context: %s\n", FUNCDINFO, tcalc_strerrcode(err));
@@ -23,6 +24,8 @@ int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts) {
   err = tcalc_eval_rpn_wctx(expr, ctx, &ans);
   TCALC_CLI_CHECK_ERR(err, "[%s] TCalc error while evaluating expression: %s\n ", FUNCDINFO, tcalc_strerrcode(err));
 
-  printf("%f\n", ans);
+  tcalc_val_fput(ans, stdout);
+  fputc('\n', stdout);
+
   return EXIT_SUCCESS;
 }

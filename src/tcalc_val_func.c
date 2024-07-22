@@ -135,6 +135,7 @@ tcalc_val_unopfunc_impl(tcalc_val_exp, tcalc_exp)
 
 tcalc_val_binopfunc_impl(tcalc_val_add, tcalc_add)
 tcalc_val_binopfunc_impl(tcalc_val_subtract, tcalc_subtract)
+tcalc_val_binopfunc_impl(tcalc_val_multiply, tcalc_multiply)
 tcalc_val_binopfunc_impl(tcalc_val_divide, tcalc_divide)
 tcalc_val_binopfunc_impl(tcalc_val_mod, tcalc_mod)
 
