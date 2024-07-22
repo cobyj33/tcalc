@@ -79,7 +79,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
     case TCALC_TOK_RELOP: {
       tcalc_val operand1, operand2;
       tcalc_relopdef* relopdef;
-      ret_on_err(err, tcalc_ctx_getbinlop(ctx, expr->token->val, &relopdef));
+      ret_on_err(err, tcalc_ctx_getrelop(ctx, expr->token->val, &relopdef));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand1));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
 

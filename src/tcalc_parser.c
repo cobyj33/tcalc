@@ -21,10 +21,20 @@ Comments are prepended by a hash (#) symbol
 
 expression -> term
 
+logic_or -> logic_and ( '||' logic_and )*
+logic_and -> equality ( '&&' equality )*
+equality -> relation ( ( '=' | '==' | '!=' ) relation )*
+relation -> term ( ( '<' | '<=' | '>' | '>=' ) term )*
+
 term -> factor ( ( "+" | "-" ) factor )*
 factor -> unary ( ( "*" | "/" | "%" ) unary )*
 
-unary -> ( "+" | "-" )* exponentiation
+# Maybe having logical NOT in the 'unary' rule is weird? I don't know where else
+# to put it though. Perhaps it could go above 'term', since arithmetic expressions
+# cannot be acted on by the Logical NOT operator anyway unlike in C and C-like
+# languages
+
+unary -> ( "+" | "-" | "!" )* exponentiation
 
 exponentiation -> primary ( ( "^" | "**" ) exponentiation )
 
@@ -49,6 +59,10 @@ typedef struct tcalc_pctx {
 typedef tcalc_err (tcalc_parsefunc_func_t)(tcalc_pctx*, tcalc_exprtree**);
 
 static tcalc_err tcalc_parsefunc_expression(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_logic_or(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_logic_and(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_equality(tcalc_pctx* pctx, tcalc_exprtree** out);
+static tcalc_err tcalc_parsefunc_relation(tcalc_pctx* pctx, tcalc_exprtree** out);
 static tcalc_err tcalc_parsefunc_term(tcalc_pctx* pctx, tcalc_exprtree** out);
 static tcalc_err tcalc_parsefunc_factor(tcalc_pctx* pctx, tcalc_exprtree** out);
 static tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree** out);
@@ -143,7 +157,27 @@ static tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char**
 }
 
 static tcalc_err tcalc_parsefunc_expression(tcalc_pctx* pctx, tcalc_exprtree** out) {
-  return tcalc_parsefunc_term(pctx, out);
+  return tcalc_parsefunc_logic_or(pctx, out);
+}
+
+static tcalc_err tcalc_parsefunc_logic_or(tcalc_pctx* pctx, tcalc_exprtree** out) {
+  const char* operators[] = { "||", NULL };
+  return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_logic_and, out);
+}
+
+static tcalc_err tcalc_parsefunc_logic_and(tcalc_pctx* pctx, tcalc_exprtree** out) {
+  const char* operators[] = { "&&", NULL };
+  return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_equality, out);
+}
+
+static tcalc_err tcalc_parsefunc_equality(tcalc_pctx* pctx, tcalc_exprtree** out) {
+  const char* operators[] = { "=", "==", "!=", NULL };
+  return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_relation, out);
+}
+
+static tcalc_err tcalc_parsefunc_relation(tcalc_pctx* pctx, tcalc_exprtree** out) {
+  const char* operators[] = { "<", "<=", ">", ">=", NULL };
+  return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_term, out);
 }
 
 static tcalc_err tcalc_parsefunc_term(tcalc_pctx* pctx, tcalc_exprtree** out) {
@@ -162,7 +196,9 @@ static tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
   tcalc_exprtree* unaryhead = NULL, *unarytail = NULL; //linked-list-like structure
   tcalc_exprtree* primary = NULL;
 
-  while (tcalc_pctx_isnextstr(pctx, "+") || tcalc_pctx_isnextstr(pctx, "-")) {
+  while (tcalc_pctx_isnextstr(pctx, "+") ||
+    tcalc_pctx_isnextstr(pctx, "-") ||
+    tcalc_pctx_isnextstr(pctx, "!")) {
     tcalc_exprtree* unarylistnode = NULL;
     cleanup_on_err(err, tcalc_exprtree_node_alloc(pctx->toks[pctx->i], 1, &unarylistnode));
 

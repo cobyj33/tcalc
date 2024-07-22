@@ -25,11 +25,11 @@ struct tcalc_exprtree_node;
 
 /**
  * Precedence Rankings (Non-Numerical):
- * (\ before an operator is just an escape btw)
  *
  * Highest Precedence, Handled First
  * ---------------------
  * "^", "**" (Exponentiation)
+ * ---------------------
  * "+" (Unary Plus)
  * "-" (Unary Minus)
  * "!" (Logical NOT)
