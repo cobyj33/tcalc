@@ -133,11 +133,6 @@ typedef struct tcalc_binfuncdef {
   tcalc_val_binfunc func;
 } tcalc_binfuncdef;
 
-typedef struct tcalc_groupsymdef {
-  char start_symbol;
-  char end_symbol;
-} tcalc_groupsymdef;
-
 tcalc_opdata tcalc_getbinopdata(tcalc_binopdef* binary_op_def);
 tcalc_opdata tcalc_getunopdata(tcalc_unopdef* unary_op_def);
 tcalc_opdata tcalc_getrelopdata(tcalc_relopdef* relop_def);
