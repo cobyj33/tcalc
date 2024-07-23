@@ -59,51 +59,51 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
     }
     case TCALC_TOK_UNOP: {
       tcalc_val operand;
-      tcalc_unopdef* unary_op_def;
+      tcalc_unopdef unary_op_def;
       ret_on_err(err, tcalc_ctx_getunop(ctx, expr->token->val, &unary_op_def));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand));
 
       out->type = TCALC_VALTYPE_NUM;
-      return unary_op_def->func(operand, &(out->as.num));
+      return unary_op_def.func(operand, &(out->as.num));
     }
     case TCALC_TOK_BINOP: {
       tcalc_val operand1, operand2;
-      tcalc_binopdef* binary_op_def;
+      tcalc_binopdef binary_op_def;
       ret_on_err(err, tcalc_ctx_getbinop(ctx, expr->token->val, &binary_op_def));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand1));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
 
       out->type = TCALC_VALTYPE_NUM;
-      return binary_op_def->func(operand1, operand2, &(out->as.num));
+      return binary_op_def.func(operand1, operand2, &(out->as.num));
     }
     case TCALC_TOK_RELOP: {
       tcalc_val operand1, operand2;
-      tcalc_relopdef* relopdef;
+      tcalc_relopdef relopdef;
       ret_on_err(err, tcalc_ctx_getrelop(ctx, expr->token->val, &relopdef));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand1));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
 
       out->type = TCALC_VALTYPE_BOOL;
-      return relopdef->func(operand1, operand2, &(out->as.boolean));
+      return relopdef.func(operand1, operand2, &(out->as.boolean));
     }
     case TCALC_TOK_UNLOP: {
       tcalc_val operand;
-      tcalc_unlopdef* unary_lop_def;
+      tcalc_unlopdef unary_lop_def;
       ret_on_err(err, tcalc_ctx_getunlop(ctx, expr->token->val, &unary_lop_def));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand));
 
       out->type = TCALC_VALTYPE_BOOL;
-      return unary_lop_def->func(operand, &(out->as.boolean));
+      return unary_lop_def.func(operand, &(out->as.boolean));
     }
     case TCALC_TOK_BINLOP: {
       tcalc_val operand1, operand2;
-      tcalc_binlopdef* binary_lop_def;
+      tcalc_binlopdef binary_lop_def;
       ret_on_err(err, tcalc_ctx_getbinlop(ctx, expr->token->val, &binary_lop_def));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand1));
       ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
 
       out->type = TCALC_VALTYPE_BOOL;
-      return binary_lop_def->func(operand1, operand2, &(out->as.boolean));
+      return binary_lop_def.func(operand1, operand2, &(out->as.boolean));
     }
     case TCALC_TOK_EQOP: {
       // TODO: Use eqopdef when introduced into tcalc_context struct
@@ -112,15 +112,15 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
       ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
 
       if (operand1.type == TCALC_VALTYPE_NUM && operand2.type == TCALC_VALTYPE_NUM) {
-        tcalc_relopdef* relopdef;
+        tcalc_relopdef relopdef;
         ret_on_err(err, tcalc_ctx_getrelop(ctx, expr->token->val, &relopdef));
         out->type = TCALC_VALTYPE_BOOL;
-        return relopdef->func(operand1, operand2, &(out->as.boolean));
+        return relopdef.func(operand1, operand2, &(out->as.boolean));
       } else if (operand1.type == TCALC_VALTYPE_BOOL && operand2.type == TCALC_VALTYPE_BOOL) {
-        tcalc_binlopdef* binlopdef;
+        tcalc_binlopdef binlopdef;
         ret_on_err(err, tcalc_ctx_getbinlop(ctx, expr->token->val, &binlopdef));
         out->type = TCALC_VALTYPE_BOOL;
-        return binlopdef->func(operand1, operand2, &(out->as.boolean));
+        return binlopdef.func(operand1, operand2, &(out->as.boolean));
       }
 
       return TCALC_ERR_BAD_CAST;
@@ -128,16 +128,16 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
     case TCALC_TOK_ID: {
 
       if (tcalc_ctx_hasunfunc(ctx, expr->token->val)) {
-        tcalc_unfuncdef* unary_func_def;
+        tcalc_unfuncdef unary_func_def;
         tcalc_ctx_getunfunc(ctx, expr->token->val, &unary_func_def);
 
         tcalc_val operand;
         ret_on_err(err, tcalc_eval_exprtree(expr->children[0], ctx, &operand));
 
         out->type = TCALC_VALTYPE_NUM;
-        return unary_func_def->func(operand, &(out->as.num));
+        return unary_func_def.func(operand, &(out->as.num));
       } else if (tcalc_ctx_hasbinfunc(ctx, expr->token->val)) {
-        tcalc_binfuncdef* binary_func_def;
+        tcalc_binfuncdef binary_func_def;
         tcalc_ctx_getbinfunc(ctx, expr->token->val, &binary_func_def);
 
         tcalc_val operand1, operand2;
@@ -145,11 +145,11 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
         ret_on_err(err, tcalc_eval_exprtree(expr->children[1], ctx, &operand2));
 
         out->type = TCALC_VALTYPE_NUM;
-        return binary_func_def->func(operand1, operand2, &(out->as.num));
+        return binary_func_def.func(operand1, operand2, &(out->as.num));
       } else if (tcalc_ctx_hasvar(ctx, expr->token->val)) {
-        tcalc_vardef* vardef;
+        tcalc_vardef vardef;
         tcalc_ctx_getvar(ctx, expr->token->val, &vardef);
-        *out = vardef->val;
+        *out = vardef.val;
         return TCALC_ERR_OK;
       } else {
         return TCALC_ERR_UNKNOWN_ID;
@@ -164,7 +164,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
 
 void tcalc_exprtree_free(tcalc_exprtree* head) {
   if (head == NULL) return;
-  TCALC_ARR_FREE_CF(head->children, head->nb_children, tcalc_exprtree_free);
+  TCALC_ARR_FREE_F(head->children, head->nb_children, tcalc_exprtree_free);
   tcalc_token_free(head->token);
   free(head);
 }

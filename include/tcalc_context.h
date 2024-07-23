@@ -134,12 +134,6 @@ typedef struct tcalc_binfuncdef {
   tcalc_val_binfunc func;
 } tcalc_binfuncdef;
 
-tcalc_opdata tcalc_getbinopdata(tcalc_binopdef* binary_op_def);
-tcalc_opdata tcalc_getunopdata(tcalc_unopdef* unary_op_def);
-tcalc_opdata tcalc_getrelopdata(tcalc_relopdef* relop_def);
-tcalc_opdata tcalc_getunlopdata(tcalc_unlopdef* unlop_def);
-tcalc_opdata tcalc_getbinlopdata(tcalc_binlopdef* binlop_def);
-
 /**
  * Some conditions to a tcalc context:
  *
@@ -158,11 +152,11 @@ typedef struct tcalc_ctx {
   TCALC_VEC(tcalc_unfuncdef*) unfuncs; // Defined Unary Functions
   TCALC_VEC(tcalc_binfuncdef*) binfuncs; // Defined Binary Functions
   TCALC_VEC(tcalc_vardef*) vars; // Defined Variables
-  TCALC_VEC(tcalc_unopdef*) unops; // Defined Unary Operators
-  TCALC_VEC(tcalc_binopdef*) binops; // Defined Binary Operators
-  TCALC_VEC(tcalc_relopdef*) relops; // Defined Relational (Binary) Operators
-  TCALC_VEC(tcalc_unlopdef*) unlops; // Defined Logical Unary Operators
-  TCALC_VEC(tcalc_binlopdef*) binlops; // Defined Logical Binary Operators
+  TCALC_VEC(tcalc_unopdef) unops; // Defined Unary Operators
+  TCALC_VEC(tcalc_binopdef) binops; // Defined Binary Operators
+  TCALC_VEC(tcalc_relopdef) relops; // Defined Relational (Binary) Operators
+  TCALC_VEC(tcalc_unlopdef) unlops; // Defined Logical Unary Operators
+  TCALC_VEC(tcalc_binlopdef) binlops; // Defined Logical Binary Operators
 } tcalc_ctx;
 
 tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out);
@@ -209,17 +203,17 @@ int tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name);
  * tcalc_ctx_has_x functions (if tcalc_ctx_has_x returns true, tcalc_ctx_get_x
  * will not return an error)
 */
-tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, tcalc_vardef** out);
+tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, tcalc_vardef* out);
 
 
-tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, tcalc_unfuncdef** out);
-tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, tcalc_binfuncdef** out);
+tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, tcalc_unfuncdef* out);
+tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, tcalc_binfuncdef* out);
 
-tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, tcalc_unopdef** out);
-tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, tcalc_binopdef** out);
-tcalc_err tcalc_ctx_getrelop(const tcalc_ctx* ctx, const char* name, tcalc_relopdef** out);
-tcalc_err tcalc_ctx_getunlop(const tcalc_ctx* ctx, const char* name, tcalc_unlopdef** out);
-tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, tcalc_binlopdef** out);
+tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, tcalc_unopdef* out);
+tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, tcalc_binopdef* out);
+tcalc_err tcalc_ctx_getrelop(const tcalc_ctx* ctx, const char* name, tcalc_relopdef* out);
+tcalc_err tcalc_ctx_getunlop(const tcalc_ctx* ctx, const char* name, tcalc_unlopdef* out);
+tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, tcalc_binlopdef* out);
 
 
 /**

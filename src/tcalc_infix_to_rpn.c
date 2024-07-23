@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, tcalc_opdata* out);
+static tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, const tcalc_token* token, tcalc_opdata* out);
 
 /**
  * Implementation of the shunting yard algorithm to reorder infix-formatted
@@ -153,28 +153,46 @@ tcalc_err tcalc_infix_tokens_to_rpn_tokens(tcalc_token** infix_toks, size_t nb_i
     return err;
 }
 
-static tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, tcalc_token* token, tcalc_opdata* out) {
+static tcalc_err tcalc_ctx_get_token_op_data(const tcalc_ctx* ctx, const tcalc_token* token, tcalc_opdata* out) {
   tcalc_err err = TCALC_ERR_OK;
 
-  // I LOVE MACROS!!
-  #define tcalc_ctx_get_token_xop_data(opname) { \
-      tcalc_ ## opname ## def* def; \
-      ret_on_err(err, tcalc_ctx_get##opname(ctx, token->val, &def)); \
-      *out = tcalc_get ## opname ## data(def); \
-      return TCALC_ERR_OK; \
-    }
-
   switch (token->type) {
-    case TCALC_TOK_UNOP: tcalc_ctx_get_token_xop_data(unop); break;
-    case TCALC_TOK_BINOP: tcalc_ctx_get_token_xop_data(binop); break;
+    case TCALC_TOK_UNOP: {
+      tcalc_unopdef unopdef;
+      ret_on_err(err, tcalc_ctx_getunop(ctx, token->val, &unopdef));
+      *out = (tcalc_opdata){ .prec = unopdef.prec, .assoc = unopdef.assoc };
+      return TCALC_ERR_OK;
+    } break;
+    case TCALC_TOK_BINOP: {
+      tcalc_binopdef binopdef;
+      ret_on_err(err, tcalc_ctx_getbinop(ctx, token->val, &binopdef));
+      *out = (tcalc_opdata){ .prec = binopdef.prec, .assoc = binopdef.assoc };
+      return TCALC_ERR_OK;
+    } break;
     case TCALC_TOK_EQOP: // only works cuz ==, !=, and = have the same relational and logical precedences
-    case TCALC_TOK_RELOP: tcalc_ctx_get_token_xop_data(relop); break;
-    case TCALC_TOK_UNLOP: tcalc_ctx_get_token_xop_data(unlop); break;
-    case TCALC_TOK_BINLOP: tcalc_ctx_get_token_xop_data(binlop); break;
-    default: return TCALC_ERR_INVALID_ARG;
+    case TCALC_TOK_RELOP: {
+      tcalc_relopdef relopdef;
+      ret_on_err(err, tcalc_ctx_getrelop(ctx, token->val, &relopdef));
+      *out = (tcalc_opdata){ .prec = relopdef.prec, .assoc = relopdef.assoc };
+      return TCALC_ERR_OK;
+    } break;
+    case TCALC_TOK_UNLOP: {
+      tcalc_unlopdef unlopdef;
+      ret_on_err(err, tcalc_ctx_getunlop(ctx, token->val, &unlopdef));
+      *out = (tcalc_opdata){ .prec = unlopdef.prec, .assoc = unlopdef.assoc };
+      return TCALC_ERR_OK;
+    } break;
+    case TCALC_TOK_BINLOP: {
+      tcalc_binlopdef binlopdef;
+      ret_on_err(err, tcalc_ctx_getbinlop(ctx, token->val, &binlopdef));
+      *out = (tcalc_opdata){ .prec = binlopdef.prec, .assoc = binlopdef.assoc };
+      return TCALC_ERR_OK;
+    } break;
+    default: {
+      return TCALC_ERR_INVALID_ARG;
+    }
   }
 
-  #undef tcalc_ctx_get_token_xop_data
 
   return TCALC_ERR_INVALID_ARG;
 }

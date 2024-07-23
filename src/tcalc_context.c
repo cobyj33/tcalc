@@ -13,20 +13,10 @@
 static tcalc_err tcalc_vardef_alloc(const char* name, tcalc_val val, tcalc_vardef** out);
 static tcalc_err tcalc_binfuncdef_alloc(const char* name, tcalc_val_binfunc func, tcalc_binfuncdef** out);
 static tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_val_unfunc func, tcalc_unfuncdef** out);
-static tcalc_err tcalc_binopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_binfunc func, tcalc_binopdef** out);
-static tcalc_err tcalc_unopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_unfunc func, tcalc_unopdef** out);
-static tcalc_err tcalc_relopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_relfunc func, tcalc_relopdef** out);
-static tcalc_err tcalc_unlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_unlfunc func, tcalc_unlopdef** out);
-static tcalc_err tcalc_binlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_binlfunc func, tcalc_binlopdef** out);
 
 static void tcalc_vardef_free(tcalc_vardef* var_def);
 static void tcalc_binfuncdef_free(tcalc_binfuncdef* binary_func_def);
 static void tcalc_unfuncdef_free(tcalc_unfuncdef* unary_func_def);
-static void tcalc_binopdef_free(tcalc_binopdef* binary_op_def);
-static void tcalc_unopdef_free(tcalc_unopdef* unary_op_def);
-static void tcalc_relopdef_free(tcalc_relopdef* rel_op_def);
-static void tcalc_unlopdef_free(tcalc_unlopdef* unl_op_def);
-static void tcalc_binlopdef_free(tcalc_binlopdef* binl_op_def);
 
 tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out) {
   // use of calloc is important here! We have to null all of the TCALC_VEC
@@ -181,11 +171,11 @@ void tcalc_ctx_free(tcalc_ctx* ctx) {
   TCALC_VEC_FREE_F(ctx->binfuncs, tcalc_binfuncdef_free);
   TCALC_VEC_FREE_F(ctx->unfuncs, tcalc_unfuncdef_free);
   TCALC_VEC_FREE_F(ctx->vars, tcalc_vardef_free);
-  TCALC_VEC_FREE_F(ctx->unops, tcalc_unopdef_free);
-  TCALC_VEC_FREE_F(ctx->binops, tcalc_binopdef_free);
-  TCALC_VEC_FREE_F(ctx->relops, tcalc_relopdef_free);
-  TCALC_VEC_FREE_F(ctx->unlops, tcalc_unlopdef_free);
-  TCALC_VEC_FREE_F(ctx->binlops, tcalc_binlopdef_free);
+  TCALC_VEC_FREE(ctx->unops);
+  TCALC_VEC_FREE(ctx->binops);
+  TCALC_VEC_FREE(ctx->relops);
+  TCALC_VEC_FREE(ctx->unlops);
+  TCALC_VEC_FREE(ctx->binlops);
 
   free(ctx);
 }
@@ -236,42 +226,44 @@ tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, tcalc_val_binfu
   tcalc_binfuncdef, tcalc_binfuncdef_alloc, tcalc_binfuncdef_free);
 }
 
-#define tcalc_ctx_addxop(vec, opid, prec_, assoc_, funcptr, deftype, def_alloc, def_free) \
+#define tcalc_ctx_addxop(vec, opid, prec_, assoc_, funcptr, deftype) \
+  tcalc_err err = TCALC_ERR_OK; \
   for (size_t i = 0; i < vec.len; i++) { \
-    if (strcmp(vec.arr[i]->id, opid) == 0) { \
-      vec.arr[i]->prec = prec_; \
-      vec.arr[i]->assoc = assoc_; \
-      vec.arr[i]->func = funcptr; \
+    if (strcmp(vec.arr[i].id, opid) == 0) { \
+      vec.arr[i].prec = prec_; \
+      vec.arr[i].assoc = assoc_; \
+      vec.arr[i].func = funcptr; \
       return TCALC_ERR_OK; \
     } \
   } \
-  deftype* def; \
-  tcalc_err err = def_alloc(opid, prec_, assoc_, funcptr, &def); \
-  if (err) return err; \
+  deftype def = { 0 }; \
+  tcalc_strlcpy(def.id, opid, TCALC_OPDEF_MAX_STR_SIZE); \
+  def.prec = prec_; \
+  def.assoc = assoc_; \
+  def.func = funcptr; \
   cleanup_on_macerr(err, TCALC_VEC_PUSH(vec, def, err)); \
   return TCALC_ERR_OK; \
   cleanup: \
-    def_free(def); \
     return err;
 
 tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_unfunc func) {
-  tcalc_ctx_addxop(ctx->unops, name, prec, assoc, func, tcalc_unopdef, tcalc_unopdef_alloc, tcalc_unopdef_free);
+  tcalc_ctx_addxop(ctx->unops, name, prec, assoc, func, tcalc_unopdef);
 }
 
 tcalc_err tcalc_ctx_addbinop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_binfunc func) {
-  tcalc_ctx_addxop(ctx->binops, name, prec, assoc, func, tcalc_binopdef, tcalc_binopdef_alloc, tcalc_binopdef_free);
+  tcalc_ctx_addxop(ctx->binops, name, prec, assoc, func, tcalc_binopdef);
 }
 
 tcalc_err tcalc_ctx_addrelop(tcalc_ctx* ctx,const char* name, int prec, tcalc_assoc assoc, tcalc_val_relfunc func) {
-  tcalc_ctx_addxop(ctx->relops, name, prec, assoc, func, tcalc_relopdef, tcalc_relopdef_alloc, tcalc_relopdef_free);
+  tcalc_ctx_addxop(ctx->relops, name, prec, assoc, func, tcalc_relopdef);
 }
 
 tcalc_err tcalc_ctx_addunlop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_unlfunc func) {
-  tcalc_ctx_addxop(ctx->unlops, name, prec, assoc, func, tcalc_unlopdef, tcalc_unlopdef_alloc, tcalc_unlopdef_free);
+  tcalc_ctx_addxop(ctx->unlops, name, prec, assoc, func, tcalc_unlopdef);
 }
 
 tcalc_err tcalc_ctx_addbinlop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_binlfunc func) {
-  tcalc_ctx_addxop(ctx->binlops, name, prec, assoc, func, tcalc_binlopdef, tcalc_binlopdef_alloc, tcalc_binlopdef_free);
+  tcalc_ctx_addxop(ctx->binlops, name, prec, assoc, func, tcalc_binlopdef);
 }
 
 #define tcalc_ctx_hasx(vec, idname) \
@@ -297,76 +289,147 @@ int tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name) {
 }
 
 int tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name) {
-  tcalc_ctx_hasx(ctx->unfuncs, name);
+  for (size_t i = 0; i < ctx->unfuncs.len; i++) {
+    if (strcmp(ctx->unfuncs.arr[i]->id, name) == 0)
+      return 1;
+  }
+  return 0;
 }
 
 int tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name) {
-  tcalc_ctx_hasx(ctx->binfuncs, name);
+  for (size_t i = 0; i < ctx->binfuncs.len; i++) {
+    if (strcmp(ctx->binfuncs.arr[i]->id, name) == 0)
+      return 1;
+  }
+  return 0;
 }
 
 int tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name) {
-  tcalc_ctx_hasx(ctx->vars, name);
+  for (size_t i = 0; i < ctx->vars.len; i++) {
+    if (strcmp(ctx->vars.arr[i]->id, name) == 0)
+      return 1;
+  }
+  return 0;
 }
 
 int tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name) {
-  tcalc_ctx_hasx(ctx->unops, name);
+  for (size_t i = 0; i < ctx->unops.len; i++) {
+    if (strcmp(ctx->unops.arr[i].id, name) == 0)
+      return 1;
+  }
+  return 0;
 }
 
 int tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name) {
-  tcalc_ctx_hasx(ctx->binops, name);
+  for (size_t i = 0; i < ctx->binops.len; i++) {
+    if (strcmp(ctx->binops.arr[i].id, name) == 0)
+      return 1;
+  }
+  return 0;
 }
 
 int tcalc_ctx_hasrelop(const tcalc_ctx* ctx, const char* name) {
-  tcalc_ctx_hasx(ctx->relops, name);
+  for (size_t i = 0; i < ctx->relops.len; i++) {
+    if (strcmp(ctx->relops.arr[i].id, name) == 0)
+      return 1;
+  }
+  return 0;
 }
 
 int tcalc_ctx_hasunlop(const tcalc_ctx* ctx, const char* name) {
-  tcalc_ctx_hasx(ctx->unlops, name);
+  for (size_t i = 0; i < ctx->unlops.len; i++) {
+    if (strcmp(ctx->unlops.arr[i].id, name) == 0)
+      return 1;
+  }
+  return 0;
 }
 
 int tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name) {
-  tcalc_ctx_hasx(ctx->binlops, name);
+  for (size_t i = 0; i < ctx->binlops.len; i++) {
+    if (strcmp(ctx->binlops.arr[i].id, name) == 0)
+      return 1;
+  }
+  return 0;
 }
 
-#define tcalc_ctx_getx(vec, idname, out) \
-  for (size_t i = 0; i < vec.len; i++) { \
-    if (strcmp(vec.arr[i]->id, idname) == 0) { \
-      *out = vec.arr[i]; \
-      return TCALC_ERR_OK; \
-    } \
-  } \
+tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, tcalc_vardef* out) {
+  for (size_t i = 0; i < ctx->vars.len; i++) {
+    if (strcmp(ctx->vars.arr[i]->id, name) == 0) {
+      *out = *(ctx->vars.arr[i]);
+      return TCALC_ERR_OK;
+    }
+  }
   return TCALC_ERR_NOT_FOUND;
-
-tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, tcalc_vardef** out) {
-  tcalc_ctx_getx(ctx->vars, name, out);
 }
 
-tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, tcalc_unfuncdef** out) {
-  tcalc_ctx_getx(ctx->unfuncs, name, out);
+tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, tcalc_unfuncdef* out) {
+  for (size_t i = 0; i < ctx->unfuncs.len; i++) {
+    if (strcmp(ctx->unfuncs.arr[i]->id, name) == 0) {
+      *out = *(ctx->unfuncs.arr[i]);
+      return TCALC_ERR_OK;
+    }
+  }
+  return TCALC_ERR_NOT_FOUND;
 }
 
-tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, tcalc_binfuncdef** out) {
-  tcalc_ctx_getx(ctx->binfuncs, name, out);
+tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, tcalc_binfuncdef* out) {
+  for (size_t i = 0; i < ctx->binfuncs.len; i++) {
+    if (strcmp(ctx->binfuncs.arr[i]->id, name) == 0) {
+      *out = *(ctx->binfuncs.arr[i]);
+      return TCALC_ERR_OK;
+    }
+  }
+  return TCALC_ERR_NOT_FOUND;
 }
 
-tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, tcalc_unopdef** out) {
-  tcalc_ctx_getx(ctx->unops, name, out);
+tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, tcalc_unopdef* out) {
+  for (size_t i = 0; i < ctx->unops.len; i++) {
+    if (strcmp(ctx->unops.arr[i].id, name) == 0) {
+      *out = ctx->unops.arr[i];
+      return TCALC_ERR_OK;
+    }
+  }
+  return TCALC_ERR_NOT_FOUND;
 }
 
-tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, tcalc_binopdef** out) {
-  tcalc_ctx_getx(ctx->binops, name, out);
+tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, tcalc_binopdef* out) {
+  for (size_t i = 0; i < ctx->binops.len; i++) {
+    if (strcmp(ctx->binops.arr[i].id, name) == 0) {
+      *out = ctx->binops.arr[i];
+      return TCALC_ERR_OK;
+    }
+  }
+  return TCALC_ERR_NOT_FOUND;
 }
 
-tcalc_err tcalc_ctx_getrelop(const tcalc_ctx* ctx, const char* name, tcalc_relopdef** out) {
-  tcalc_ctx_getx(ctx->relops, name, out);
+tcalc_err tcalc_ctx_getrelop(const tcalc_ctx* ctx, const char* name, tcalc_relopdef* out) {
+  for (size_t i = 0; i < ctx->relops.len; i++) {
+    if (strcmp(ctx->relops.arr[i].id, name) == 0) {
+      *out = ctx->relops.arr[i];
+      return TCALC_ERR_OK;
+    }
+  }
+  return TCALC_ERR_NOT_FOUND;
 }
 
-tcalc_err tcalc_ctx_getunlop(const tcalc_ctx* ctx, const char* name, tcalc_unlopdef** out) {
-  tcalc_ctx_getx(ctx->unlops, name, out);
+tcalc_err tcalc_ctx_getunlop(const tcalc_ctx* ctx, const char* name, tcalc_unlopdef* out) {
+  for (size_t i = 0; i < ctx->unlops.len; i++) {
+    if (strcmp(ctx->unlops.arr[i].id, name) == 0) {
+      *out = ctx->unlops.arr[i];
+      return TCALC_ERR_OK;
+    }
+  }
+  return TCALC_ERR_NOT_FOUND;
 }
 
-tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, tcalc_binlopdef** out) {
-  tcalc_ctx_getx(ctx->binlops, name, out);
+tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, tcalc_binlopdef* out) {
+  for (size_t i = 0; i < ctx->binlops.len; i++) {
+    if (strcmp(ctx->binlops.arr[i].id, name) == 0) {
+      *out = ctx->binlops.arr[i];
+      return TCALC_ERR_OK;
+    }
+  }
+  return TCALC_ERR_NOT_FOUND;
 }
 
 
@@ -411,37 +474,6 @@ static tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_val_unfunc func, 
   tcalc_xfuncdef_alloc(tcalc_unfuncdef, name, func, out)
 }
 
-#define tcalc_xopdef_alloc(optype, name, prec, assoc, func, out) \
-  *out = NULL; \
-  optype* def = (optype*)malloc(sizeof(optype)); \
-  if (def == NULL) return TCALC_ERR_BAD_ALLOC; \
-  tcalc_strlcpy(def->id, name, TCALC_OPDEF_MAX_STR_SIZE); \
-  def->prec = prec; \
-  def->assoc = assoc; \
-  def->func = func; \
-  *out = def; \
-  return TCALC_ERR_OK;
-
-static tcalc_err tcalc_binopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_binfunc func, tcalc_binopdef** out) {
-  tcalc_xopdef_alloc(tcalc_binopdef, name, prec, assoc, func, out)
-}
-
-static tcalc_err tcalc_unopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_unfunc func, tcalc_unopdef** out) {
-  tcalc_xopdef_alloc(tcalc_unopdef, name, prec, assoc, func, out)
-}
-
-static tcalc_err tcalc_unlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_unlfunc func, tcalc_unlopdef** out) {
-  tcalc_xopdef_alloc(tcalc_unlopdef, name, prec, assoc, func, out)
-}
-
-static tcalc_err tcalc_binlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_binlfunc func, tcalc_binlopdef** out) {
-  tcalc_xopdef_alloc(tcalc_binlopdef, name, prec, assoc, func, out)
-}
-
-static tcalc_err tcalc_relopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_relfunc func, tcalc_relopdef** out) {
-  tcalc_xopdef_alloc(tcalc_relopdef, name, prec, assoc, func, out)
-}
-
 static void tcalc_vardef_free(tcalc_vardef* var_def) {
   if (var_def == NULL) return;
   free((void*)var_def->id);
@@ -458,31 +490,6 @@ static void tcalc_unfuncdef_free(tcalc_unfuncdef* unary_func_def) {
   if (unary_func_def == NULL) return;
   free((void*)unary_func_def->id);
   free(unary_func_def);
-}
-
-static void tcalc_binopdef_free(tcalc_binopdef* binary_op_def) {
-  if (binary_op_def == NULL) return;
-  free(binary_op_def);
-}
-
-static void tcalc_unopdef_free(tcalc_unopdef* unary_op_def) {
-  if (unary_op_def == NULL) return;
-  free(unary_op_def);
-}
-
-static void tcalc_relopdef_free(tcalc_relopdef* rel_op_def) {
-  if (rel_op_def == NULL) return;
-  free(rel_op_def);
-}
-
-static void tcalc_unlopdef_free(tcalc_unlopdef* unl_op_def) {
-  if (unl_op_def == NULL) return;
-  free(unl_op_def);
-}
-
-static void tcalc_binlopdef_free(tcalc_binlopdef* binl_op_def) {
-  if (binl_op_def == NULL) return;
-  free(binl_op_def);
 }
 
 #define tcalc_getxopdata(objname) \
