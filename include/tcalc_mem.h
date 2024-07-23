@@ -80,15 +80,8 @@ void* tcalc_xrealloc(void*, size_t);
  * data
 */
 #define TCALC_DARR_GROW(arr, size, capacity, err) do { \
-    if ((capacity) == 0) { \
-      (arr) = malloc(sizeof(*(arr))); \
-      if ((arr) == NULL) { \
-        (err) = TCALC_ERR_BAD_ALLOC; \
-      } else { \
-        (capacity) = 1; \
-      } \
-    } else if ((size) > (capacity)) { \
-      size_t new_capacity = alloc_nr(capacity) < (size) ? (size) : alloc_nr(capacity); \
+    if ((size) > (capacity)) { \
+      const size_t new_capacity = alloc_nr(capacity) < (size) ? (size) : alloc_nr(capacity); \
       void* realloced = realloc((arr), sizeof(*(arr)) * new_capacity); \
       if (realloced == NULL) { \
         err = TCALC_ERR_BAD_ALLOC; \
