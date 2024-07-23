@@ -86,37 +86,38 @@ typedef struct tcalc_exprvardef {
   const char* dependencies;
 } tcalc_exprvardef;
 
+#define TCALC_OPDEF_MAX_STR_SIZE 8
 
 typedef struct tcalc_unopdef {
-  char* id;
+  char id[TCALC_OPDEF_MAX_STR_SIZE];
   int prec;
   tcalc_assoc assoc;
   tcalc_val_unfunc func;
 } tcalc_unopdef;
 
 typedef struct tcalc_binopdef {
-  char* id;
+  char id[TCALC_OPDEF_MAX_STR_SIZE];
   int prec;
   tcalc_assoc assoc;
   tcalc_val_binfunc func;
 } tcalc_binopdef;
 
 typedef struct tcalc_relopdef {
-  char* id;
+  char id[TCALC_OPDEF_MAX_STR_SIZE];
   int prec;
   tcalc_assoc assoc;
   tcalc_val_relfunc func;
 } tcalc_relopdef;
 
 typedef struct tcalc_unlopdef {
-  char* id;
+  char id[TCALC_OPDEF_MAX_STR_SIZE];
   int prec;
   tcalc_assoc assoc;
   tcalc_val_unlfunc func;
 } tcalc_unlopdef;
 
 typedef struct tcalc_binlopdef {
-  char* id;
+  char id[TCALC_OPDEF_MAX_STR_SIZE];
   int prec;
   tcalc_assoc assoc;
   tcalc_val_binlfunc func;
@@ -129,7 +130,7 @@ typedef struct tcalc_unfuncdef {
 } tcalc_unfuncdef;
 
 typedef struct tcalc_binfuncdef {
-  const char* id;
+  char* id;
   tcalc_val_binfunc func;
 } tcalc_binfuncdef;
 

@@ -411,17 +411,11 @@ static tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_val_unfunc func, 
   tcalc_xfuncdef_alloc(tcalc_unfuncdef, name, func, out)
 }
 
-#define tcalc_xopdef_allocx(optype, name, prec, assoc, func, out) \
+#define tcalc_xopdef_alloc(optype, name, prec, assoc, func, out) \
   *out = NULL; \
-  char* dupstr = NULL; \
   optype* def = (optype*)malloc(sizeof(optype)); \
   if (def == NULL) return TCALC_ERR_BAD_ALLOC; \
-  tcalc_err err = tcalc_strdup(name, &dupstr); \
-  if (err) { \
-    free(def); \
-    return err; \
-  } \
-  def->id = dupstr; \
+  tcalc_strlcpy(def->id, name, TCALC_OPDEF_MAX_STR_SIZE); \
   def->prec = prec; \
   def->assoc = assoc; \
   def->func = func; \
@@ -429,60 +423,66 @@ static tcalc_err tcalc_unfuncdef_alloc(const char* name, tcalc_val_unfunc func, 
   return TCALC_ERR_OK;
 
 static tcalc_err tcalc_binopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_binfunc func, tcalc_binopdef** out) {
-  tcalc_xopdef_allocx(tcalc_binopdef, name, prec, assoc, func, out)
+  tcalc_xopdef_alloc(tcalc_binopdef, name, prec, assoc, func, out)
 }
 
 static tcalc_err tcalc_unopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_unfunc func, tcalc_unopdef** out) {
-  tcalc_xopdef_allocx(tcalc_unopdef, name, prec, assoc, func, out)
+  tcalc_xopdef_alloc(tcalc_unopdef, name, prec, assoc, func, out)
 }
 
 static tcalc_err tcalc_unlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_unlfunc func, tcalc_unlopdef** out) {
-  tcalc_xopdef_allocx(tcalc_unlopdef, name, prec, assoc, func, out)
+  tcalc_xopdef_alloc(tcalc_unlopdef, name, prec, assoc, func, out)
 }
 
 static tcalc_err tcalc_binlopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_binlfunc func, tcalc_binlopdef** out) {
-  tcalc_xopdef_allocx(tcalc_binlopdef, name, prec, assoc, func, out)
+  tcalc_xopdef_alloc(tcalc_binlopdef, name, prec, assoc, func, out)
 }
 
 static tcalc_err tcalc_relopdef_alloc(const char* name, int prec, tcalc_assoc assoc, tcalc_val_relfunc func, tcalc_relopdef** out) {
-  tcalc_xopdef_allocx(tcalc_relopdef, name, prec, assoc, func, out)
+  tcalc_xopdef_alloc(tcalc_relopdef, name, prec, assoc, func, out)
 }
 
-#define tcalc_xdef_free(objname) \
-  if (objname == NULL) return; \
-  free((void*)objname->id); \
-  free(objname); \
-
 static void tcalc_vardef_free(tcalc_vardef* var_def) {
-  tcalc_xdef_free(var_def);
+  if (var_def == NULL) return;
+  free((void*)var_def->id);
+  free(var_def);
 }
 
 static void tcalc_binfuncdef_free(tcalc_binfuncdef* binary_func_def) {
-  tcalc_xdef_free(binary_func_def);
+  if (binary_func_def == NULL) return;
+  free((void*)binary_func_def->id);
+  free(binary_func_def);
 }
 
 static void tcalc_unfuncdef_free(tcalc_unfuncdef* unary_func_def) {
-  tcalc_xdef_free(unary_func_def);
+  if (unary_func_def == NULL) return;
+  free((void*)unary_func_def->id);
+  free(unary_func_def);
 }
 
 static void tcalc_binopdef_free(tcalc_binopdef* binary_op_def) {
-  tcalc_xdef_free(binary_op_def);
+  if (binary_op_def == NULL) return;
+  free(binary_op_def);
 }
 
 static void tcalc_unopdef_free(tcalc_unopdef* unary_op_def) {
-  tcalc_xdef_free(unary_op_def);
+  if (unary_op_def == NULL) return;
+  free(unary_op_def);
 }
 
 static void tcalc_relopdef_free(tcalc_relopdef* rel_op_def) {
-  tcalc_xdef_free(rel_op_def);
+  if (rel_op_def == NULL) return;
+  free(rel_op_def);
 }
 
 static void tcalc_unlopdef_free(tcalc_unlopdef* unl_op_def) {
-  tcalc_xdef_free(unl_op_def);
+  if (unl_op_def == NULL) return;
+  free(unl_op_def);
 }
 
 static void tcalc_binlopdef_free(tcalc_binlopdef* binl_op_def) {
-  tcalc_xdef_free(binl_op_def);
+  if (binl_op_def == NULL) return;
+  free(binl_op_def);
 }
 
 #define tcalc_getxopdata(objname) \
