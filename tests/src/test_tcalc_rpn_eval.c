@@ -10,6 +10,9 @@
 
 double TCALC_RPN_EVAL_ASSERT_DELTA = 0.01;
 
+#if 0
+// TODO: Remove legacy code
+
 void TestTCalcRPNEvalSuccesses(CuTest *tc) {
   tcalc_val res = TCALC_VAL_INIT_NUM(0.0);
   tcalc_err err = tcalc_eval_rpn("2 4 +", &res);
@@ -38,3 +41,9 @@ CuSuite* TCalcRPNEvalGetSuite() {
   SUITE_ADD_TEST(suite, TestTCalcRPNEvalFailures);
   return suite;
 }
+#else
+CuSuite* TCalcRPNEvalGetSuite() {
+  CuSuite* suite = CuSuiteNew();
+  return suite;
+}
+#endif

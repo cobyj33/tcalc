@@ -29,6 +29,8 @@ tcalc_err tcalc_eval_wctx(const char* infix, const tcalc_ctx* ctx, tcalc_val* ou
   return err;
 }
 
+
+#if 0
 tcalc_err tcalc_eval_rpn(const char* infix, tcalc_val* out) {
   tcalc_ctx* ctx;
   tcalc_err err = TCALC_ERR_OK;
@@ -38,7 +40,9 @@ tcalc_err tcalc_eval_rpn(const char* infix, tcalc_val* out) {
   tcalc_ctx_free(ctx);
   return err;
 }
+#endif
 
+#if 0
 tcalc_err tcalc_eval_rpn_wctx(const char* rpn, const tcalc_ctx* ctx, tcalc_val* out) {
   tcalc_exprtree* tree;
   tcalc_err err = TCALC_ERR_OK;
@@ -48,3 +52,4 @@ tcalc_err tcalc_eval_rpn_wctx(const char* rpn, const tcalc_ctx* ctx, tcalc_val* 
   tcalc_exprtree_free(tree);
   return err;
 }
+#endif

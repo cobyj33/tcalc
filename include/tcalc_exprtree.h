@@ -8,55 +8,72 @@ struct tcalc_token;
 struct tcalc_ctx;
 struct tcalc_val;
 
-typedef enum tcalc_exprtype {
-  TCALC_RELATION_EXPR,
-  TCALC_ARITHMETIC_EXPR
-} tcalc_exprtype;
+typedef struct tcalc_exprtree_node tcalc_exprtree_node;
+typedef struct tcalc_exprtree_node tcalc_exprtree;
 
-/**
- * The type of token dictates how an expression tree node should be evaluated,
- * as well as how many
- *
- * TCALC_TOK_NUM:
- *  The token simply holds a number in its value string, and it can be evaluated
- *  by calling tcalc_strtodouble. The expression tree node has no children.
- *
- * TCALC_TOK_UNOP:
- *  The expression tree node has 1 child which must be evaluated, and then the
- *  corresponding operator in the token's value is used to determine the unary
- *  operation to perform on the evaluated child.
- *
- * TCALC_TOK_BINOP:
- *  The expression tree node has 2 children which must first be evaluated, and then the
- *  corresponding operator in the token's value is used to determine the binary
- *  operation to perform on the evaluated children. The evaluated children must
- *  be called with the binary expression in order, as some binary operations like
- *  division and subtraction are not associative.
- *
- * Every other token type is currently unimplemented :(
- *
- * To validate a tree, evaluate it with tcalc_eval_exprtree and checking that
- * it returns TCALC_ERR_OK.
-*/
-typedef struct tcalc_exprtree_node {
+// Valid Token Types:
+// TCALC_TOK_ID: identifier for a binary function
+// TCALC_TOK_BINOP: operator for a binary operator
+// TCALC_TOK_BINLOP: operator for a binary logical operator
+// TCALC_TOK_RELOP: operator for a binary relational operator
+// TCALC_TOK_EQOP: operator for a binary equality operator
+typedef struct tcalc_exprtree_binary_node {
+  struct tcalc_token* token;
+  tcalc_exprtree_node* left;
+  tcalc_exprtree_node* right;
+} tcalc_exprtree_binary_node;
+
+// Valid Token Types:
+// TCALC_TOK_ID: identifier for a unary function
+// TCALC_TOK_UNOP: operator for a unary operator
+// TCALC_TOK_UNLOP: operator for a unary logical operator
+typedef struct tcalc_exprtree_unary_node {
+  struct tcalc_token* token;
+  tcalc_exprtree_node* child;
+} tcalc_exprtree_unary_node;
+
+
+// Valid Token Types:
+// TCALC_TOK_ID: identifier for a variable
+// TCALC_TOK_NUM: Numerical string
+typedef struct tcalc_exprtree_value_node {
+  struct tcalc_token* token;
+} tcalc_exprtree_value_node;
+
+
+#if 0
+// Currently Unused
+// Exists in source code to show that the size of tcalc_exprtree_func_node when
+// arbitrary sized functions are supported would be equal to the size of
+// tcalc_exprtree_binary_node, making the union of the two waste no memory
+typedef struct tcalc_exprtree_func_node {
   struct tcalc_token* token;
   struct tcalc_exprtree_node** children;
   size_t nb_children;
-} tcalc_exprtree;
+} tcalc_exprtree_func_node;
+#endif
 
-/**
- * Clones the token given and allocates a children buffer of size nb_children.
- *
- * All entries in the children array will be initialized to NULL.
- *
- * It is safe to free the parameter token passed after calling
- * tcalc_exprtree_node_alloc, since the given token is copied.
-*/
-tcalc_err tcalc_exprtree_node_alloc(struct tcalc_token* token, size_t nb_children, tcalc_exprtree** out);
-void tcalc_exprtree_node_free(tcalc_exprtree* node);
+enum tcalc_exprtree_node_type {
+  TCALC_EXPRTREE_NODE_TYPE_BINARY,
+  TCALC_EXPRTREE_NODE_TYPE_UNARY,
+  TCALC_EXPRTREE_NODE_TYPE_VALUE,
+  // TCALC_EXPRTREE_NODE_TYPE_FUNC
+};
+
+struct tcalc_exprtree_node {
+  enum tcalc_exprtree_node_type type;
+  union {
+    tcalc_exprtree_binary_node binary;
+    tcalc_exprtree_unary_node unary;
+    // tcalc_exprtree_func_node func;
+    tcalc_exprtree_value_node value;
+  } as;
+};
 
 /**
  * Free a tcalc expression tree **recursively**
+ * This function can be called even if 'head' is NULL, any of the
+ * children of 'head' are NULL, or the token of 'head' is NULL
 */
 void tcalc_exprtree_free(tcalc_exprtree* head);
 

@@ -31,6 +31,7 @@ const char* tcalc_strerrcode(tcalc_err err) {
     case TCALC_ERR_UNCLOSED_FUNC: return "unclosed function";
     case TCALC_ERR_UNCALLED_FUNC: return "uncalled function";
     case TCALC_ERR_MALFORMED_BINEXP: return "malformed binary expression";
+    case TCALC_ERR_MALFORMED_UNEXP: return "malformed unary expression";
     case TCALC_ERR_MALFORMED_INPUT: return "malformed input";
     case TCALC_ERR_BAD_CAST: return "bad cast";
     case TCALC_ERR_UNIMPLEMENTED: return "unimplemented";

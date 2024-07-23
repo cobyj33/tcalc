@@ -12,6 +12,7 @@
 
 
 int tcalc_cli_rpn_tokenizer(const char* expr) {
+  #if 0
   tcalc_ctx* ctx = NULL;
   tcalc_token** infix_tokens = NULL;
   tcalc_token** rpn_tokens = NULL;
@@ -47,4 +48,9 @@ int tcalc_cli_rpn_tokenizer(const char* expr) {
     tcalc_ctx_free(ctx);
 
     return err ? EXIT_FAILURE : EXIT_SUCCESS;
+  #else
+    fputs("rpn tokenization currently disabled\n", stdout);
+  #endif
+
+  return EXIT_SUCCESS;
 }

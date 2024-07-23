@@ -32,14 +32,25 @@ int tcalc_cli_print_exprtree(const char* expr) {
 }
 
 void tcalc_exprtree_print(tcalc_exprtree* node, unsigned int depth) {
+  if (node == NULL) return;
+
   for (unsigned int i = 0; i < depth; i++)
     fputs("|___", stdout);
 
   if (depth < TCALC_EXPRTREE_PRINT_MAX_DEPTH) {
-    printf("%s\n", node->token->val);
-
-    for (size_t i = 0; i < node->nb_children; i++) {
-      tcalc_exprtree_print(node->children[i], depth + 1);
+    switch (node->type) {
+      case TCALC_EXPRTREE_NODE_TYPE_BINARY: {
+        printf("%s\n", node->as.binary.token->val);
+        tcalc_exprtree_print(node->as.binary.left, depth + 1);
+        tcalc_exprtree_print(node->as.binary.right, depth + 1);
+      } break;
+      case TCALC_EXPRTREE_NODE_TYPE_UNARY: {
+        printf("%s\n", node->as.unary.token->val);
+        tcalc_exprtree_print(node->as.unary.child, depth + 1);
+      } break;
+      case TCALC_EXPRTREE_NODE_TYPE_VALUE: {
+        printf("%s\n", node->as.value.token->val);
+      } break;
     }
   } else {
     fputs("...\n", stdout);

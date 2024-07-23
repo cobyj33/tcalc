@@ -51,7 +51,7 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
   return "unknown token type";
 }
 
-tcalc_err tcalc_token_alloc(tcalc_token_type type, char* val, tcalc_token** out) {
+tcalc_err tcalc_token_alloc(tcalc_token_type type, const char* val, tcalc_token** out) {
   if (val == NULL) return TCALC_ERR_INVALID_ARG;
 
   tcalc_token* token = (tcalc_token*)malloc(sizeof(tcalc_token));
@@ -74,7 +74,7 @@ void tcalc_token_free(tcalc_token* token) {
 }
 
 
-tcalc_err tcalc_token_clone(tcalc_token* src, tcalc_token** out) {
+tcalc_err tcalc_token_clone(const tcalc_token* src, tcalc_token** out) {
   return tcalc_token_alloc(src->type, src->val, out);
 }
 

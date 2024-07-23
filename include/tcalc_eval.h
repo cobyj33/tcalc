@@ -17,7 +17,10 @@ struct tcalc_val;
 tcalc_err tcalc_eval_wctx(const char* infix, const struct tcalc_ctx* ctx, struct tcalc_val* out);
 tcalc_err tcalc_eval(const char* infix, struct tcalc_val* out);
 
+#if 0
+// TODO: Remove legacy code
 tcalc_err tcalc_eval_rpn_wctx(const char* rpn, const struct tcalc_ctx* ctx, struct tcalc_val* out);
 tcalc_err tcalc_eval_rpn(const char* rpn, struct tcalc_val* out);
+#endif
 
 #endif

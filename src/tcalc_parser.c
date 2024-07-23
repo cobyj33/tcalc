@@ -70,6 +70,10 @@ static tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out);
 static tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out);
 static tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out);
 
+static tcalc_err tcalc_exprtree_node_alloc_binary(const tcalc_token* token, tcalc_exprtree* left, tcalc_exprtree* right, tcalc_exprtree** out);
+static tcalc_err tcalc_exprtree_node_alloc_unary(const tcalc_token* token, tcalc_exprtree* child, tcalc_exprtree** out);
+static tcalc_err tcalc_exprtree_node_alloc_value(const tcalc_token* token, tcalc_exprtree** out);
+
 /**
  *
  * @param parent the expression tree node to attach parameter arguments to.
@@ -126,7 +130,7 @@ static tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char**
   cleanup_on_err(err, higher_prec_parsefunc(pctx, &left));
 
   while (pctx->i < pctx->nb_toks && tcalc_token_in_operator_list(pctx->toks[pctx->i], operators)) {
-    tcalc_token* operator = pctx->toks[pctx->i];
+    const tcalc_token* const operator = pctx->toks[pctx->i];
     pctx->i++; // consume current operator
     cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_MALFORMED_BINEXP);
 
@@ -134,17 +138,12 @@ static tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx, const char**
     cleanup_on_err(err, higher_prec_parsefunc(pctx, &right));
 
     tcalc_exprtree* temp = NULL;
-    if (tc_failed(err, tcalc_exprtree_node_alloc(operator, 2, &temp))) {
-      // since right has not yet been added to the left subtree,  we would need
-      // to free it before jumping to cleanup
+    if (tc_failed(err, tcalc_exprtree_node_alloc_binary(operator, left, right, &temp))) {
       tcalc_exprtree_free(right);
       goto cleanup;
     }
 
-    temp->children[0] = left;
-    temp->children[1] = right;
     left = temp;
-    temp = NULL;
   }
 
   *out = left;
@@ -190,7 +189,7 @@ static tcalc_err tcalc_parsefunc_factor(tcalc_pctx* pctx, tcalc_exprtree** out) 
   return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_unary, out);
 }
 
-// unary -> ( "+" | "-" )* exponentiation
+// unary -> ( "+" | "-" | "!" )* exponentiation
 static tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
   tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* unaryhead = NULL, *unarytail = NULL; //linked-list-like structure
@@ -199,23 +198,32 @@ static tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, tcalc_exprtree** out) {
   while (tcalc_pctx_isnextstr(pctx, "+") ||
     tcalc_pctx_isnextstr(pctx, "-") ||
     tcalc_pctx_isnextstr(pctx, "!")) {
+
+    const tcalc_token* const operator = pctx->toks[pctx->i]; // non-owning
+    pctx->i++; // consume current operator
+    cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_MALFORMED_UNEXP);
+
     tcalc_exprtree* unarylistnode = NULL;
-    cleanup_on_err(err, tcalc_exprtree_node_alloc(pctx->toks[pctx->i], 1, &unarylistnode));
+    if (tc_failed(err, tcalc_exprtree_node_alloc_unary(operator, NULL, &unarylistnode))) {
+      goto cleanup;
+    }
 
     if (unarytail != NULL) {
-      unarytail->children[0] = unarylistnode;
+      assert(unarytail->type == TCALC_EXPRTREE_NODE_TYPE_UNARY);
+      unarytail->as.unary.child = unarylistnode;
       unarytail = unarylistnode;
     } else {
+      assert(unaryhead == NULL);
       unarytail = unarylistnode;
       unaryhead = unarylistnode;
     }
-    pctx->i++;
   }
 
   cleanup_on_err(err, tcalc_parsefunc_exponentiation(pctx, &primary));
 
   if (unarytail != NULL) {
-    unarytail->children[0] = primary;
+    assert(unarytail->type == TCALC_EXPRTREE_NODE_TYPE_UNARY);
+    unarytail->as.unary.child = primary;
   } else {
     unaryhead = primary;
   }
@@ -238,7 +246,7 @@ static tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree
   cleanup_on_err(err, tcalc_parsefunc_primary(pctx, &tree));
 
   if (pctx->i < pctx->nb_toks && tcalc_token_in_operator_list(pctx->toks[pctx->i], operators)) {
-    tcalc_token* operator = pctx->toks[pctx->i];
+    const tcalc_token* const operator = pctx->toks[pctx->i];
     pctx->i++;
     cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_MALFORMED_BINEXP);
 
@@ -246,13 +254,11 @@ static tcalc_err tcalc_parsefunc_exponentiation(tcalc_pctx* pctx, tcalc_exprtree
     cleanup_on_err(err, tcalc_parsefunc_exponentiation(pctx, &rst)); // right recursion
 
     tcalc_exprtree* temp = NULL;
-    if (tc_failed(err, tcalc_exprtree_node_alloc(operator, 2, &temp))) {
+    if (tc_failed(err, tcalc_exprtree_node_alloc_binary(operator, tree, rst, &temp))) {
       tcalc_exprtree_free(rst);
       goto cleanup;
     }
 
-    temp->children[0] = tree;
-    temp->children[1] = rst;
     tree = temp;
   }
 
@@ -275,7 +281,7 @@ static tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out)
   cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_MALFORMED_INPUT);
 
   if (pctx->toks[pctx->i]->type == TCALC_TOK_NUM) { //number
-    cleanup_on_err(err, tcalc_exprtree_node_alloc(pctx->toks[pctx->i], 0, &node));
+    cleanup_on_err(err, tcalc_exprtree_node_alloc_value(pctx->toks[pctx->i], &node));
     pctx->i++; // consume number token
   } else if (pctx->toks[pctx->i]->type == TCALC_TOK_GRPSTRT) { // parenthesized expression
     pctx->i++; // consume group start symbol
@@ -285,7 +291,7 @@ static tcalc_err tcalc_parsefunc_primary(tcalc_pctx* pctx, tcalc_exprtree** out)
     pctx->i++; // consume group end symbol
   } else if (pctx->toks[pctx->i]->type == TCALC_TOK_ID) { // variable or function
     if (tcalc_ctx_hasvar(pctx->ctx, pctx->toks[pctx->i]->val)) { // variable
-      cleanup_on_err(err, tcalc_exprtree_node_alloc(pctx->toks[pctx->i], 0, &node));
+      cleanup_on_err(err, tcalc_exprtree_node_alloc_value(pctx->toks[pctx->i], &node));
       pctx->i++; // consume variable
     } else if (tcalc_ctx_hasfunc(pctx->ctx, pctx->toks[pctx->i]->val)) { // function
       cleanup_on_err(err, tcalc_parsefunc_func(pctx, &node));
@@ -313,16 +319,16 @@ static tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out) {
   tcalc_err err = TCALC_ERR_OK;
   tcalc_exprtree* funchead = NULL;
 
-  size_t arity = 0;
-  if (tcalc_ctx_hasunfunc(pctx->ctx, pctx->toks[pctx->i]->val)) arity = 1;
-  else if (tcalc_ctx_hasbinfunc(pctx->ctx, pctx->toks[pctx->i]->val)) arity = 2;
-  else {
+  if (tcalc_ctx_hasunfunc(pctx->ctx, pctx->toks[pctx->i]->val)) {
+    cleanup_on_err(err, tcalc_exprtree_node_alloc_unary(pctx->toks[pctx->i], NULL, &funchead));
+    pctx->i++;
+  } else if (tcalc_ctx_hasbinfunc(pctx->ctx, pctx->toks[pctx->i]->val)) {
+    cleanup_on_err(err, tcalc_exprtree_node_alloc_binary(pctx->toks[pctx->i], NULL, NULL, &funchead));
+    pctx->i++;
+  } else {
     err = TCALC_ERR_UNKNOWN_ID; // should be unreachable
     goto cleanup;
   }
-
-  cleanup_on_err(err, tcalc_exprtree_node_alloc(pctx->toks[pctx->i], arity, &funchead));
-  pctx->i++; // consume function name
 
   cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPSTRT), TCALC_ERR_UNCALLED_FUNC);
   pctx->i++; // consume opening parentheses
@@ -341,24 +347,33 @@ static tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, tcalc_exprtree** out) {
     return err;
 }
 
-
 static tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* parent) {
   tcalc_err err = TCALC_ERR_OK;
 
-  if (parent->nb_children > 0) {
-    cleanup_if(err, tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_WRONG_ARITY);
-    cleanup_on_err(err, tcalc_parsefunc_expression(pctx, &(parent->children[0])));
+  switch (parent->type) {
+    case TCALC_EXPRTREE_NODE_TYPE_BINARY: {
+      cleanup_if(err, tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_WRONG_ARITY);
 
-    size_t childi = 1;
-    while (childi < parent->nb_children && tcalc_pctx_isnexttype(pctx, TCALC_TOK_PSEP)) {
-      pctx->i++; // consume separator
-      cleanup_on_err(err, tcalc_parsefunc_expression(pctx, &(parent->children[childi])) );
-      childi++;
-    }
+      cleanup_on_err(err, tcalc_parsefunc_expression(pctx, &(parent->as.binary.left) ));
+      cleanup_if(err, !tcalc_pctx_isnexttype(pctx, TCALC_TOK_PSEP), TCALC_ERR_WRONG_ARITY);
+      pctx->i++; // consume ',' parameter separator
 
-    cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_UNCLOSED_FUNC);
-    cleanup_if(err, childi < parent->nb_children, TCALC_ERR_WRONG_ARITY);
-    cleanup_if(err, childi == parent->nb_children && !tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_WRONG_ARITY);
+      cleanup_on_err(err, tcalc_parsefunc_expression(pctx, &(parent->as.binary.right) ));
+      cleanup_if(err, tcalc_pctx_isnexttype(pctx, TCALC_TOK_PSEP), TCALC_ERR_WRONG_ARITY);
+
+      return err;
+    } break;
+    case TCALC_EXPRTREE_NODE_TYPE_UNARY: {
+      cleanup_if(err, tcalc_pctx_isnexttype(pctx, TCALC_TOK_GRPEND), TCALC_ERR_WRONG_ARITY);
+      cleanup_on_err(err, tcalc_parsefunc_expression(pctx, &(parent->as.unary.child) ));
+      cleanup_if(err, tcalc_pctx_isnexttype(pctx, TCALC_TOK_PSEP), TCALC_ERR_WRONG_ARITY);
+      return err;
+    } break;
+    case TCALC_EXPRTREE_NODE_TYPE_VALUE: {
+      // Invalid, assert on debug and return error on release
+      assert(parent->type != TCALC_EXPRTREE_NODE_TYPE_VALUE);
+      return TCALC_ERR_INVALID_ARG;
+    } break;
   }
 
   return err;
@@ -382,4 +397,55 @@ static int tcalc_token_in_operator_list(tcalc_token* token, const char** operato
       return 1;
   }
   return 0;
+}
+
+static tcalc_err tcalc_exprtree_node_alloc_binary(const tcalc_token* token, tcalc_exprtree* left, tcalc_exprtree* right, tcalc_exprtree** out) {
+  *out = NULL;
+  tcalc_err err = TCALC_ERR_OK;
+  tcalc_exprtree* binary = calloc(1, sizeof(*binary));
+  if (binary == NULL) return TCALC_ERR_BAD_ALLOC;
+
+  binary->type = TCALC_EXPRTREE_NODE_TYPE_BINARY;
+  cleanup_on_err(err, tcalc_token_clone(token, &(binary->as.binary.token)));
+  binary->as.binary.left = left;
+  binary->as.binary.right = right;
+  *out = binary;
+  return TCALC_ERR_OK;
+
+  cleanup:
+    tcalc_exprtree_free(binary);
+    return err;
+}
+
+static tcalc_err tcalc_exprtree_node_alloc_unary(const tcalc_token* token, tcalc_exprtree* child, tcalc_exprtree** out) {
+  *out = NULL;
+  tcalc_err err = TCALC_ERR_OK;
+  tcalc_exprtree* unary = calloc(1, sizeof(*unary));
+  if (unary == NULL) return TCALC_ERR_BAD_ALLOC;
+
+  unary->type = TCALC_EXPRTREE_NODE_TYPE_UNARY;
+  cleanup_on_err(err, tcalc_token_clone(token, &(unary->as.unary.token)));
+  unary->as.unary.child = child;
+  *out = unary;
+  return TCALC_ERR_OK;
+
+  cleanup:
+    tcalc_exprtree_free(unary);
+    return err;
+}
+
+static tcalc_err tcalc_exprtree_node_alloc_value(const tcalc_token* token, tcalc_exprtree** out) {
+  *out = NULL;
+  tcalc_err err = TCALC_ERR_OK;
+  tcalc_exprtree* value = calloc(1, sizeof(*value));
+  if (value == NULL) return TCALC_ERR_BAD_ALLOC;
+
+  value->type = TCALC_EXPRTREE_NODE_TYPE_VALUE;
+  cleanup_on_err(err, tcalc_token_clone(token, &(value->as.value.token)));
+  *out = value;
+  return TCALC_ERR_OK;
+
+  cleanup:
+    tcalc_exprtree_free(value);
+    return err;
 }

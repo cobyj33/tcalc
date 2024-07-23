@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts) {
+  #if 0
   tcalc_val ans;
   tcalc_ctx* ctx = NULL;
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
@@ -26,6 +27,9 @@ int tcalc_cli_eval_rpn(const char* expr, struct eval_opts eval_opts) {
 
   tcalc_val_fput(ans, stdout);
   fputc('\n', stdout);
+  #else
+    fputs("rpn evaluation currently disabled\n", stdout);
+  #endif
 
   return EXIT_SUCCESS;
 }
