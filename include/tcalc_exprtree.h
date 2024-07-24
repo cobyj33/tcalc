@@ -91,9 +91,7 @@ void tcalc_exprtree_free_children(tcalc_exprtree* head);
 */
 int tcalc_exprtree_is_vardef(tcalc_exprtree* expr);
 
-tcalc_err tcalc_create_exprtree_rpn(const char* rpn, const struct tcalc_ctx* ctx, tcalc_exprtree** out);
 tcalc_err tcalc_create_exprtree_infix(const char* infix, const struct tcalc_ctx* ctx, tcalc_exprtree** out);
-tcalc_err tcalc_infix_tokens_to_rpn_tokens(struct tcalc_token** tokens, size_t nb_tokens, const struct tcalc_ctx* ctx, struct tcalc_token*** out, size_t* out_size);
 
 tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const struct tcalc_ctx* ctx, struct tcalc_val* out);
 

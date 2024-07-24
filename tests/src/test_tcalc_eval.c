@@ -5,7 +5,6 @@
 #include "tcalc_val.h"
 
 #include <stddef.h>
-//tcalc_err tcalc_eval_rpn(const char* rpn, double* out);
 #define TCALC_EVAL_ASSERT_DELTA 0.0001
 
 void TestTCalcEvalSuccesses(CuTest *tc) {

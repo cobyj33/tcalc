@@ -18,7 +18,6 @@ ${CMAKE_SOURCE_DIR}/src/tcalc_eval.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_exit.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_exprtree.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_func.c
-${CMAKE_SOURCE_DIR}/src/tcalc_infix_to_rpn.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_mem.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_parser.c
 ${CMAKE_SOURCE_DIR}/src/tcalc_string.c
@@ -29,17 +28,14 @@ ${CMAKE_SOURCE_DIR}/src/tcalc_val_func.c
 
 set(TCALC_CLI_SRC_FILES
 ${CMAKE_SOURCE_DIR}/cli/tcalc_cli_common.c
-${CMAKE_SOURCE_DIR}/cli/tcalc_cli_eval_rpn.c
 ${CMAKE_SOURCE_DIR}/cli/tcalc_cli_eval.c
 ${CMAKE_SOURCE_DIR}/cli/tcalc_cli_infix_tokenizer.c
 ${CMAKE_SOURCE_DIR}/cli/tcalc_cli_print_exprtree.c
-${CMAKE_SOURCE_DIR}/cli/tcalc_cli_rpn_tokenizer.c
 ${CMAKE_SOURCE_DIR}/cli/tcalc_cli.c
 ${CMAKE_SOURCE_DIR}/cli/tcalc_repl.c
 )
 
 set(TCALC_TEST_SRC_FILES
-${CMAKE_SOURCE_DIR}/tests/src/test_tcalc_rpn_eval.c
 ${CMAKE_SOURCE_DIR}/tests/src/test_tcalc_tokenize.c
 ${CMAKE_SOURCE_DIR}/tests/src/test_tcalc_string.c
 ${CMAKE_SOURCE_DIR}/tests/src/test_tcalc_eval.c

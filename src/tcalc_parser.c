@@ -87,8 +87,6 @@ static tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* pare
  * General Pipeline:
  *
  * Convert infix expression into infix tokens
- * Convert infix tokens into rpn-formatted tokens
- * Convert rpn-formatted tokens into returned expression tree
 */
 
 // expression rule

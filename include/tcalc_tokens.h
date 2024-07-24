@@ -87,6 +87,5 @@ void tcalc_token_free(tcalc_token* token);
 
 tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const struct tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size);
 tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out_size);
-tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_size);
 
 #endif

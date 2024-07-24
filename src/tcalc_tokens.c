@@ -24,7 +24,6 @@ const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%!=<>";
 const char* TCALC_MULTI_TOKENS[] = {"**", "==", "<=", ">=", "!=", "&&", "||", NULL}; // make sure this remains null terminated
 
 static int is_valid_tcalc_char(char ch);
-static tcalc_err tcalc_valid_token_str(const char* token);
 static tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
 static int tcalc_are_groupsyms_balanced(const char* expr);
 static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size);
@@ -394,91 +393,12 @@ static tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t s
 	return TCALC_ERR_STOP_ITER; // this SHOULD be unreachable
 }
 
-/**
- *
- *
- * @param out allocate and return a list of tcalc_token objects based on expr param
- * @param out_size
-*/
-tcalc_err tcalc_tokenize_rpn(const char* expr, tcalc_token*** out, size_t* out_size) {
-  *out_size = 0;
-  char** token_strings;
-  size_t nb_str_tokens;
-  tcalc_err err = tcalc_strsplit(expr, ' ', &token_strings, &nb_str_tokens); // very simple :)
-  if (err) return err;
-
-  *out = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_str_tokens);
-  if (*out == NULL) {
-    TCALC_ARR_FREE_F(token_strings, nb_str_tokens, free);
-    return TCALC_ERR_BAD_ALLOC;
-  }
-
-  for (size_t i = 0; i < nb_str_tokens; i++) {
-    cleanup_on_err(err, tcalc_valid_token_str(token_strings[i]));
-
-    tcalc_token_type token_type;
-
-    if (strcmp(token_strings[i], "-") == 0 ||
-        strcmp(token_strings[i], "+") == 0 ||
-        strcmp(token_strings[i], "*") == 0 ||
-        strcmp(token_strings[i], "/") == 0 ||
-        strcmp(token_strings[i], "^") == 0 ||
-        strcmp(token_strings[i], "%") == 0) {
-      token_type = TCALC_TOK_BINOP;
-    } else if (tcalc_strisdouble(token_strings[i])) {
-      token_type = TCALC_TOK_NUM;
-    } else if (tcalc_is_identifier(token_strings[i])) {
-      token_type = TCALC_TOK_ID;
-    } else { // Could not find matching token definition
-      err = TCALC_ERR_UNKNOWN_TOKEN;
-      goto cleanup;
-    }
-
-    tcalc_token* token;
-    cleanup_on_err(err, tcalc_token_alloc(token_type, token_strings[i], &token));
-
-    (*out)[i] = token;
-    (*out_size)++;
-  }
-
-  TCALC_ARR_FREE_F(token_strings, nb_str_tokens, free);
-  return TCALC_ERR_OK;
-
-  cleanup:
-    TCALC_ARR_FREE_F(token_strings, nb_str_tokens, free);
-    TCALC_ARR_FREE_F(*out, *out_size, tcalc_token_free);
-    return err;
-}
-
 static int is_valid_tcalc_char(char ch) {
 	for (int i = 0; TCALC_ALLOWED_CHARS[i] != '\0'; i++)
 		if (TCALC_ALLOWED_CHARS[i] == ch)
 			return 1;
 	return 0;
 }
-
-/**
- *
- * returns TCALC_ERR_OK on success and TCALC_ERR_INVALID_ARG on error.
-*/
-static tcalc_err tcalc_valid_token_str(const char* token) {
-  if (token == NULL) return TCALC_ERR_INVALID_ARG;
-  if (token[0] == '\0') return TCALC_ERR_INVALID_ARG; // empty string
-
-  for (size_t s = 0; TCALC_MULTI_TOKENS[s] != NULL; s++) {
-    if (strcmp(TCALC_MULTI_TOKENS[s], token) == 0) return TCALC_ERR_OK;
-  }
-
-  for (int i = 0; TCALC_SINGLE_TOKENS[i] != '\0'; i++) {
-    if (token[0] == TCALC_SINGLE_TOKENS[i]) return TCALC_ERR_OK;
-  }
-
-  if (tcalc_strisdouble(token)) return TCALC_ERR_OK;
-  if (tcalc_is_identifier(token)) return TCALC_ERR_OK;
-
-  return TCALC_ERR_INVALID_ARG;
-}
-
 
 /**
  * There's probably a better way to implement this but whatever

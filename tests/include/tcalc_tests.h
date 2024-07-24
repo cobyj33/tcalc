@@ -6,7 +6,6 @@
 #define TCALC_DBL_ASSERT_DELTA 0.001
 
 CuSuite* TCalcEvalGetSuite();
-CuSuite* TCalcRPNEvalGetSuite();
 CuSuite* TCalcTokenizeGetSuite();
 
 #endif
