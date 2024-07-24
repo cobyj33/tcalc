@@ -65,11 +65,6 @@ typedef enum tcalc_assoc{
   TCALC_LEFT_ASSOC,
 } tcalc_assoc;
 
-typedef struct tcalc_vardef {
-  char* id;
-  struct tcalc_val val;
-} tcalc_vardef;
-
 typedef struct tcalc_opdata {
   int prec;
   tcalc_assoc assoc;
@@ -86,7 +81,15 @@ typedef struct tcalc_exprvardef {
   const char* dependencies;
 } tcalc_exprvardef;
 
+// 8 may seem large, but because of alignment from function pointers,
+// each operator id struct must be aligned across the alignment of a function
+// pointer, which is 8 bytes on 64 bit machines. If we used less than 8, it
+// would be wasting bytes as padding instead
 #define TCALC_OPDEF_MAX_STR_SIZE 8
+
+// TODO: maybe should be increased to 64? Definitely when user-defined
+// TODO: functions are added
+#define TCALC_IDDEF_MAX_STR_SIZE 16
 
 typedef struct tcalc_unopdef {
   char id[TCALC_OPDEF_MAX_STR_SIZE];
@@ -123,14 +126,19 @@ typedef struct tcalc_binlopdef {
   tcalc_val_binlfunc func;
 } tcalc_binlopdef;
 
+typedef struct tcalc_vardef {
+  char id[TCALC_IDDEF_MAX_STR_SIZE];
+  struct tcalc_val val;
+} tcalc_vardef;
+
 
 typedef struct tcalc_unfuncdef {
-  char* id;
+  char id[TCALC_IDDEF_MAX_STR_SIZE];
   tcalc_val_unfunc func;
 } tcalc_unfuncdef;
 
 typedef struct tcalc_binfuncdef {
-  char* id;
+  char id[TCALC_IDDEF_MAX_STR_SIZE];
   tcalc_val_binfunc func;
 } tcalc_binfuncdef;
 
@@ -149,9 +157,9 @@ typedef struct tcalc_binfuncdef {
  *   have created it like this. -_-
 */
 typedef struct tcalc_ctx {
-  TCALC_VEC(tcalc_unfuncdef*) unfuncs; // Defined Unary Functions
-  TCALC_VEC(tcalc_binfuncdef*) binfuncs; // Defined Binary Functions
-  TCALC_VEC(tcalc_vardef*) vars; // Defined Variables
+  TCALC_VEC(tcalc_unfuncdef) unfuncs; // Defined Unary Functions
+  TCALC_VEC(tcalc_binfuncdef) binfuncs; // Defined Binary Functions
+  TCALC_VEC(tcalc_vardef) vars; // Defined Variables
   TCALC_VEC(tcalc_unopdef) unops; // Defined Unary Operators
   TCALC_VEC(tcalc_binopdef) binops; // Defined Binary Operators
   TCALC_VEC(tcalc_relopdef) relops; // Defined Relational (Binary) Operators

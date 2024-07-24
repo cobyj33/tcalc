@@ -60,21 +60,21 @@ int tcalc_repl() {
     }
     else if (strcmp(input, "variables") == 0) {
       for (size_t i = 0; i < ctx->vars.len; i++) {
-        const tcalc_vardef* var = ctx->vars.arr[i];
-        fputs(var->id, stdout);
+        const tcalc_vardef var = ctx->vars.arr[i];
+        fputs(var.id, stdout);
         fputs(" = ", stdout);
-        tcalc_val_fput(var->val, stdout);
+        tcalc_val_fput(var.val, stdout);
         fputc('\n', stdout);
       }
       continue;
     }
     else if (strcmp(input, "functions") == 0) {
       for (size_t i = 0; i < ctx->unfuncs.len; i++) {
-        printf("%s%s", ctx->unfuncs.arr[i]->id, i == ctx->unfuncs.len - 1 ? "" : ", ");
+        printf("%s%s", ctx->unfuncs.arr[i].id, i == ctx->unfuncs.len - 1 ? "" : ", ");
       }
 
       for (size_t i = 0; i < ctx->binfuncs.len; i++) {
-        printf("%s%s", ctx->binfuncs.arr[i]->id, i == ctx->binfuncs.len - 1 ? "" : ", ");
+        printf("%s%s", ctx->binfuncs.arr[i].id, i == ctx->binfuncs.len - 1 ? "" : ", ");
       }
       fputs("\n", stdout);
       continue;

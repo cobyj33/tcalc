@@ -132,6 +132,8 @@ typedef enum tcalc_err {
 */
 #define ret_on_err(err, expr) if (tc_failed(err, expr)) return (err)
 
+#define ret_on_macerr(err, mac) do { mac; if (err) return err; } while (0)
+
 
 #define reterr_on_true(err, expr, err_on_true) if (expr) { (err) = (err_on_true); return (err); }
 
