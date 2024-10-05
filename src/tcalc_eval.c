@@ -24,7 +24,7 @@ tcalc_err tcalc_eval_wctx(const char* infix, const tcalc_ctx* ctx, tcalc_val* ou
   tcalc_err err = tcalc_create_exprtree_infix(infix, ctx, &tree);
   if (err) return err;
 
-  err = tcalc_eval_exprtree(tree, ctx, out);
+  err = tcalc_eval_exprtree(infix, tree, ctx, out);
   tcalc_exprtree_free(tree);
   return err;
 }

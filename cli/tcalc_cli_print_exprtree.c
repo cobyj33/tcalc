@@ -13,7 +13,7 @@
 
 #define TCALC_EXPRTREE_PRINT_MAX_DEPTH 20
 
-void tcalc_exprtree_print(tcalc_exprtree* node, unsigned int depth);
+void tcalc_exprtree_print(const char* expr, tcalc_exprtree* node, unsigned int depth);
 
 
 int tcalc_cli_print_exprtree(const char* expr) {
@@ -26,12 +26,12 @@ int tcalc_cli_print_exprtree(const char* expr) {
   tcalc_ctx_free(ctx);
   TCALC_CLI_CHECK_ERR(err, "[%s] tcalc error: %s\n", FUNCDINFO, tcalc_strerrcode(err));
 
-  tcalc_exprtree_print(tree, 0);
+  tcalc_exprtree_print(expr, tree, 0);
   tcalc_exprtree_free(tree);
   return EXIT_SUCCESS;
 }
 
-void tcalc_exprtree_print(tcalc_exprtree* node, unsigned int depth) {
+void tcalc_exprtree_print(const char* expr, tcalc_exprtree* node, unsigned int depth) {
   if (node == NULL) return;
 
   for (unsigned int i = 0; i < depth; i++)
@@ -40,16 +40,16 @@ void tcalc_exprtree_print(tcalc_exprtree* node, unsigned int depth) {
   if (depth < TCALC_EXPRTREE_PRINT_MAX_DEPTH) {
     switch (node->type) {
       case TCALC_EXPRTREE_NODE_TYPE_BINARY: {
-        printf("%s\n", node->as.binary.token->val);
-        tcalc_exprtree_print(node->as.binary.left, depth + 1);
-        tcalc_exprtree_print(node->as.binary.right, depth + 1);
+        printf("%.*s\n", TCALC_TOKEN_PRINTF_VARARG(expr, node->as.binary.token));
+        tcalc_exprtree_print(expr, node->as.binary.left, depth + 1);
+        tcalc_exprtree_print(expr, node->as.binary.right, depth + 1);
       } break;
       case TCALC_EXPRTREE_NODE_TYPE_UNARY: {
-        printf("%s\n", node->as.unary.token->val);
-        tcalc_exprtree_print(node->as.unary.child, depth + 1);
+        printf("%.*s\n", TCALC_TOKEN_PRINTF_VARARG(expr, node->as.unary.token));
+        tcalc_exprtree_print(expr, node->as.unary.child, depth + 1);
       } break;
       case TCALC_EXPRTREE_NODE_TYPE_VALUE: {
-        printf("%s\n", node->as.value.token->val);
+        printf("%.*s\n", TCALC_TOKEN_PRINTF_VARARG(expr, node->as.value.token));
       } break;
     }
   } else {

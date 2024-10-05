@@ -2,9 +2,9 @@
 #define _TCALC_EXPRTREE_H_
 
 #include "tcalc_error.h"
+#include "tcalc_tokens.h"
 #include <stddef.h>
 
-struct tcalc_token;
 struct tcalc_ctx;
 struct tcalc_val;
 
@@ -18,7 +18,7 @@ typedef struct tcalc_exprtree_node tcalc_exprtree;
 // TCALC_TOK_RELOP: operator for a binary relational operator
 // TCALC_TOK_EQOP: operator for a binary equality operator
 typedef struct tcalc_exprtree_binary_node {
-  struct tcalc_token* token;
+  struct tcalc_token token;
   tcalc_exprtree_node* left;
   tcalc_exprtree_node* right;
 } tcalc_exprtree_binary_node;
@@ -28,7 +28,7 @@ typedef struct tcalc_exprtree_binary_node {
 // TCALC_TOK_UNOP: operator for a unary operator
 // TCALC_TOK_UNLOP: operator for a unary logical operator
 typedef struct tcalc_exprtree_unary_node {
-  struct tcalc_token* token;
+  struct tcalc_token token;
   tcalc_exprtree_node* child;
 } tcalc_exprtree_unary_node;
 
@@ -37,7 +37,7 @@ typedef struct tcalc_exprtree_unary_node {
 // TCALC_TOK_ID: identifier for a variable
 // TCALC_TOK_NUM: Numerical string
 typedef struct tcalc_exprtree_value_node {
-  struct tcalc_token* token;
+  struct tcalc_token token;
 } tcalc_exprtree_value_node;
 
 
@@ -91,8 +91,8 @@ void tcalc_exprtree_free_children(tcalc_exprtree* head);
 */
 int tcalc_exprtree_is_vardef(tcalc_exprtree* expr);
 
-tcalc_err tcalc_create_exprtree_infix(const char* infix, const struct tcalc_ctx* ctx, tcalc_exprtree** out);
+tcalc_err tcalc_create_exprtree_infix(const char* expr, const struct tcalc_ctx* ctx, tcalc_exprtree** out);
 
-tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const struct tcalc_ctx* ctx, struct tcalc_val* out);
+tcalc_err tcalc_eval_exprtree(const char* expr, tcalc_exprtree* exprtree, const struct tcalc_ctx* ctx, struct tcalc_val* out);
 
 #endif

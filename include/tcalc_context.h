@@ -21,6 +21,8 @@ struct tcalc_exprtree_node;
  * multiplication, then addition when evaluating an expression within the same
  * grouping symbols.
  *
+ * Higher Precedence Value <- Higher Precedence <- Lower down AST
+ *
  */
 
 /**
@@ -175,33 +177,33 @@ tcalc_err tcalc_ctx_addtrigdeg(tcalc_ctx* ctx);
 
 void tcalc_ctx_free(tcalc_ctx* ctx);
 
-tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, const char* name, struct tcalc_val val);
-tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, const char* name, tcalc_val_unfunc func);
-tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, tcalc_val_binfunc func);
-tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_unfunc func);
-tcalc_err tcalc_ctx_addbinop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_binfunc func);
-tcalc_err tcalc_ctx_addrelop(tcalc_ctx* ctx,const char* name, int prec, tcalc_assoc assoc, tcalc_val_relfunc func);
-tcalc_err tcalc_ctx_addunlop(tcalc_ctx* ctx,const char* name, int prec, tcalc_assoc assoc, tcalc_val_unlfunc func);
-tcalc_err tcalc_ctx_addbinlop(tcalc_ctx* ctx, const char* name, int prec, tcalc_assoc assoc, tcalc_val_binlfunc func);
+tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, const char* name, size_t name_len, struct tcalc_val val);
+tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_val_unfunc func);
+tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_val_binfunc func);
+tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_unfunc func);
+tcalc_err tcalc_ctx_addbinop(tcalc_ctx* ctx, const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_binfunc func);
+tcalc_err tcalc_ctx_addrelop(tcalc_ctx* ctx,const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_relfunc func);
+tcalc_err tcalc_ctx_addunlop(tcalc_ctx* ctx,const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_unlfunc func);
+tcalc_err tcalc_ctx_addbinlop(tcalc_ctx* ctx, const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_binlfunc func);
 
 /**
  * Note that tcalc_ctx_hasid does not apply to operations, but only
  * functions and variables
 */
-int tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name);
-int tcalc_ctx_hasid(const tcalc_ctx* ctx, const char* name);
-int tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+int tcalc_ctx_hasid(const tcalc_ctx* ctx, const char* name, size_t name_len);
+int tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
 
-int tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name);
-int tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name);
-int tcalc_ctx_hasrelop(const tcalc_ctx* ctx, const char* name);
-int tcalc_ctx_hasunlop(const tcalc_ctx* ctx, const char* name);
-int tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+int tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+int tcalc_ctx_hasrelop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+int tcalc_ctx_hasunlop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+int tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name, size_t name_len);
 
-int tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name);
-int tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
+int tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
 
-int tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name);
+int tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name, size_t name_len);
 
 /**
  * Note that out must be NON-NULL
@@ -211,17 +213,17 @@ int tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name);
  * tcalc_ctx_has_x functions (if tcalc_ctx_has_x returns true, tcalc_ctx_get_x
  * will not return an error)
 */
-tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, tcalc_vardef* out);
+tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_vardef* out);
 
 
-tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, tcalc_unfuncdef* out);
-tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, tcalc_binfuncdef* out);
+tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_unfuncdef* out);
+tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_binfuncdef* out);
 
-tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, tcalc_unopdef* out);
-tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, tcalc_binopdef* out);
-tcalc_err tcalc_ctx_getrelop(const tcalc_ctx* ctx, const char* name, tcalc_relopdef* out);
-tcalc_err tcalc_ctx_getunlop(const tcalc_ctx* ctx, const char* name, tcalc_unlopdef* out);
-tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, tcalc_binlopdef* out);
+tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_unopdef* out);
+tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_binopdef* out);
+tcalc_err tcalc_ctx_getrelop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_relopdef* out);
+tcalc_err tcalc_ctx_getunlop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_unlopdef* out);
+tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_binlopdef* out);
 
 
 /**

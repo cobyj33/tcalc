@@ -17,7 +17,7 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
       err = tcalc_eval(expr, &res); \
       CuAssert_Line(tc, __FILE__, __LINE__, "Expression '" expr "' evaluation succeeded", err == TCALC_ERR_OK); \
       CuAssert_Line(tc, __FILE__, __LINE__, "Expression '" expr "' returns as a double", res.type == TCALC_VALTYPE_NUM); \
-      CuAssertDblEquals_LineMsg(tc, __FILE__, __LINE__, "Expression '" expr "' returns as expected boolean", res.as.num, val, TCALC_EVAL_ASSERT_DELTA); \
+      CuAssertDblEquals_LineMsg(tc, __FILE__, __LINE__, "Expression '" expr "' evaluation test", val, res.as.num, TCALC_EVAL_ASSERT_DELTA); \
     }
 
   #define MAKE_BOOL_SUCCESS_TEST(tc, expr, val) \
@@ -29,7 +29,7 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
       \
       CuAssert_Line(tc, __FILE__, __LINE__, "Expression '" expr "' evaluation succeeded", err == TCALC_ERR_OK); \
       CuAssert_Line(tc, __FILE__, __LINE__, "Expression '" expr "' returns as a boolean", res.type == TCALC_VALTYPE_BOOL); \
-      CuAssertIntEquals_LineMsg(tc, __FILE__, __LINE__, "Expression '" expr "' returns as expected boolean", !!res.as.boolean, !!val); \
+      CuAssertIntEquals_LineMsg(tc, __FILE__, __LINE__, "Expression '" expr "' returns as expected boolean", !!val, !!res.as.boolean); \
     }
 
   // Double Tests

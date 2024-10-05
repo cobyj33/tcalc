@@ -4,6 +4,50 @@
 #include <stddef.h>
 #include <tcalc_error.h>
 
+typedef struct tcalc_strv {
+  char* str;
+  size_t len;
+} tcalc_strv;
+
+typedef struct tcalc_dstr {
+  size_t len;
+  size_t cap;
+  char str[];
+} tcalc_dstr;
+
+typedef struct tcalc_slice {
+  size_t start;
+  size_t xend;
+} tcalc_slice;
+
+typedef struct tcalc_strslice {
+  char* str;
+  size_t start;
+  size_t xend;
+} tcalc_strslice;
+
+
+static inline size_t tcalc_slice_len(tcalc_slice slice) {
+  return slice.xend - slice.start;
+}
+
+inline struct tcalc_strv tcalc_dstr_to_strv(struct tcalc_dstr dstr) {
+  return (struct tcalc_strv){ .str = dstr.str, .len = dstr.len };
+}
+
+#define TCALC_STRLIT_LEN(strlit) (sizeof(strlit) - 1)
+
+// Needs to be a macro instead of an inline struct, since we have to calculate
+// the literal string length with sizeof()
+#define TCALC_STRLIT_TO_CONST_STRV(strlit) ((const struct tcalc_strv){ .str = (strlit), .len = TCALC_STRLIT_LEN(strlit) })
+
+int tcalc_streq_lb(const char* s1, size_t l1, const char* s2, size_t l2);
+
+// Check if a null terminated string and a length-based string hold equivalent
+// information
+int tcalc_streq_ntlb(const char* ntstr, const char* lbstr, size_t lbstr_len);
+
+int tcalc_slice_ntstr_eq(const char* source, tcalc_slice slice, const char* ntstr);
 /**
  * Taken from FreeBSD
  * Copy string src to buffer dst of size dsize.  At most dsize-1
@@ -18,6 +62,7 @@
  * a null pointer.
 */
 size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize);
+
 
 /*
  * Taken from FreeBSD
@@ -44,6 +89,9 @@ enum tcalc_err tcalc_strtoint(const char*, int*);
 
 int tcalc_strisdouble(const char*);
 enum tcalc_err tcalc_strtodouble(const char*, double*);
+
+int tcalc_lpstrisdouble(const char*, size_t);
+enum tcalc_err tcalc_lpstrtodouble(const char*, size_t, double*);
 
 enum tcalc_err find_in_strarr(const char**, size_t, const char*, size_t*);
 int has_in_strarr(const char**, size_t, const char*);

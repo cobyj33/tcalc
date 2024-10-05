@@ -22,7 +22,8 @@
  * should only be constructed using these functions.
 */
 
-#define alloc_nr(x) (((x)+16)*3/2)
+// #define alloc_nr(x) (((x)+16)*3/2)
+#define alloc_nr(x) (((x / 2) + 8) * 3)
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
@@ -66,8 +67,6 @@ void* tcalc_xcalloc(size_t, size_t);
 void* tcalc_xrealloc(void*, size_t);
 
 /**
- *
- *
  * arr: The pointer to the array to perform possible growth on
  * size: The size to which the array should fit into
  * capacity: The current capacity of the array
@@ -81,14 +80,21 @@ void* tcalc_xrealloc(void*, size_t);
 */
 #define TCALC_DARR_GROW(arr, size, capacity, err) do { \
     if ((size) > (capacity)) { \
-      const size_t new_capacity = alloc_nr(capacity) < (size) ? (size) : alloc_nr(capacity); \
-      void* realloced = realloc((arr), sizeof(*(arr)) * new_capacity); \
-      if (realloced == NULL) { \
-        err = TCALC_ERR_BAD_ALLOC; \
+      const size_t grow_func_res = alloc_nr(capacity); \
+      if (grow_func_res < (size)) { \
+        err = TCALC_ERR_OVERFLOW; \
       } else { \
-        (arr) = realloced; \
-        (capacity) = new_capacity; \
+        const size_t new_capacity = grow_func_res < (size) ? (size) : grow_func_res; \
+        void* realloced = realloc((arr), sizeof(*(arr)) * new_capacity); \
+        if (realloced == NULL) { \
+          err = TCALC_ERR_BAD_ALLOC; \
+        } else { \
+          (arr) = realloced; \
+          (capacity) = new_capacity; \
+        } \
       } \
+    } else { \
+      err = TCALC_ERR_OK; \
     } \
   } while (0)
 
@@ -115,17 +121,14 @@ void* tcalc_xrealloc(void*, size_t);
  * err: a tcalc_err variable that will be set upon any errors
 */
 #define TCALC_DARR_INSERT(arr, size, capacity, val, index, err) do { \
-    if (index > (size) || index < 0) { \
-      err = TCALC_ERR_OUT_OF_BOUNDS; \
-    } else { \
-      TCALC_DARR_GROW(arr, (size) + 1, capacity, err); \
-      if (err == TCALC_ERR_OK) { \
-        size++; \
-        for (size_t i = index + 1; i < (size) + 1; i++) { \
-          (arr)[i] = (arr)[i - 1]; \
-        } \
-        (arr)[index] = (val); \
+    assert((index) < (size) && (index) >= 0); \
+    TCALC_DARR_GROW(arr, (size) + 1, capacity, err); \
+    if ((err) == TCALC_ERR_OK) { \
+      (size)++; \
+      for (size_t i = (size) - 1; i > (index); i--) { \
+        (arr)[i] = (arr)[i - 1]; \
       } \
+      (arr)[index] = (val); \
     } \
   } while (0)
 

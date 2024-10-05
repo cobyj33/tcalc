@@ -17,7 +17,7 @@
 int tcalc_exprtree_is_vardef(tcalc_exprtree* expr) {
   if (expr == NULL) return 0;
 
-  // if (expr->token->type == TCALC_TOK_RELOP) {}
+  // if (expr->token.type == TCALC_TOK_RELOP) {}
   return 1;
 }
 
@@ -31,7 +31,7 @@ int tcalc_exprtree_is_vardef(tcalc_exprtree* expr) {
  * If the token type is a unary operator
  * a
 */
-tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_val* out) {
+tcalc_err tcalc_eval_exprtree(const char* expr, tcalc_exprtree* exprtree, const tcalc_ctx* ctx, tcalc_val* out) {
   assert(expr != NULL);
   assert(ctx != NULL);
   assert(out != NULL);
@@ -39,21 +39,21 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
 
   tcalc_err err = TCALC_ERR_OK;
 
-  switch (expr->type) {
+  switch (exprtree->type) {
     case TCALC_EXPRTREE_NODE_TYPE_BINARY: {
-      const tcalc_exprtree_binary_node binnode = expr->as.binary;
+      const tcalc_exprtree_binary_node binnode = exprtree->as.binary;
       assert(binnode.left != NULL);
       assert(binnode.right != NULL);
 
-      switch (binnode.token->type) {
+      switch (binnode.token.type) {
         case TCALC_TOK_ID: {
-          if (tcalc_ctx_hasbinfunc(ctx, binnode.token->val)) {
+          if (tcalc_ctx_hasbinfunc(ctx, tcalc_token_startcp(expr, binnode.token), tcalc_token_len(binnode.token))) {
             tcalc_binfuncdef binary_func_def;
-            tcalc_ctx_getbinfunc(ctx, binnode.token->val, &binary_func_def);
+            tcalc_ctx_getbinfunc(ctx, tcalc_token_startcp(expr, binnode.token), tcalc_token_len(binnode.token), &binary_func_def);
 
             tcalc_val operand1, operand2;
-            ret_on_err(err, tcalc_eval_exprtree(binnode.left, ctx, &operand1));
-            ret_on_err(err, tcalc_eval_exprtree(binnode.right, ctx, &operand2));
+            ret_on_err(err, tcalc_eval_exprtree(expr, binnode.left, ctx, &operand1));
+            ret_on_err(err, tcalc_eval_exprtree(expr, binnode.right, ctx, &operand2));
 
             out->type = TCALC_VALTYPE_NUM;
             return binary_func_def.func(operand1, operand2, &(out->as.num));
@@ -64,9 +64,9 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
         case TCALC_TOK_BINOP: {
           tcalc_val operand1, operand2;
           tcalc_binopdef binary_op_def;
-          ret_on_err(err, tcalc_ctx_getbinop(ctx, binnode.token->val, &binary_op_def));
-          ret_on_err(err, tcalc_eval_exprtree(binnode.left, ctx, &operand1));
-          ret_on_err(err, tcalc_eval_exprtree(binnode.right, ctx, &operand2));
+          ret_on_err(err, tcalc_ctx_getbinop(ctx, tcalc_token_startcp(expr, binnode.token), tcalc_token_len(binnode.token), &binary_op_def));
+          ret_on_err(err, tcalc_eval_exprtree(expr, binnode.left, ctx, &operand1));
+          ret_on_err(err, tcalc_eval_exprtree(expr, binnode.right, ctx, &operand2));
 
           out->type = TCALC_VALTYPE_NUM;
           return binary_op_def.func(operand1, operand2, &(out->as.num));
@@ -74,9 +74,9 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
         case TCALC_TOK_BINLOP: {
           tcalc_val operand1, operand2;
           tcalc_binlopdef binary_lop_def;
-          ret_on_err(err, tcalc_ctx_getbinlop(ctx, binnode.token->val, &binary_lop_def));
-          ret_on_err(err, tcalc_eval_exprtree(binnode.left, ctx, &operand1));
-          ret_on_err(err, tcalc_eval_exprtree(binnode.right, ctx, &operand2));
+          ret_on_err(err, tcalc_ctx_getbinlop(ctx, tcalc_token_startcp(expr, binnode.token), tcalc_token_len(binnode.token), &binary_lop_def));
+          ret_on_err(err, tcalc_eval_exprtree(expr, binnode.left, ctx, &operand1));
+          ret_on_err(err, tcalc_eval_exprtree(expr, binnode.right, ctx, &operand2));
 
           out->type = TCALC_VALTYPE_BOOL;
           return binary_lop_def.func(operand1, operand2, &(out->as.boolean));
@@ -84,9 +84,9 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
         case TCALC_TOK_RELOP: {
           tcalc_val operand1, operand2;
           tcalc_relopdef relopdef;
-          ret_on_err(err, tcalc_ctx_getrelop(ctx, binnode.token->val, &relopdef));
-          ret_on_err(err, tcalc_eval_exprtree(binnode.left, ctx, &operand1));
-          ret_on_err(err, tcalc_eval_exprtree(binnode.right, ctx, &operand2));
+          ret_on_err(err, tcalc_ctx_getrelop(ctx, tcalc_token_startcp(expr, binnode.token), tcalc_token_len(binnode.token), &relopdef));
+          ret_on_err(err, tcalc_eval_exprtree(expr, binnode.left, ctx, &operand1));
+          ret_on_err(err, tcalc_eval_exprtree(expr, binnode.right, ctx, &operand2));
 
           out->type = TCALC_VALTYPE_BOOL;
           return relopdef.func(operand1, operand2, &(out->as.boolean));
@@ -94,17 +94,17 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
         case TCALC_TOK_EQOP: {
           // TODO: Use eqopdef when introduced into tcalc_context struct
           tcalc_val operand1, operand2;
-          ret_on_err(err, tcalc_eval_exprtree(binnode.left, ctx, &operand1));
-          ret_on_err(err, tcalc_eval_exprtree(binnode.right, ctx, &operand2));
+          ret_on_err(err, tcalc_eval_exprtree(expr, binnode.left, ctx, &operand1));
+          ret_on_err(err, tcalc_eval_exprtree(expr, binnode.right, ctx, &operand2));
 
           if (operand1.type == TCALC_VALTYPE_NUM && operand2.type == TCALC_VALTYPE_NUM) {
             tcalc_relopdef relopdef;
-            ret_on_err(err, tcalc_ctx_getrelop(ctx, binnode.token->val, &relopdef));
+            ret_on_err(err, tcalc_ctx_getrelop(ctx, tcalc_token_startcp(expr, binnode.token), tcalc_token_len(binnode.token), &relopdef));
             out->type = TCALC_VALTYPE_BOOL;
             return relopdef.func(operand1, operand2, &(out->as.boolean));
           } else if (operand1.type == TCALC_VALTYPE_BOOL && operand2.type == TCALC_VALTYPE_BOOL) {
             tcalc_binlopdef binlopdef;
-            ret_on_err(err, tcalc_ctx_getbinlop(ctx, binnode.token->val, &binlopdef));
+            ret_on_err(err, tcalc_ctx_getbinlop(ctx, tcalc_token_startcp(expr, binnode.token), tcalc_token_len(binnode.token), &binlopdef));
             out->type = TCALC_VALTYPE_BOOL;
             return binlopdef.func(operand1, operand2, &(out->as.boolean));
           }
@@ -118,17 +118,17 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
 
     } break;
     case TCALC_EXPRTREE_NODE_TYPE_UNARY: {
-      const tcalc_exprtree_unary_node unnode = expr->as.unary;
+      const tcalc_exprtree_unary_node unnode = exprtree->as.unary;
       assert(unnode.child != NULL);
 
-      switch (unnode.token->type) {
+      switch (unnode.token.type) {
         case TCALC_TOK_ID: {
-          if (tcalc_ctx_hasunfunc(ctx, unnode.token->val)) {
+          if (tcalc_ctx_hasunfunc(ctx, tcalc_token_startcp(expr, unnode.token), tcalc_token_len(unnode.token))) {
             tcalc_unfuncdef unary_func_def;
-            tcalc_ctx_getunfunc(ctx, unnode.token->val, &unary_func_def);
+            tcalc_ctx_getunfunc(ctx, tcalc_token_startcp(expr, unnode.token), tcalc_token_len(unnode.token), &unary_func_def);
 
             tcalc_val operand;
-            ret_on_err(err, tcalc_eval_exprtree(unnode.child, ctx, &operand));
+            ret_on_err(err, tcalc_eval_exprtree(expr, unnode.child, ctx, &operand));
 
             out->type = TCALC_VALTYPE_NUM;
             return unary_func_def.func(operand, &(out->as.num));
@@ -140,8 +140,8 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
         case TCALC_TOK_UNOP: {
           tcalc_val operand;
           tcalc_unopdef unary_op_def;
-          ret_on_err(err, tcalc_ctx_getunop(ctx, unnode.token->val, &unary_op_def));
-          ret_on_err(err, tcalc_eval_exprtree(unnode.child, ctx, &operand));
+          ret_on_err(err, tcalc_ctx_getunop(ctx, tcalc_token_startcp(expr, unnode.token), tcalc_token_len(unnode.token), &unary_op_def));
+          ret_on_err(err, tcalc_eval_exprtree(expr, unnode.child, ctx, &operand));
 
           out->type = TCALC_VALTYPE_NUM;
           return unary_op_def.func(operand, &(out->as.num));
@@ -149,8 +149,8 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
         case TCALC_TOK_UNLOP: {
           tcalc_val operand;
           tcalc_unlopdef unary_lop_def;
-          ret_on_err(err, tcalc_ctx_getunlop(ctx, unnode.token->val, &unary_lop_def));
-          ret_on_err(err, tcalc_eval_exprtree(unnode.child, ctx, &operand));
+          ret_on_err(err, tcalc_ctx_getunlop(ctx, tcalc_token_startcp(expr, unnode.token), tcalc_token_len(unnode.token), &unary_lop_def));
+          ret_on_err(err, tcalc_eval_exprtree(expr, unnode.child, ctx, &operand));
 
           out->type = TCALC_VALTYPE_BOOL;
           return unary_lop_def.func(operand, &(out->as.boolean));
@@ -162,12 +162,12 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
       }
     } break;
     case TCALC_EXPRTREE_NODE_TYPE_VALUE: {
-      const tcalc_exprtree_value_node value_node = expr->as.value;
-      switch (value_node.token->type) {
+      const tcalc_exprtree_value_node value_node = exprtree->as.value;
+      switch (value_node.token.type) {
         case TCALC_TOK_ID: {
-          if (tcalc_ctx_hasvar(ctx, value_node.token->val)) {
+          if (tcalc_ctx_hasvar(ctx, tcalc_token_startcp(expr, value_node.token), tcalc_token_len(value_node.token))) {
             tcalc_vardef vardef;
-            tcalc_ctx_getvar(ctx, value_node.token->val, &vardef);
+            tcalc_ctx_getvar(ctx, tcalc_token_startcp(expr, value_node.token), tcalc_token_len(value_node.token), &vardef);
             *out = vardef.val;
             return TCALC_ERR_OK;
           }
@@ -177,7 +177,7 @@ tcalc_err tcalc_eval_exprtree(tcalc_exprtree* expr, const tcalc_ctx* ctx, tcalc_
         } break;
         case TCALC_TOK_NUM: {
           out->type = TCALC_VALTYPE_NUM;
-          return tcalc_strtodouble(value_node.token->val, &(out->as.num));
+          return tcalc_lpstrtodouble(tcalc_token_startcp(expr, value_node.token), tcalc_token_len(value_node.token), &(out->as.num));
         } break;
         default: {
           // TODO: ERR
@@ -197,14 +197,12 @@ void tcalc_exprtree_free(tcalc_exprtree* head) {
     case TCALC_EXPRTREE_NODE_TYPE_BINARY: {
       tcalc_exprtree_free(head->as.binary.left);
       tcalc_exprtree_free(head->as.binary.right);
-      tcalc_token_free(head->as.binary.token);
     } break;
     case TCALC_EXPRTREE_NODE_TYPE_UNARY: {
       tcalc_exprtree_free(head->as.unary.child);
-      tcalc_token_free(head->as.binary.token);
     } break;
     case TCALC_EXPRTREE_NODE_TYPE_VALUE: {
-      tcalc_token_free(head->as.value.token);
+      // do nothing
     } break;
   }
   free(head);
@@ -213,18 +211,18 @@ void tcalc_exprtree_free(tcalc_exprtree* head) {
 void tcalc_exprtree_free_children(tcalc_exprtree* head) {
   if (head == NULL) return;
   switch (head->type) {
-    case TCALC_EXPRTREE_NODE_TYPE_BINARY:
+    case TCALC_EXPRTREE_NODE_TYPE_BINARY: {
       tcalc_exprtree_free(head->as.binary.left);
-      head->as.binary.left = NULL;
       tcalc_exprtree_free(head->as.binary.right);
+      head->as.binary.left = NULL;
       head->as.binary.right = NULL;
-      break;
-    case TCALC_EXPRTREE_NODE_TYPE_UNARY:
+    } break;
+    case TCALC_EXPRTREE_NODE_TYPE_UNARY: {
       tcalc_exprtree_free(head->as.unary.child);
       head->as.unary.child = NULL;
-      break;
-    case TCALC_EXPRTREE_NODE_TYPE_VALUE:
+    } break;
+    case TCALC_EXPRTREE_NODE_TYPE_VALUE: {
       // no-op
-      break;
+    } break;
   }
 }

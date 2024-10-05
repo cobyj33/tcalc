@@ -2,6 +2,7 @@
 #define _TCALC_TOKENS_H_
 
 #include "tcalc_error.h"
+#include "tcalc_string.h"
 #include <stddef.h>
 
 struct tcalc_ctx;
@@ -60,32 +61,58 @@ typedef enum tcalc_token_type {
 
 const char* tcalc_token_type_str(tcalc_token_type token_type);
 
-/**
- * Since tokens get passed around so much, it would be difficult to determine
- * which struct has ownership of a specific token. This is important in tracking
- * when to free a tokens string value. For that reason, all tokens should be
- * allocated through the allocator and free functions for tcalc_token types,
- * so each time a token is used, we know its can be freed safely without some other
- * token having a pointer to the same string value
-*/
+// typedef struct tcalc_token {
+//   tcalc_token_type type;
+//   char* val;
+// } tcalc_token;
+
+
+// Data that a token can contain:
+// Type
+// Starting Offset
+// Ending Offset
+// Instead of a pointer to the string, provide a starting and ending index.
+// This would allow for the area around strings in the data to be easily
+// displayed if necessary.
+// Line data can just be calculated later by iterating over the source string
+// if it is needed. Line data should not be needed unless an error occurs, so
+// there's no good reason to store it.
+
 typedef struct tcalc_token {
   tcalc_token_type type;
-  char* val;
+  size_t start;
+  size_t xend;
 } tcalc_token;
 
-/**
- * Because of the different contexts in which different operators can have in
- * different contexts and input formats (such as the ambiguous unary - + and binary - +),
- * we don't have a way to pass in a operator or number to allocation and automatically getting
- * a configured token. Tokenizer functions themselves have to determine when a given token has
- * a specific meaning
-*/
-tcalc_err tcalc_token_alloc(tcalc_token_type type, const char* val, tcalc_token** out);
-tcalc_err tcalc_token_clone(const tcalc_token* src, tcalc_token** out);
-void tcalc_token_free(tcalc_token* token);
 
+inline static const char* tcalc_token_startcp(const char* str, tcalc_token tok) { return str + tok.start; }
+inline static char* tcalc_token_startp(char* str, tcalc_token tok) { return str + tok.start; }
+inline static size_t tcalc_token_len(tcalc_token tok) { return tok.xend - tok.start; }
 
-tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const struct tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size);
-tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out_size);
+tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const struct tcalc_ctx* ctx, tcalc_token** out, size_t* out_size);
+tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token** out, size_t* out_size);
+
+#define TCALC_TOKEN_IMPLICIT_MULT_PRINTF_STR ("*")
+
+#define TCALC_TOKEN_IS_IMPLICIT_MULT(token) ((token).type == TCALC_TOK_BINOP && tcalc_token_len((token)) == 0)
+
+// Must use %.*s with tokens. This macro simplifies adding the token length
+// and string information into the variable arguments section of printf formats.
+// Also, it makes sure that the length is casted to a integer, like it
+// should be, which is easy to forget
+//
+// Handles printing implicit multiplication
+#define TCALC_TOKEN_PRINTF_VARARG(expr, token) \
+  (TCALC_TOKEN_IS_IMPLICIT_MULT(token) ? (int)TCALC_STRLIT_LEN(TCALC_TOKEN_IMPLICIT_MULT_PRINTF_STR) : (int)tcalc_token_len((token))), \
+  (TCALC_TOKEN_IS_IMPLICIT_MULT(token) ? (TCALC_TOKEN_IMPLICIT_MULT_PRINTF_STR) : tcalc_token_startcp((expr), (token)))
+
+// Must use %.*s with tokens. This macro simplifies adding the token length
+// and string information into the variable arguments section of printf formats.
+// Also, it makes sure that the length is casted to a integer, like it
+// should be, which is easy to forget
+//
+// Implicit multiplication is not handled as a special case.
+#define TCALC_TOKEN_PRINTF_VARARG_EXACT(expr, token) \
+  (int)tcalc_token_len((token)), tcalc_token_startcp((expr), (token))
 
 #endif

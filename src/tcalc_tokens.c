@@ -24,12 +24,11 @@ const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%!=<>";
 const char* TCALC_MULTI_TOKENS[] = {"**", "==", "<=", ">=", "!=", "&&", "||", NULL}; // make sure this remains null terminated
 
 static int is_valid_tcalc_char(char ch);
-static tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t offset, size_t* new_offset);
+static tcalc_err tcalc_next_math_strtoken(const char* expr, size_t req_start, size_t* out_start, size_t* out_xend);
 static int tcalc_are_groupsyms_balanced(const char* expr);
-static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size);
-static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size);
-static tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size);
-static int tcalc_is_identifier(const char* str);
+static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, tcalc_slice** out, size_t* out_size, size_t* out_cap);
+static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(const char* expr, const tcalc_ctx* ctx, const tcalc_slice* str_tokens, const size_t nb_str_tokens, tcalc_token** out, size_t* out_size);
+static int tcalc_is_identifier(const char* source, size_t len);
 
 const char* tcalc_token_type_str(tcalc_token_type token_type) {
   switch (token_type) {
@@ -47,126 +46,61 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
     case TCALC_TOK_EOF: return "group end";
   }
 
+  assert(0 && "unreachable");
   return "unknown token type";
 }
 
-tcalc_err tcalc_token_alloc(tcalc_token_type type, const char* val, tcalc_token** out) {
-  if (val == NULL) return TCALC_ERR_INVALID_ARG;
+tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token** out, size_t* out_size) {
+  assert(expr != NULL);
+  assert(out != NULL);
+  assert(out_size != NULL);
 
-  tcalc_token* token = (tcalc_token*)malloc(sizeof(tcalc_token));
-  if (token == NULL) return TCALC_ERR_BAD_ALLOC;
-
-  token->type = type;
-  if (tcalc_strdup(val, &token->val) != TCALC_ERR_OK) {
-    free(token);
-    return TCALC_ERR_BAD_ALLOC;
-  }
-
-  *out = token;
-  return TCALC_ERR_OK;
-}
-
-void tcalc_token_free(tcalc_token* token) {
-  if (token == NULL) return;
-  free(token->val);
-  free(token);
-}
-
-
-tcalc_err tcalc_token_clone(const tcalc_token* src, tcalc_token** out) {
-  return tcalc_token_alloc(src->type, src->val, out);
-}
-
-tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token*** out, size_t* out_size) {
   *out = NULL;
   *out_size = 0;
   tcalc_ctx* ctx = NULL;
-
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   if (err) return err;
+
   err = tcalc_tokenize_infix_ctx(expr, ctx, out, out_size);
   tcalc_ctx_free(ctx);
   return err;
 }
 
-tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size) {
-  assert(out != NULL); assert(out_size != NULL);
+tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc_token** out, size_t* out_size) {
+  assert(out != NULL);
+  assert(ctx != NULL);
+  assert(out != NULL);
+  assert(out_size != NULL);
 
   tcalc_err err = TCALC_ERR_OK;
   *out = NULL;
   *out_size = 0;
 
-  err = tcalc_are_groupsyms_balanced(expr);
-  if (err) {
+  if (!tcalc_are_groupsyms_balanced(expr)) {
     tcalc_errstkaddf(FUNCDINFO, "Unbalanced grouping symbols");
     return err;
   }
 
-  ret_on_err(err, tcalc_are_groupsyms_balanced(expr));
+  tcalc_slice* str_tokens = NULL;
+  size_t nb_str_tokens = 0;
+  size_t str_tokens_cap = 0;
+  ret_on_err(err, tcalc_tokenize_infix_strtokens(expr, &str_tokens, &nb_str_tokens, &str_tokens_cap));
 
-  char** str_tokens;
-  size_t nb_str_tokens;
-  ret_on_err(err, tcalc_tokenize_infix_strtokens(expr, &str_tokens, &nb_str_tokens));
+  tcalc_token* infix_tokens = NULL;
+  size_t nb_infix_tokens = 0;
+  err = tcalc_tokenize_infix_strtokens_assign_types(expr, ctx, str_tokens, nb_str_tokens, &infix_tokens, &nb_infix_tokens);
+  free(str_tokens);
 
-  tcalc_token** initial_infix_tokens;
-  size_t nb_initial_infix_tokens;
-  err = tcalc_tokenize_infix_strtokens_assign_types(str_tokens, nb_str_tokens, &initial_infix_tokens, &nb_initial_infix_tokens);
-  TCALC_ARR_FREE_F(str_tokens, nb_str_tokens, free);
-  if (err) return err;
-
-  tcalc_token** resolved_infix_tokens;
-  size_t nb_resolved_infix_tokens;
-  err = tcalc_tokenize_infix_token_insertions(initial_infix_tokens, nb_initial_infix_tokens, ctx, &resolved_infix_tokens, &nb_resolved_infix_tokens);
-  TCALC_ARR_FREE_F(initial_infix_tokens, nb_initial_infix_tokens, tcalc_token_free);
-  if (err) return err;
-
-  *out = resolved_infix_tokens;
-  *out_size = nb_resolved_infix_tokens;
+  *out = infix_tokens;
+  *out_size = nb_infix_tokens;
   return err;
 }
 
-/**
- *
- *
- * Responsibilities:
- * - Insert shorthand multiplication logic
- *   - Essentially, if a number preceeds an identifier or grouping symbol, append a multiplication token after that number
-*/
-static tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, size_t nb_tokens, const tcalc_ctx* ctx, tcalc_token*** out, size_t* out_size) {
-  tcalc_err err = TCALC_ERR_OK;
-  tcalc_token** fin_toks = NULL;
-  size_t nb_fin_toks = 0;
-  size_t fin_toks_cap = 0;
-
-  for (size_t i = 0; i < nb_tokens; i++) {
-    tcalc_token* clone;
-    cleanup_on_err(err, tcalc_token_clone(tokens[i], &clone));
-    cleanup_on_macerr(err, TCALC_DARR_PUSH(fin_toks, nb_fin_toks, fin_toks_cap, clone, err));
-
-    if (i + 1 < nb_tokens &&
-      (tokens[i]->type == TCALC_TOK_NUM ||
-      tokens[i]->type == TCALC_TOK_GRPEND ||
-      (tokens[i]->type == TCALC_TOK_ID && tcalc_ctx_hasvar(ctx, tokens[i]->val))) &&
-      (tokens[i + 1]->type == TCALC_TOK_GRPSTRT ||
-      tokens[i + 1]->type == TCALC_TOK_ID)) {
-        tcalc_token* mult;
-        cleanup_on_err(err, tcalc_token_alloc(TCALC_TOK_BINOP, "*", &mult));
-        cleanup_on_macerr(err, TCALC_DARR_PUSH(fin_toks, nb_fin_toks, fin_toks_cap, mult, err));
-    }
-  }
-
-  *out = fin_toks;
-  *out_size = nb_fin_toks;
-  return err;
-
-  cleanup:
-    TCALC_ARR_FREE_F(fin_toks, nb_fin_toks, tcalc_token_free);
-    return err;
-}
 
 /**
  *
  * Tokenize infix expression and assign token types to each token.
+ * Also inserts implicit multiplications where necessary
  *
  * tcalc_tokenize_infix checks for balanced grouping symbols and returns
  * TCALC_ERR_UNBAL_GRPSYMS error upon imbalanced grouping symbols.
@@ -176,78 +110,115 @@ static tcalc_err tcalc_tokenize_infix_token_insertions(tcalc_token** tokens, siz
  * before they are processed.
  *
 */
-static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, size_t nb_str_tokens, tcalc_token*** out, size_t* out_size) {
+static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(const char* expr, const tcalc_ctx* ctx, const tcalc_slice* str_tokens, const size_t nb_str_tokens, tcalc_token** out, size_t* out_size) {
+  assert(!(str_tokens == NULL && nb_str_tokens != 0));
+  assert(out != NULL);
+  assert(out_size != NULL);
   tcalc_err err = TCALC_ERR_OK;
-  // const char* relation_op_tokens[8] = {"=", "<", ">", "!", "==", "!=", ">=", "<="};
+  *out = NULL;
+  *out_size = 0;
 
-  tcalc_token** infix_tokens = (tcalc_token**)malloc(sizeof(tcalc_token*) * nb_str_tokens);
+  // TODO: Maybe this should just dynamically grow or something instead of
+  // defaulting to twice the size. (Twice the size to handle
+  // implicit multiplication case)
+  tcalc_token* infix_tokens = calloc(nb_str_tokens * 2, sizeof(*infix_tokens));
   size_t nb_infix_tokens = 0;
   if (infix_tokens == NULL) { return TCALC_ERR_BAD_ALLOC; }
 
+  // arbitrary value. Since this is only used for implicit multiplication, just
+  // start it on some tcalc_token_type which won't trigger an implicit
+  // multiplication token.
+  enum tcalc_token_type last_token_type = TCALC_TOK_PSEP;
+  tcalc_slice last_slice = {0};
+
   for (size_t i = 0; i < nb_str_tokens; i++) {
     tcalc_token_type token_type;
+    const tcalc_slice slice = str_tokens[i];
+    assert(slice.xend > slice.start); // none of these slices should be 0-length
 
-    if (strcmp(str_tokens[i], "+")  == 0 || strcmp(str_tokens[i], "-") == 0) {
+    if (tcalc_slice_ntstr_eq(expr, slice, "+") || tcalc_slice_ntstr_eq(expr, slice, "-")) {
 
       if (i == 0) { // + and - are unary if they are the first token in an expression
         token_type = TCALC_TOK_UNOP;
-      } else if (infix_tokens[i - 1]->type == TCALC_TOK_GRPSTRT) { // + and - are unary if they are the first token in a grouping symbol
+      } else if (infix_tokens[i - 1].type == TCALC_TOK_GRPSTRT) { // + and - are unary if they are the first token in a grouping symbol
         token_type = TCALC_TOK_UNOP;
-      } else if (infix_tokens[i - 1]->type == TCALC_TOK_BINOP) { // + and - are unary if they follow another binary operator
+      } else if (infix_tokens[i - 1].type == TCALC_TOK_BINOP) { // + and - are unary if they follow another binary operator
         token_type = TCALC_TOK_UNOP;
-      } else if (infix_tokens[i - 1]->type == TCALC_TOK_UNOP) { // + and - are unary if they follow another binary operator
+      } else if (infix_tokens[i - 1].type == TCALC_TOK_UNOP) { // + and - are unary if they follow another binary operator
         token_type = TCALC_TOK_UNOP;
       } else { // in any other case, + and - are binary
         token_type = TCALC_TOK_BINOP;
       }
 
-    } else if ( strcmp(str_tokens[i], "*") == 0 ||
-                strcmp(str_tokens[i], "/") == 0 ||
-                strcmp(str_tokens[i], "^") == 0 ||
-                strcmp(str_tokens[i], "**") == 0 ||
-                strcmp(str_tokens[i], "%") == 0) {
+    } else if ( tcalc_slice_ntstr_eq(expr, str_tokens[i], "*") ||
+                tcalc_slice_ntstr_eq(expr, str_tokens[i], "/") ||
+                tcalc_slice_ntstr_eq(expr, str_tokens[i], "^") ||
+                tcalc_slice_ntstr_eq(expr, str_tokens[i], "**") ||
+                tcalc_slice_ntstr_eq(expr, str_tokens[i], "%")) {
       token_type = TCALC_TOK_BINOP;
-    } else if (strcmp(str_tokens[i], "(") == 0 || strcmp(str_tokens[i], "[") == 0) {
+    } else if (tcalc_slice_ntstr_eq(expr, slice, "(")) {
       token_type = TCALC_TOK_GRPSTRT;
-    } else if (strcmp(str_tokens[i], ")") == 0 || strcmp(str_tokens[i], "]") == 0) {
+    } else if (tcalc_slice_ntstr_eq(expr, slice, ")")) {
       token_type = TCALC_TOK_GRPEND;
-    } else if (strcmp(str_tokens[i], "==") == 0 ||
-              strcmp(str_tokens[i], "=") == 0 ||
-              strcmp(str_tokens[i], "!=") == 0) {
+    } else if (tcalc_slice_ntstr_eq(expr, slice, "==") ||
+              tcalc_slice_ntstr_eq(expr, slice, "=") ||
+              tcalc_slice_ntstr_eq(expr, slice, "!=")) {
       token_type = TCALC_TOK_EQOP;
-    } else if (strcmp(str_tokens[i], "<") == 0 ||
-              strcmp(str_tokens[i], "<=") == 0 ||
-              strcmp(str_tokens[i], ">") == 0 ||
-              strcmp(str_tokens[i], ">=") == 0) {
+    } else if (tcalc_slice_ntstr_eq(expr, slice, "<") ||
+              tcalc_slice_ntstr_eq(expr, slice, "<=") ||
+              tcalc_slice_ntstr_eq(expr, slice, ">") ||
+              tcalc_slice_ntstr_eq(expr, slice, ">=")) {
       token_type = TCALC_TOK_RELOP;
-    } else if (strcmp(str_tokens[i], "&&") == 0 ||
-              strcmp(str_tokens[i], "||") == 0) {
+    } else if (tcalc_slice_ntstr_eq(expr, slice, "&&") ||
+              tcalc_slice_ntstr_eq(expr, slice, "||")) {
       token_type = TCALC_TOK_BINLOP;
-    } else if (strcmp(str_tokens[i], "!") == 0) {
+    } else if (tcalc_slice_ntstr_eq(expr, slice, "!")) {
       token_type = TCALC_TOK_UNLOP;
-    } else if (strcmp(str_tokens[i], ",") == 0) {
+    } else if (tcalc_slice_ntstr_eq(expr, slice, ",")) {
       token_type = TCALC_TOK_PSEP;
-    } else if (tcalc_strisdouble(str_tokens[i])) {
+    } else if (tcalc_lpstrisdouble(expr + slice.start, tcalc_slice_len(slice))) {
       token_type = TCALC_TOK_NUM;
-    } else if (tcalc_is_identifier(str_tokens[i])) {
+    } else if (tcalc_is_identifier(expr + slice.start, tcalc_slice_len(slice))) {
       token_type = TCALC_TOK_ID;
     } else { // could not identify token type, exit
-      err = TCALC_ERR_INVALID_ARG;
-      goto cleanup;
+      return TCALC_ERR_INVALID_ARG;
     }
 
-    tcalc_token* token;
-    cleanup_on_err(err, tcalc_token_alloc(token_type, str_tokens[i], &token));
-    infix_tokens[nb_infix_tokens++] = token;
+
+    // there is no way to make this code block look good.
+    // detects if an implicit multiplication token should be inserted
+    if (
+      (
+        last_token_type == TCALC_TOK_NUM ||
+        last_token_type == TCALC_TOK_GRPEND ||
+        (
+          last_token_type == TCALC_TOK_ID &&
+          tcalc_ctx_hasvar(ctx, expr + last_slice.start, tcalc_slice_len(last_slice))
+        )
+      ) &&
+      (token_type == TCALC_TOK_GRPSTRT || token_type == TCALC_TOK_ID)
+    ) {
+
+      // Insert 0-length implicit multiplication token
+      infix_tokens[nb_infix_tokens++] = (struct tcalc_token){
+        .type = TCALC_TOK_BINOP,
+        .start = slice.start,
+        .xend = slice.start
+      };
+    }
+
+    infix_tokens[nb_infix_tokens++] = (struct tcalc_token){
+      .type = token_type,
+      .start = slice.start,
+      .xend = slice.xend
+    };
+    last_token_type = token_type;
+    last_slice = slice;
   }
 
   *out = infix_tokens;
   *out_size = nb_infix_tokens;
   return err;
-
-  cleanup:
-    TCALC_ARR_FREE_F(infix_tokens, nb_infix_tokens, tcalc_token_free);
-    return err;
 }
 
 /**
@@ -276,26 +247,33 @@ static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(char** str_tokens, 
  * "     [45 ^ (3 / 2)] *   +11"
  * "[", "45", "^", "(", "3", "/", "2", ")", "]", "*", "+", "11"
 */
-static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, size_t* out_size) {
-  tcalc_err err = TCALC_ERR_OK;
+static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, tcalc_slice** out, size_t* out_size, size_t* out_cap) {
+  assert(expr != NULL);
+  assert(out != NULL);
+  assert(out_size != NULL);
+  assert(out_cap != NULL);
+  *out = NULL;
   *out_size = 0;
-  char** token_buffer = NULL;
+  *out_cap = 0;
+
+  tcalc_err err = TCALC_ERR_OK;
+  tcalc_slice* token_buffer = NULL;
   size_t tb_size = 0;
   size_t tb_capacity = 0;
 
-  size_t offset = 0;
-  char* current_token;
-  while ((err = tcalc_next_math_strtoken(expr, &current_token, offset, &offset)) == TCALC_ERR_OK) {
-    cleanup_on_macerr(err, TCALC_DARR_PUSH(token_buffer, tb_size, tb_capacity, current_token, err));
+  tcalc_slice slice = {0};
+  while ((err = tcalc_next_math_strtoken(expr, slice.xend, &(slice.start), &(slice.xend))) == TCALC_ERR_OK) {
+    cleanup_on_macerr(err, TCALC_DARR_PUSH(token_buffer, tb_size, tb_capacity, slice, err));
   }
 
   if (err != TCALC_ERR_STOP_ITER) goto cleanup;
   *out = token_buffer;
   *out_size = tb_size;
+  *out_cap = tb_capacity;
   return TCALC_ERR_OK;
 
   cleanup:
-    TCALC_ARR_FREE_F(token_buffer, tb_size, free);
+    free(token_buffer);
     return err;
 }
 
@@ -328,68 +306,72 @@ static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, char*** out, s
  * "32+-34*(5 * 101)"
  * "32", "+", "-", "34", "*", "(", "5", "*", "101", ")"
 */
-static tcalc_err tcalc_next_math_strtoken(const char* expr, char** out, size_t start, size_t* new_offset) {
-  tcalc_err err;
-  size_t offset = start;
+static tcalc_err tcalc_next_math_strtoken(const char* expr, size_t req_start, size_t* out_start, size_t* out_xend) {
+  assert(expr != NULL);
+  assert(out_start != NULL);
+  assert(out_xend != NULL);
+  *out_start = req_start;
+  *out_xend = req_start;
 
-	while (expr[offset] == ' ') // consume all spaces
-		offset++;
-  if (expr[offset] == '\0')
+  size_t start = req_start;
+
+	while (expr[start] == ' ') // consume all spaces
+		start++;
+  if (expr[start] == '\0')
     return TCALC_ERR_STOP_ITER;
 
-  if (!is_valid_tcalc_char(expr[offset]))
+  if (!is_valid_tcalc_char(expr[start]))
     return TCALC_ERR_INVALID_ARG;
 
+  *out_start = start;
+
   for (size_t s = 0; TCALC_MULTI_TOKENS[s] != NULL; s++) {
-    if (tcalc_strhaspre(TCALC_MULTI_TOKENS[s], expr + offset)) {
-      size_t mlsize = strlen(TCALC_MULTI_TOKENS[s]);
-      ret_on_err(err, tcalc_strsubstr(expr, offset, offset + mlsize, out));
-      *new_offset = offset + mlsize;
+    if (tcalc_strhaspre(TCALC_MULTI_TOKENS[s], expr + start)) {
+      *out_xend = start + strlen(TCALC_MULTI_TOKENS[s]);
       return TCALC_ERR_OK;
     }
   }
 
 	for (size_t s = 0; TCALC_SINGLE_TOKENS[s] != '\0'; s++) { // checking for operator and grouping symbols
-		if (expr[offset] == TCALC_SINGLE_TOKENS[s]) {
-      ret_on_err(err, tcalc_strsubstr(expr, offset, offset + 1, out));
-      *new_offset = offset + 1;
+		if (expr[start] == TCALC_SINGLE_TOKENS[s]) {
+      *out_xend = start + 1;
       return TCALC_ERR_OK;
 		}
 	}
 
-	if (isdigit(expr[offset]) || expr[offset] == '.') { // number checking.
-		if (expr[offset] == '.'  && !isdigit(expr[offset + 1])) { // lone decimal point
+
+	if (isdigit(expr[start]) || expr[start] == '.') { // number checking.
+		if (expr[start] == '.'  && !isdigit(expr[start + 1])) { // lone decimal point
       return TCALC_ERR_INVALID_ARG;
 		}
 
 		int decimalCount = 0;
-    const size_t num_start = offset;
+    size_t xend = start;
 
-		while (expr[offset] != '\0' && (isdigit(expr[offset]) || expr[offset] == '.')) {
-			if (expr[offset] == '.') {
+		while (expr[xend] != '\0' && (isdigit(expr[xend]) || expr[xend] == '.')) {
+			if (expr[xend] == '.') {
 				if (decimalCount > 0) return TCALC_ERR_INVALID_ARG;
 				decimalCount++;
 			}
 
-      offset++;
+      xend++;
 		}
 
-    ret_on_err(err, tcalc_strsubstr(expr, num_start, offset, out));
-    *new_offset = offset;
+    *out_xend = xend;
     return TCALC_ERR_OK;
 	}
 
-  if (islower(expr[offset])) { // identifier checking
-    const size_t id_start = offset;
-    while (expr[offset] != '\0' && islower(expr[offset])) {
-      offset++;
+  if (islower(expr[start])) { // identifier checking
+    size_t xend = start;
+    while (expr[xend] != '\0' && islower(expr[xend])) {
+      xend++;
     }
 
-    ret_on_err(err, tcalc_strsubstr(expr, id_start, offset, out));
-    *new_offset = offset;
+    *out_xend = xend;
     return TCALC_ERR_OK;
   }
 
+  assert(0 && "unreachable");
 	return TCALC_ERR_STOP_ITER; // this SHOULD be unreachable
 }
 
@@ -403,50 +385,21 @@ static int is_valid_tcalc_char(char ch) {
 /**
  * There's probably a better way to implement this but whatever
 */
-static tcalc_err tcalc_are_groupsyms_balanced(const char* expr) {
-  tcalc_err err = TCALC_ERR_OK;
+static int tcalc_are_groupsyms_balanced(const char* expr) {
+  int nb_parens = 0;
 
-  char* stack = NULL;
-  size_t stack_size = 0;
-  size_t stack_capacity = 0;
-  char corresponding[256];
-  corresponding[')'] = '(';
-  corresponding[']'] = '[';
-
-  for (size_t i = 0; expr[i] != '\0'; i++) {
-    switch (expr[i]) {
-      case '(':
-      case '[': {
-        TCALC_DARR_PUSH(stack, stack_size, stack_capacity, expr[i], err);
-        if (err) goto cleanup;
-        break;
-      }
-      case ')':
-      case ']': {
-        cleanup_on_err(err, err_pred(stack_size == 0, TCALC_ERR_UNBAL_GRPSYMS));
-        cleanup_on_err(err, err_pred(stack[stack_size - 1] != corresponding[(int)expr[i]], TCALC_ERR_UNBAL_GRPSYMS));
-        stack_size--;
-        break;
-      }
-    }
+  for (size_t i = 0; expr[i] != '\0' && nb_parens >= 0; i++) {
+    nb_parens += expr[i] == '(';
+    nb_parens -= expr[i] == ')';
   }
 
-  free(stack);
-  return stack_size == 0 ? TCALC_ERR_OK : TCALC_ERR_UNBAL_GRPSYMS;
-
-  cleanup:
-    free(stack);
-    return err;
+  return nb_parens == 0;
 }
 
-static int tcalc_is_identifier(const char* str) {
-  int is_identifier = 1;
-  for (size_t i = 0; str[i] != '\0'; i++) {
-    if (!islower(str[i])) {
-      is_identifier = 0;
-      break;
-    }
+static int tcalc_is_identifier(const char* str, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    if (!islower(str[i])) return 0;
   }
 
-  return is_identifier;
+  return 1;
 }
