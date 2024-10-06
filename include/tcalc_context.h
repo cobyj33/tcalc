@@ -80,9 +80,7 @@ typedef struct tcalc_opdata {
 // would be wasting bytes as padding instead
 #define TCALC_OPDEF_MAX_STR_SIZE 8
 
-// TODO: maybe should be increased to 64? Definitely when user-defined
-// TODO: functions are added
-#define TCALC_IDDEF_MAX_STR_SIZE 16
+#define TCALC_IDDEF_MAX_STR_SIZE 64
 
 /**
  * Maybe the tcalc_ctx should not hold information about user-defined functions,
