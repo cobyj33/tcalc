@@ -6,6 +6,7 @@
 #include "tcalc_vec.h"
 #include "tcalc_val_func.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 
 struct tcalc_token;
@@ -190,20 +191,20 @@ tcalc_err tcalc_ctx_addbinlop(tcalc_ctx* ctx, const char* name, size_t name_len,
  * Note that tcalc_ctx_hasid does not apply to operations, but only
  * functions and variables
 */
-int tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-int tcalc_ctx_hasid(const tcalc_ctx* ctx, const char* name, size_t name_len);
-int tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasid(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
 
-int tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-int tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-int tcalc_ctx_hasrelop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-int tcalc_ctx_hasunlop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-int tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasrelop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasunlop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name, size_t name_len);
 
-int tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
-int tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
 
-int tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name, size_t name_len);
 
 /**
  * Note that out must be NON-NULL

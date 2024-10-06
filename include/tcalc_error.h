@@ -2,6 +2,7 @@
 #define TCALC_ERROR_H
 
 #include <stddef.h>
+#include <stdbool.h>
 
 /**
  * tcalc_error.h - Error handling in tcalc
@@ -33,8 +34,8 @@ void tcalc_errstkclear();
 unsigned int tcalc_errstksize();
 unsigned int tcalc_errstkpop();
 
-int tcalc_errstkadd(const char* funcname, const char* errstr);
-int tcalc_errstkaddf(const char* funcname, const char* format, ...);
+bool tcalc_errstkadd(const char* funcname, const char* errstr);
+bool tcalc_errstkaddf(const char* funcname, const char* format, ...);
 
 size_t tcalc_errstkpeek(char* out, size_t dsize);
 

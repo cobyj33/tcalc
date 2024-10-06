@@ -261,84 +261,83 @@ tcalc_err tcalc_ctx_addbinlop(tcalc_ctx* ctx, const char* name, size_t name_len,
   tcalc_ctx_addxop(ctx->binlops, name, prec, assoc, func, tcalc_binlopdef);
 }
 
-int tcalc_ctx_hasid(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasid(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   return tcalc_ctx_hasvar(ctx, name, name_len) || tcalc_ctx_hasfunc(ctx, name, name_len);
 }
 
-int tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   return tcalc_ctx_hasunfunc(ctx, name, name_len) || tcalc_ctx_hasbinfunc(ctx, name, name_len);
 }
 
-int tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
  return tcalc_ctx_hasbinop(ctx, name, name_len) || tcalc_ctx_hasunop(ctx, name, name_len) ||
   tcalc_ctx_hasrelop(ctx, name, name_len) || tcalc_ctx_hasunlop(ctx, name, name_len) ||
   tcalc_ctx_hasbinlop(ctx, name, name_len);
 }
 
-int tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   for (size_t i = 0; i < ctx->unfuncs.len; i++) {
     if (tcalc_streq_ntlb(ctx->unfuncs.arr[i].id, name, name_len))
-      return 1;
+      return true;
   }
-  return 0;
+  return false;
 }
 
-int tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   for (size_t i = 0; i < ctx->binfuncs.len; i++) {
     if (tcalc_streq_ntlb(ctx->binfuncs.arr[i].id, name, name_len))
-      return 1;
+      return true;
   }
-  return 0;
+  return false;
 }
 
-int tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   for (size_t i = 0; i < ctx->vars.len; i++) {
     assert(ctx->vars.arr[i].id[TCALC_OPDEF_MAX_STR_SIZE - 1] == '\0');
     if (tcalc_streq_ntlb(ctx->vars.arr[i].id, name, name_len))
-      return 1;
+      return true;
   }
-  return 0;
-
+  return false;
 }
 
-int tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   for (size_t i = 0; i < ctx->unops.len; i++) {
     if (tcalc_streq_ntlb(ctx->unops.arr[i].id, name, name_len))
-      return 1;
+      return true;
   }
-  return 0;
+  return false;
 }
 
-int tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   for (size_t i = 0; i < ctx->binops.len; i++) {
     if (tcalc_streq_ntlb(ctx->binops.arr[i].id, name, name_len))
-      return 1;
+      return true;
   }
-  return 0;
+  return false;
 }
 
-int tcalc_ctx_hasrelop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasrelop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   for (size_t i = 0; i < ctx->relops.len; i++) {
     if (tcalc_streq_ntlb(ctx->relops.arr[i].id, name, name_len))
-      return 1;
+      return true;
   }
-  return 0;
+  return false;
 }
 
-int tcalc_ctx_hasunlop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasunlop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   for (size_t i = 0; i < ctx->unlops.len; i++) {
     if (tcalc_streq_ntlb(ctx->unlops.arr[i].id, name, name_len))
-      return 1;
+      return true;
   }
-  return 0;
+  return false;
 }
 
-int tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
+bool tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name, size_t name_len) {
   for (size_t i = 0; i < ctx->binlops.len; i++) {
     if (tcalc_streq_ntlb(ctx->binlops.arr[i].id, name, name_len))
-      return 1;
+      return true;
   }
-  return 0;
+  return false;
 }
 
 tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_vardef* out) {

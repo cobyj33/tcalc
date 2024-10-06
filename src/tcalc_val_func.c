@@ -5,6 +5,7 @@
 #include "tcalc_error.h"
 #include "tcalc_constants.h"
 
+#include <stdbool.h>
 #include <math.h>
 #include <errno.h>
 #include <float.h>
@@ -14,7 +15,7 @@
 // reason and everything just always works well.
 
 #define tcalc_val_unlopfunc_impl(_funcname_, _implfuncname_) \
-  tcalc_err _funcname_(tcalc_val a, int* out) { \
+  tcalc_err _funcname_(tcalc_val a, bool* out) { \
     assert(out != NULL); \
     if (a.type != TCALC_VALTYPE_BOOL) \
       return TCALC_ERR_BAD_CAST; \
@@ -26,7 +27,7 @@
 tcalc_val_unlopfunc_impl(tcalc_val_not, tcalc_not)
 
 #define tcalc_val_binlopfunc_impl(_funcname_, _implfuncname_) \
-  tcalc_err _funcname_(tcalc_val a, tcalc_val b, int* out) { \
+  tcalc_err _funcname_(tcalc_val a, tcalc_val b, bool* out) { \
     assert(out != NULL); \
     if (a.type != TCALC_VALTYPE_BOOL || b.type != TCALC_VALTYPE_BOOL) \
       return TCALC_ERR_BAD_CAST; \
@@ -46,7 +47,7 @@ tcalc_val_binlopfunc_impl(tcalc_val_equals_l, tcalc_equals_l)
 tcalc_val_binlopfunc_impl(tcalc_val_nequals_l, tcalc_nequals_l)
 
 #define tcalc_val_relopfunc_impl(_funcname_, _implfuncname_) \
-  tcalc_err _funcname_(tcalc_val a, tcalc_val b, int* out) { \
+  tcalc_err _funcname_(tcalc_val a, tcalc_val b, bool* out) { \
     assert(out != NULL); \
     if (a.type != TCALC_VALTYPE_NUM || b.type != TCALC_VALTYPE_NUM) \
       return TCALC_ERR_BAD_CAST; \

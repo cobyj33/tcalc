@@ -1,6 +1,7 @@
 #ifndef TCALC_STRING_H
 #define TCALC_STRING_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <tcalc_error.h>
 
@@ -41,13 +42,13 @@ inline struct tcalc_strv tcalc_dstr_to_strv(struct tcalc_dstr dstr) {
 // the literal string length with sizeof()
 #define TCALC_STRLIT_TO_CONST_STRV(strlit) ((const struct tcalc_strv){ .str = (strlit), .len = TCALC_STRLIT_LEN(strlit) })
 
-int tcalc_streq_lb(const char* s1, size_t l1, const char* s2, size_t l2);
+bool tcalc_streq_lb(const char* s1, size_t l1, const char* s2, size_t l2);
 
 // Check if a null terminated string and a length-based string hold equivalent
 // information
-int tcalc_streq_ntlb(const char* ntstr, const char* lbstr, size_t lbstr_len);
+bool tcalc_streq_ntlb(const char* ntstr, const char* lbstr, size_t lbstr_len);
 
-int tcalc_slice_ntstr_eq(const char* source, tcalc_slice slice, const char* ntstr);
+bool tcalc_slice_ntstr_eq(const char* source, tcalc_slice slice, const char* ntstr);
 /**
  * Taken from FreeBSD
  * Copy string src to buffer dst of size dsize.  At most dsize-1
@@ -84,23 +85,23 @@ enum tcalc_err tcalc_strdup(const char *src, char** out);
 */
 enum tcalc_err tcalc_strcombine(const char *first, const char *second, char** out);
 
-int tcalc_strisint(const char*);
+bool tcalc_strisint(const char*);
 enum tcalc_err tcalc_strtoint(const char*, int*);
 
-int tcalc_strisdouble(const char*);
+bool tcalc_strisdouble(const char*);
 enum tcalc_err tcalc_strtodouble(const char*, double*);
 
-int tcalc_lpstrisdouble(const char*, size_t);
+bool tcalc_lpstrisdouble(const char*, size_t);
 enum tcalc_err tcalc_lpstrtodouble(const char*, size_t, double*);
 
 enum tcalc_err find_in_strarr(const char**, size_t, const char*, size_t*);
-int has_in_strarr(const char**, size_t, const char*);
+bool has_in_strarr(const char**, size_t, const char*);
 
 enum tcalc_err tcalc_strsplit(const char*, char, char***, size_t* return_size);
 
-int tcalc_streq(const char*, const char*);
+bool tcalc_streq(const char*, const char*);
 
-int tcalc_str_list_has(const char* input, const char** list, size_t count);
+bool tcalc_str_list_has(const char* input, const char** list, size_t count);
 
 /**
  * Find if one string has the prefix given by another string.
@@ -118,7 +119,7 @@ int tcalc_str_list_has(const char* input, const char** list, size_t count);
  *
  * prefix and str must NOT be NULL
 */
-int tcalc_strhaspre(const char* prefix, const char* str);
+bool tcalc_strhaspre(const char* prefix, const char* str);
 
 /**
  *

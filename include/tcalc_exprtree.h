@@ -3,6 +3,8 @@
 
 #include "tcalc_error.h"
 #include "tcalc_tokens.h"
+
+#include <stdbool.h>
 #include <stddef.h>
 
 struct tcalc_ctx;
@@ -89,7 +91,7 @@ void tcalc_exprtree_free_children(tcalc_exprtree* head);
  * Vardef form:
  *  <variable> "=" expression
 */
-int tcalc_exprtree_is_vardef(tcalc_exprtree* expr);
+bool tcalc_exprtree_is_vardef(tcalc_exprtree* expr);
 
 tcalc_err tcalc_create_exprtree_infix(const char* expr, const struct tcalc_ctx* ctx, tcalc_exprtree** out);
 

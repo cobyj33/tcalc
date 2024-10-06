@@ -6,6 +6,7 @@
 #include "tcalc_mem.h"
 #include "tcalc_vec.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
@@ -169,18 +170,18 @@ tcalc_err find_in_strarr(const char** list, size_t list_len, const char* search,
   return TCALC_ERR_NOT_FOUND;
 }
 
-int has_in_strarr(const char** list, size_t list_len, const char* search) {
+bool has_in_strarr(const char** list, size_t list_len, const char* search) {
   size_t dummy;
   return find_in_strarr(list, list_len, search, &dummy) == TCALC_ERR_OK;
 }
 
-int tcalc_strisint(const char* str) {
+bool tcalc_strisint(const char* str) {
   int dummyout;
   return tcalc_strtoint(str, &dummyout) == TCALC_ERR_OK;
 }
 
 
-int tcalc_strisdouble(const char* str) {
+bool tcalc_strisdouble(const char* str) {
   double dummyout;
   return tcalc_strtodouble(str, &dummyout) == TCALC_ERR_OK;
 }
@@ -235,7 +236,7 @@ tcalc_err tcalc_strtodouble(const char* str, double* out)
   return TCALC_ERR_OK;
 }
 
-int tcalc_lpstrisdouble(const char* str, size_t len) {
+bool tcalc_lpstrisdouble(const char* str, size_t len) {
   double dummyout;
   return tcalc_lpstrtodouble(str, len, &dummyout) == TCALC_ERR_OK;
 }
@@ -318,23 +319,23 @@ tcalc_err tcalc_strtoint(const char* str, int* out)
   return TCALC_ERR_OK;
 }
 
-int tcalc_streq(const char* a, const char* b) {
+bool tcalc_streq(const char* a, const char* b) {
   size_t i = 0;
   for (; a[i] != '\0' && b[i] != '\0'; i++) {
-    if (a[i] != b[i]) return 0;
+    if (a[i] != b[i]) return false;
   }
 
   return a[i] == b[i]; // either a[i] or b[i] will be '\0'. Therefore, if they are equal they have both ended
 }
 
-int tcalc_str_list_has(const char* input, const char** list, size_t count) {
+bool tcalc_str_list_has(const char* input, const char** list, size_t count) {
   for (size_t i = 0; i < count; i++) {
-    if (strcmp(input, list[i]) == 0) return 1;
+    if (strcmp(input, list[i]) == 0) return true;
   }
-  return 0;
+  return false;
 }
 
-int tcalc_strhaspre(const char* prefix, const char* str) {
+bool tcalc_strhaspre(const char* prefix, const char* str) {
   size_t i = 0;
   for (; str[i] != '\0' && prefix[i] != '\0'; i++) {
     if (prefix[i] != str[i]) break;
@@ -343,20 +344,20 @@ int tcalc_strhaspre(const char* prefix, const char* str) {
   return prefix[i] == '\0';
 }
 
-int tcalc_streq_lb(const char* s1, size_t l1, const char* s2, size_t l2) {
+bool tcalc_streq_lb(const char* s1, size_t l1, const char* s2, size_t l2) {
   if (l1 != l2) return 0;
   const char* const e1 = s1 + l1;
   while (s1 != e1 && *s1 == *s2) { s1++; s2++; }
   return s1 == e1;
 }
 
-int tcalc_streq_ntlb(const char* ntstr, const char* lbstr, size_t lbstr_len) {
+bool tcalc_streq_ntlb(const char* ntstr, const char* lbstr, size_t lbstr_len) {
   const char* const lbstr_end = lbstr + lbstr_len;
   while (*ntstr && lbstr != lbstr_end && *ntstr == *lbstr) { ntstr++; lbstr++; }
   return *ntstr == '\0' && (lbstr == lbstr_end);
 }
 
-int tcalc_slice_ntstr_eq(const char* source, tcalc_slice slice, const char* ntstr) {
+bool tcalc_slice_ntstr_eq(const char* source, tcalc_slice slice, const char* ntstr) {
   assert(source != NULL);
   assert(slice.xend >= slice.start);
   assert(ntstr != NULL);

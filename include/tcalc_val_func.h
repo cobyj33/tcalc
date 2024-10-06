@@ -21,36 +21,36 @@
 
 typedef tcalc_err (*tcalc_val_unfunc)(tcalc_val, double*);
 typedef tcalc_err (*tcalc_val_binfunc)(tcalc_val, tcalc_val, double*);
-typedef tcalc_err (*tcalc_val_relfunc)(tcalc_val, tcalc_val, int*);
+typedef tcalc_err (*tcalc_val_relfunc)(tcalc_val, tcalc_val, bool*);
 
 // l suffix stands for "logical"
-typedef tcalc_err (*tcalc_val_unlfunc)(tcalc_val, int* out);
-typedef tcalc_err (*tcalc_val_binlfunc)(tcalc_val, tcalc_val, int* out);
+typedef tcalc_err (*tcalc_val_unlfunc)(tcalc_val, bool* out);
+typedef tcalc_err (*tcalc_val_binlfunc)(tcalc_val, tcalc_val, bool* out);
 
 
 /**
  * Logical Functions
 */
-tcalc_err tcalc_val_not(tcalc_val a, int* out);
-tcalc_err tcalc_val_and(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_or(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_nand(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_nor(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_xor(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_xnor(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_matcond(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_equals_l(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_nequals_l(tcalc_val a, tcalc_val b, int* out);
+tcalc_err tcalc_val_not(tcalc_val a, bool* out);
+tcalc_err tcalc_val_and(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_or(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_nand(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_nor(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_xor(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_xnor(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_matcond(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_equals_l(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_nequals_l(tcalc_val a, tcalc_val b, bool* out);
 
 /**
  * Relational Functions
 */
-tcalc_err tcalc_val_equals(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_nequals(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_lt(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_lteq(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_gt(tcalc_val a, tcalc_val b, int* out);
-tcalc_err tcalc_val_gteq(tcalc_val a, tcalc_val b, int* out);
+tcalc_err tcalc_val_equals(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_nequals(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_lt(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_lteq(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_gt(tcalc_val a, tcalc_val b, bool* out);
+tcalc_err tcalc_val_gteq(tcalc_val a, tcalc_val b, bool* out);
 
 
 /**

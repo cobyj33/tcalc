@@ -2,6 +2,7 @@
 #include "tcalc_error.h"
 #include "tcalc_string.h"
 
+#include <stdbool.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -50,21 +51,21 @@ void tcalc_errstkclear() {
   errstksize = 0;
 }
 
-int tcalc_errstkadd(const char* funcname, const char* errstr) {
-  if (errstksize >= TCALC_ERRSTK_MAX_SIZE) return 0;
+bool tcalc_errstkadd(const char* funcname, const char* errstr) {
+  if (errstksize >= TCALC_ERRSTK_MAX_SIZE) return false;
   int res = snprintf(errstk[errstksize], TCALC_ERROR_MAX_SIZE, "[%s] %s", funcname, errstr);
 
   if (res < 0) {
     errstk[errstksize][0] = '\0';
-    return 0;
+    return false;
   }
 
   errstksize++;
-  return 1;
+  return true;
 }
 
-int tcalc_errstkaddf(const char* funcname, const char* format, ...) {
-  if (errstksize >= TCALC_ERRSTK_MAX_SIZE) return 0;
+bool tcalc_errstkaddf(const char* funcname, const char* format, ...) {
+  if (errstksize >= TCALC_ERRSTK_MAX_SIZE) return false;
   char err[TCALC_ERROR_MAX_SIZE] = {'\0'};
 
   va_list args;
@@ -72,7 +73,7 @@ int tcalc_errstkaddf(const char* funcname, const char* format, ...) {
   int success = vsnprintf(err, TCALC_ERROR_MAX_SIZE, format, args);
   va_end(args);
 
-  if (!success) return 0;
+  if (!success) return false;
   return tcalc_errstkadd(funcname, err);
 }
 

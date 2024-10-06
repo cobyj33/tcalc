@@ -6,6 +6,7 @@
 #include "tcalc_mem.h"
 #include "tcalc_tokens.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
@@ -112,10 +113,10 @@ tcalc_err tcalc_create_exprtree_infix(const char* expr, const tcalc_ctx* ctx, tc
 /**
  * @param operators a NULL-terminated array of NUL-terminated operator strings to match.
 */
-static int tcalc_lbstr_in_ntntstrs(const char* token_str, size_t tokenLen, const char** nt_ntstrs);
+static bool tcalc_lbstr_in_ntntstrs(const char* token_str, size_t tokenLen, const char** nt_ntstrs);
 
-static int tcalc_pctx_isnexttype(const tcalc_pctx* pctx, tcalc_token_type type);
-static int tcalc_pctx_is_curr_tok_in_optlist(const tcalc_pctx* pctx, const char** nt_ntstr_operators);
+static bool tcalc_pctx_isnexttype(const tcalc_pctx* pctx, tcalc_token_type type);
+static bool tcalc_pctx_is_curr_tok_in_optlist(const tcalc_pctx* pctx, const char** nt_ntstr_operators);
 static tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx,  const char** operators, tcalc_parsefunc_func_t higher_prec_parsefunc, tcalc_exprtree** out);
 
 
@@ -377,16 +378,16 @@ static tcalc_err tcalc_parsefunc_funcargs(tcalc_pctx* pctx, tcalc_exprtree* pare
     return err;
 }
 
-static int tcalc_pctx_isnexttype(const tcalc_pctx* pctx, tcalc_token_type type){
+static bool tcalc_pctx_isnexttype(const tcalc_pctx* pctx, tcalc_token_type type){
   return pctx->i < pctx->nb_toks && pctx->toks[pctx->i].type == type;
 }
 
-static int tcalc_lbstr_in_ntntstrs(const char* s, size_t strl, const char** ntntstrs) {
+static bool tcalc_lbstr_in_ntntstrs(const char* s, size_t strl, const char** ntntstrs) {
   for (unsigned int i = 0; ntntstrs[i] != NULL; i++) {
     if (tcalc_streq_ntlb(ntntstrs[i], s, strl))
-      return 1;
+      return true;
   }
-  return 0;
+  return false;
 }
 
 static tcalc_err tcalc_exprtree_node_alloc_binary(const tcalc_token token, tcalc_exprtree* left, tcalc_exprtree* right, tcalc_exprtree** out) {
@@ -427,7 +428,7 @@ static tcalc_err tcalc_exprtree_node_alloc_value(const tcalc_token token, tcalc_
   return TCALC_ERR_OK;
 }
 
-static int tcalc_pctx_is_curr_tok_in_optlist(const tcalc_pctx* pctx, const char** nt_ntstr_operators)
+static bool tcalc_pctx_is_curr_tok_in_optlist(const tcalc_pctx* pctx, const char** nt_ntstr_operators)
 {
   return pctx->i < pctx->nb_toks && tcalc_lbstr_in_ntntstrs(pctx->expr + pctx->toks[pctx->i].start, tcalc_token_len(pctx->toks[pctx->i]), nt_ntstr_operators);
 }

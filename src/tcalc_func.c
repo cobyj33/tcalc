@@ -3,6 +3,7 @@
 #include "tcalc_error.h"
 #include "tcalc_constants.h"
 
+#include <stdbool.h>
 #include <math.h>
 #include <errno.h>
 #include <float.h>
@@ -10,36 +11,36 @@
 /**
  * Logical Functions
 */
-int tcalc_not(int a) {
+bool tcalc_not(bool a) {
   return !a;
 }
 
-int tcalc_and(int a, int b) {
+bool tcalc_and(bool a, bool b) {
   return a && b;
 }
 
-int tcalc_or(int a, int b) {
+bool tcalc_or(bool a, bool b) {
   return a || b;
 }
 
-int tcalc_nand(int a, int b) {
+bool tcalc_nand(bool a, bool b) {
   return !(a && b);
 }
 
-int tcalc_nor(int a, int b) {
+bool tcalc_nor(bool a, bool b) {
   return !(a || b);
 }
 
-int tcalc_xor(int a, int b) {
+bool tcalc_xor(bool a, bool b) {
   return (a && !b) || (!a && b);
 }
 
-int tcalc_xnor(int a, int b) {
+bool tcalc_xnor(bool a, bool b) {
   // note that xnor and equals are literally the same thing
   return (a && b) || (!a && !b);
 }
 
-int tcalc_matcond(int a, int b) {
+bool tcalc_matcond(bool a, bool b) {
   return !a || b;
 }
 
@@ -47,11 +48,11 @@ int tcalc_matcond(int a, int b) {
  * We can't just say if they are directly equal as ```a == b```, since
  * a truthy value in C simply means that the value is not 0.
 */
-int tcalc_equals_l(int a, int b) {
+bool tcalc_equals_l(bool a, bool b) {
   return (a && b) || (!a && !b);
 }
 
-int tcalc_nequals_l(int a, int b) {
+bool tcalc_nequals_l(bool a, bool b) {
   return (a && !b) || (!a && b);
 }
 
@@ -59,27 +60,27 @@ int tcalc_nequals_l(int a, int b) {
 /**
  * Relational Operators
 */
-int tcalc_equals(double a, double b) {
+bool tcalc_equals(double a, double b) {
   return fabs(a - b) < 1e-9;
 }
 
-int tcalc_nequals(double a, double b) {
+bool tcalc_nequals(double a, double b) {
   return !tcalc_equals(a, b);
 }
 
-int tcalc_lt(double a, double b) {
+bool tcalc_lt(double a, double b) {
   return a < b && !tcalc_equals(a, b);
 }
 
-int tcalc_lteq(double a, double b) {
+bool tcalc_lteq(double a, double b) {
   return a < b || tcalc_equals(a, b);
 }
 
-int tcalc_gt(double a, double b) {
+bool tcalc_gt(double a, double b) {
   return a > b && !tcalc_equals(a, b);
 }
 
-int tcalc_gteq(double a, double b) {
+bool tcalc_gteq(double a, double b) {
   return a > b || tcalc_equals(a, b);
 }
 

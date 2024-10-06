@@ -1,39 +1,40 @@
 #ifndef TCALC_FUNC_H
 #define TCALC_FUNC_H
 
+#include <stdbool.h>
 #include "tcalc_error.h"
 
 typedef tcalc_err (*tcalc_unfunc)(double, double*);
 typedef tcalc_err (*tcalc_binfunc)(double, double, double*);
-typedef int (*tcalc_relfunc)(double, double);
+typedef bool (*tcalc_relfunc)(double, double);
 
 // l suffix stands for "logical" in tcalc_unlfunc and tcalc_binlfunc
 
-typedef int (*tcalc_unlfunc)(int);
-typedef int (*tcalc_binlfunc)(int, int);
+typedef bool (*tcalc_unlfunc)(bool);
+typedef bool (*tcalc_binlfunc)(bool, bool);
 
 
 // Logical Functions
 
-int tcalc_not(int a);
-int tcalc_and(int a, int b);
-int tcalc_or(int a, int b);
-int tcalc_nand(int a, int b);
-int tcalc_nor(int a, int b);
-int tcalc_xor(int a, int b);
-int tcalc_xnor(int a, int b);
-int tcalc_matcond(int a, int b);
-int tcalc_equals_l(int a, int b);
-int tcalc_nequals_l(int a, int b);
+bool tcalc_not(bool a);
+bool tcalc_and(bool a, bool b);
+bool tcalc_or(bool a, bool b);
+bool tcalc_nand(bool a, bool b);
+bool tcalc_nor(bool a, bool b);
+bool tcalc_xor(bool a, bool b);
+bool tcalc_xnor(bool a, bool b);
+bool tcalc_matcond(bool a, bool b);
+bool tcalc_equals_l(bool a, bool b);
+bool tcalc_nequals_l(bool a, bool b);
 
 // Relational Functions
 
-int tcalc_equals(double a, double b);
-int tcalc_nequals(double a, double b);
-int tcalc_lt(double a, double b);
-int tcalc_lteq(double a, double b);
-int tcalc_gt(double a, double b);
-int tcalc_gteq(double a, double b);
+bool tcalc_equals(double a, double b);
+bool tcalc_nequals(double a, double b);
+bool tcalc_lt(double a, double b);
+bool tcalc_lteq(double a, double b);
+bool tcalc_gt(double a, double b);
+bool tcalc_gteq(double a, double b);
 
 
 // Unary functions

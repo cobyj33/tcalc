@@ -5,6 +5,7 @@
 #include "tcalc_context.h"
 #include "tcalc_mac.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -23,12 +24,12 @@ const char* TCALC_ALLOWED_CHARS = ",()[]+-*/^%!=<>&|0123456789. abcdefghijklmnop
 const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%!=<>";
 const char* TCALC_MULTI_TOKENS[] = {"**", "==", "<=", ">=", "!=", "&&", "||", NULL}; // make sure this remains null terminated
 
-static int is_valid_tcalc_char(char ch);
+static bool is_valid_tcalc_char(char ch);
 static tcalc_err tcalc_next_math_strtoken(const char* expr, size_t req_start, size_t* out_start, size_t* out_xend);
-static int tcalc_are_groupsyms_balanced(const char* expr);
+static bool tcalc_are_groupsyms_balanced(const char* expr);
 static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, tcalc_slice** out, size_t* out_size, size_t* out_cap);
 static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(const char* expr, const tcalc_ctx* ctx, const tcalc_slice* str_tokens, const size_t nb_str_tokens, tcalc_token** out, size_t* out_size);
-static int tcalc_is_identifier(const char* source, size_t len);
+static bool tcalc_is_identifier(const char* source, size_t len);
 
 const char* tcalc_token_type_str(tcalc_token_type token_type) {
   switch (token_type) {
@@ -375,17 +376,17 @@ static tcalc_err tcalc_next_math_strtoken(const char* expr, size_t req_start, si
 	return TCALC_ERR_STOP_ITER; // this SHOULD be unreachable
 }
 
-static int is_valid_tcalc_char(char ch) {
+static bool is_valid_tcalc_char(char ch) {
 	for (int i = 0; TCALC_ALLOWED_CHARS[i] != '\0'; i++)
 		if (TCALC_ALLOWED_CHARS[i] == ch)
-			return 1;
-	return 0;
+			return true;
+	return false;
 }
 
 /**
  * There's probably a better way to implement this but whatever
 */
-static int tcalc_are_groupsyms_balanced(const char* expr) {
+static bool tcalc_are_groupsyms_balanced(const char* expr) {
   int nb_parens = 0;
 
   for (size_t i = 0; expr[i] != '\0' && nb_parens >= 0; i++) {
@@ -396,10 +397,10 @@ static int tcalc_are_groupsyms_balanced(const char* expr) {
   return nb_parens == 0;
 }
 
-static int tcalc_is_identifier(const char* str, size_t len) {
+static bool tcalc_is_identifier(const char* str, size_t len) {
   for (size_t i = 0; i < len; i++) {
-    if (!islower(str[i])) return 0;
+    if (!islower(str[i])) return false;
   }
 
-  return 1;
+  return true;
 }

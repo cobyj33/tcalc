@@ -1,6 +1,8 @@
 #ifndef TCALC_VAL_H
 #define TCALC_VAL_H
 
+#include <stdbool.h>
+
 enum tcalc_valtype {
   TCALC_VALTYPE_NUM,
   TCALC_VALTYPE_BOOL
@@ -8,7 +10,7 @@ enum tcalc_valtype {
 
 union tcalc_valunion {
   double num;
-  int boolean;
+  bool boolean;
 };
 
 const char* tcalc_valtype_str(enum tcalc_valtype type);
