@@ -34,6 +34,14 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
 
   // Double Tests
 
+  // Expressions from the README
+  MAKE_DOUBLE_SUCCESS_TEST(tc, "2 * 3 ^ ln(2)", 4.28297212);
+  MAKE_DOUBLE_SUCCESS_TEST(tc, "(sin(5))^2 + (cos(5))^2", 1.0);
+  MAKE_DOUBLE_SUCCESS_TEST(tc, "5 + sin(2 * pi)", 5.0);
+  MAKE_DOUBLE_SUCCESS_TEST(tc, "23 + arcsin(0.5) * (1 / 4)", 23.13089969);
+
+
+
   MAKE_DOUBLE_SUCCESS_TEST(tc, "6", 6.0);
   MAKE_DOUBLE_SUCCESS_TEST(tc, "600", 600.0);
   MAKE_DOUBLE_SUCCESS_TEST(tc, "2.53", 2.53);

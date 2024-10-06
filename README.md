@@ -6,7 +6,7 @@ Terminal Floating-Precision Calculator written in C99
 
 ```bash
 tcalc "2 * 3 ^ ln(2)"
-tcalc "[sin(5)]^2 + [cos(5)]^2"
+tcalc "(sin(5))^2 + (cos(5))^2"
 tcalc "5 + sin(2 * pi)"
 tcalc "23 + arcsin(0.5) * (1 / 4)"
 ```
