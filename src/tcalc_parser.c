@@ -102,6 +102,12 @@ tcalc_err tcalc_create_exprtree_infix(const char* expr, const tcalc_ctx* ctx, tc
 
   err = tcalc_parsefunc_expression(&pctx, out);
   free(pctx.toks);
+
+  if (err == TCALC_ERR_OK && pctx.i < pctx.nb_toks)
+  {
+    err = TCALC_ERR_UNPROCESSED_INPUT;
+    tcalc_errstkaddf(__func__, "Failed to process all input (processed %zu tokens of %zu total tokens)", pctx.i, pctx.nb_toks);
+  }
   return err;
 }
 
@@ -469,11 +475,7 @@ static bool tcalc_pctx_should_insert_implicit_mult(const tcalc_pctx* pctx)
   return
       (
         lastToken.type == TCALC_TOK_NUM ||
-        lastToken.type == TCALC_TOK_GRPEND ||
-        (
-          lastToken.type == TCALC_TOK_ID &&
-          tcalc_ctx_hasvar(pctx->ctx, tcalc_token_startcp(pctx->expr, lastToken), tcalc_token_len(lastToken))
-        )
+        lastToken.type == TCALC_TOK_GRPEND
       ) &&
       (
         currToken.type == TCALC_TOK_GRPSTRT ||

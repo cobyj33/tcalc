@@ -5,7 +5,6 @@
 #include "tcalc_context.h"
 #include "tcalc_eval.h"
 #include "tcalc_string.h"
-#include "tcalc_mac.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,10 +35,10 @@ int tcalc_repl() {
 
   tcalc_ctx* ctx = NULL;
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
-  TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to allocate ctx for REPL... exiting: %s", FUNCDINFO, tcalc_strerrcode(err))
+  TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to allocate ctx for REPL... exiting: %s", __func__, tcalc_strerrcode(err))
 
   err = tcalc_ctx_addvar(ctx, "ans", TCALC_STRLIT_LEN("ans"), TCALC_VAL_INIT_NUM(0.0));
-  TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to set ans variable on tcalc ctx.. exiting: %s", FUNCDINFO, tcalc_strerrcode(err))
+  TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to set ans variable on tcalc ctx.. exiting: %s", __func__, tcalc_strerrcode(err))
 
   while (!tcalc_str_list_has(input_buffer, quit_strings, ARRAY_SIZE(quit_strings))) {
     fputs("> ", stdout);

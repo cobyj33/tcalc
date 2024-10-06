@@ -2,7 +2,6 @@
 #include "tcalc_error.h"
 #include "tcalc_string.h"
 #include "tcalc_mem.h"
-#include "tcalc_mac.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -61,7 +60,7 @@ tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token** out, size_t* out_
   *out_size = 0;
 
   if (!tcalc_are_groupsyms_balanced(expr)) {
-    tcalc_errstkaddf(FUNCDINFO, "Unbalanced grouping symbols");
+    tcalc_errstkaddf(__func__, "Unbalanced grouping symbols");
     return TCALC_ERR_UNBAL_GRPSYMS;
   }
 

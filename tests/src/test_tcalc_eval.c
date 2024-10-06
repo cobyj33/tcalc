@@ -15,9 +15,9 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
       tcalc_val res = TCALC_VAL_INIT_NUM(0.0); \
       \
       err = tcalc_eval(expr, &res); \
-      CuAssert_Line(tc, __FILE__, __LINE__, "Expression '" expr "' evaluation succeeded", err == TCALC_ERR_OK); \
-      CuAssert_Line(tc, __FILE__, __LINE__, "Expression '" expr "' returns as a double", res.type == TCALC_VALTYPE_NUM); \
-      CuAssertDblEquals_LineMsg(tc, __FILE__, __LINE__, "Expression '" expr "' evaluation test", val, res.as.num, TCALC_EVAL_ASSERT_DELTA); \
+      CuAssert_Line(tc, __FILE__, __LINE__, "Checking numerical expression '" expr "' evaluation for errors", err == TCALC_ERR_OK); \
+      CuAssert_Line(tc, __FILE__, __LINE__, "Checking numerical expression '" expr "' returns as a double", res.type == TCALC_VALTYPE_NUM); \
+      CuAssertDblEquals_LineMsg(tc, __FILE__, __LINE__, "Checking numerical expression '" expr "' evaluated to expected number", val, res.as.num, TCALC_EVAL_ASSERT_DELTA); \
     }
 
   #define MAKE_BOOL_SUCCESS_TEST(tc, expr, val) \
@@ -27,9 +27,9 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
       \
       err = tcalc_eval(expr, &res); \
       \
-      CuAssert_Line(tc, __FILE__, __LINE__, "Expression '" expr "' evaluation succeeded", err == TCALC_ERR_OK); \
-      CuAssert_Line(tc, __FILE__, __LINE__, "Expression '" expr "' returns as a boolean", res.type == TCALC_VALTYPE_BOOL); \
-      CuAssertIntEquals_LineMsg(tc, __FILE__, __LINE__, "Expression '" expr "' returns as expected boolean", !!val, !!res.as.boolean); \
+      CuAssert_Line(tc, __FILE__, __LINE__, "Checking boolean expression '" expr "' evaluation for errors", err == TCALC_ERR_OK); \
+      CuAssert_Line(tc, __FILE__, __LINE__, "Checking boolean expression '" expr "' returns as a boolean", res.type == TCALC_VALTYPE_BOOL); \
+      CuAssertIntEquals_LineMsg(tc, __FILE__, __LINE__, "Checking boolean xpression '" expr "' returns as expected boolean", !!val, !!res.as.boolean); \
     }
 
   // Double Tests
@@ -76,8 +76,6 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
   MAKE_DOUBLE_SUCCESS_TEST(tc, "5ln(e)", 5.0);
   MAKE_DOUBLE_SUCCESS_TEST(tc, "2^2ln(e)", 4.0);
   MAKE_DOUBLE_SUCCESS_TEST(tc, "2pi", 6.283185);
-  MAKE_DOUBLE_SUCCESS_TEST(tc, "pi(2)", 6.283185);
-  MAKE_DOUBLE_SUCCESS_TEST(tc, "e(pi)(2(4))", 68.317874);
 
   // Boolean Tests
 
@@ -131,6 +129,9 @@ void TestTCalcEvalFailures(CuTest *tc) {
   CuAssertTrue(tc, tcalc_eval("", &res) != TCALC_ERR_OK);
   CuAssertTrue(tc, tcalc_eval("          ", &res) != TCALC_ERR_OK);
   CuAssertTrue(tc, tcalc_eval("          ", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval("pi(2)", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval("e(pi)", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval("e(pi)(2(4))", &res) != TCALC_ERR_OK);
 
   CuAssertTrue(tc, tcalc_eval("== 3", &res) != TCALC_ERR_OK);
   CuAssertTrue(tc, tcalc_eval(" ^^^^3--", &res) != TCALC_ERR_OK);

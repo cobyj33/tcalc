@@ -73,16 +73,6 @@ typedef struct tcalc_opdata {
   tcalc_assoc assoc;
 } tcalc_opdata;
 
-/**
- * Maybe the tcalc_ctx should not hold information about user-defined functions,
- * but only the actual definitions. Something else could handle resolving
- * user-defined variable definitions?
-*/
-typedef struct tcalc_exprvardef {
-  char* id;
-  struct tcalc_exprtree_node* expr;
-  const char* dependencies;
-} tcalc_exprvardef;
 
 // 8 may seem large, but because of alignment from function pointers,
 // each operator id struct must be aligned across the alignment of a function
@@ -93,6 +83,18 @@ typedef struct tcalc_exprvardef {
 // TODO: maybe should be increased to 64? Definitely when user-defined
 // TODO: functions are added
 #define TCALC_IDDEF_MAX_STR_SIZE 16
+
+/**
+ * Maybe the tcalc_ctx should not hold information about user-defined functions,
+ * but only the actual definitions. Something else could handle resolving
+ * user-defined variable definitions?
+ *
+ * We have to hold our expression as
+*/
+typedef struct tcalc_exprvardef {
+  char id[TCALC_IDDEF_MAX_STR_SIZE];
+  const char* expr;
+} tcalc_exprvardef;
 
 typedef struct tcalc_unopdef {
   char id[TCALC_OPDEF_MAX_STR_SIZE];

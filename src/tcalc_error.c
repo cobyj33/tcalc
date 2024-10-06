@@ -35,6 +35,7 @@ const char* tcalc_strerrcode(tcalc_err err) {
     case TCALC_ERR_MALFORMED_UNEXP: return "malformed unary expression";
     case TCALC_ERR_MALFORMED_INPUT: return "malformed input";
     case TCALC_ERR_BAD_CAST: return "bad cast";
+    case TCALC_ERR_UNPROCESSED_INPUT: return "unprocessed input";
     case TCALC_ERR_UNIMPLEMENTED: return "unimplemented";
     case TCALC_ERR_UNKNOWN_ID: return "unknown identifier";
     case TCALC_ERR_UNKNOWN: return "unknown";

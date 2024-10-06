@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include "tcalc_compdefs.h"
+
 /**
  * tcalc_error.h - Error handling in tcalc
  *
@@ -35,7 +37,7 @@ unsigned int tcalc_errstksize();
 unsigned int tcalc_errstkpop();
 
 bool tcalc_errstkadd(const char* funcname, const char* errstr);
-bool tcalc_errstkaddf(const char* funcname, const char* format, ...);
+bool tcalc_errstkaddf(const char* funcname, const char* format, ...) TCALC_FORMAT_ATTRIB(printf, 2, 3);
 
 size_t tcalc_errstkpeek(char* out, size_t dsize);
 
@@ -109,6 +111,7 @@ typedef enum tcalc_err {
   TCALC_ERR_MALFORMED_UNEXP,
   TCALC_ERR_MALFORMED_INPUT,
   TCALC_ERR_BAD_CAST,
+  TCALC_ERR_UNPROCESSED_INPUT,
 
   // add new errors above this
   TCALC_ERR_UNIMPLEMENTED,
