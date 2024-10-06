@@ -97,13 +97,8 @@ tcalc_err tcalc_create_exprtree_infix(const char* expr, const tcalc_ctx* ctx, tc
   *out = NULL;
   tcalc_err err = TCALC_ERR_OK;
 
-  tcalc_pctx pctx;
-  pctx.expr = expr;
-  pctx.ctx = ctx;
-  pctx.i = 0;
-  pctx.toks = NULL;
-  pctx.nb_toks = 0;
-  ret_on_err(err, tcalc_tokenize_infix_ctx(expr, ctx, &(pctx.toks), &(pctx.nb_toks)));
+  tcalc_pctx pctx = { .expr = expr, .ctx = ctx, .i = 0, .toks = NULL, .nb_toks = 0 };
+  ret_on_err(err, tcalc_tokenize_infix(expr, &(pctx.toks), &(pctx.nb_toks)));
 
   err = tcalc_parsefunc_expression(&pctx, out);
   free(pctx.toks);
@@ -115,6 +110,7 @@ tcalc_err tcalc_create_exprtree_infix(const char* expr, const tcalc_ctx* ctx, tc
 */
 static bool tcalc_lbstr_in_ntntstrs(const char* token_str, size_t tokenLen, const char** nt_ntstrs);
 
+static bool tcalc_pctx_should_insert_implicit_mult(const tcalc_pctx* pctx);
 static bool tcalc_pctx_isnexttype(const tcalc_pctx* pctx, tcalc_token_type type);
 static bool tcalc_pctx_is_curr_tok_in_optlist(const tcalc_pctx* pctx, const char** nt_ntstr_operators);
 static tcalc_err tcalc_parsefunc_binops_leftassoc(tcalc_pctx* pctx,  const char** operators, tcalc_parsefunc_func_t higher_prec_parsefunc, tcalc_exprtree** out);
@@ -189,7 +185,38 @@ static tcalc_err tcalc_parsefunc_term(tcalc_pctx* pctx, tcalc_exprtree** out) {
 
 static tcalc_err tcalc_parsefunc_factor(tcalc_pctx* pctx, tcalc_exprtree** out) {
   const char* operators[] = { "*", "", "/", "%", NULL };
-  return tcalc_parsefunc_binops_leftassoc(pctx, operators, tcalc_parsefunc_unary, out);
+  tcalc_exprtree* left = NULL;
+  tcalc_err err = TCALC_ERR_OK;
+
+  cleanup_on_err(err, tcalc_parsefunc_unary(pctx, &left));
+
+  while (tcalc_pctx_is_curr_tok_in_optlist(pctx, operators) || tcalc_pctx_should_insert_implicit_mult(pctx)) {
+    const tcalc_token operator = tcalc_pctx_should_insert_implicit_mult(pctx) ?
+      (struct tcalc_token){ .type = TCALC_TOK_BINOP, .start = pctx->toks[pctx->i].start, .xend = pctx->toks[pctx->i].start } :
+      pctx->toks[pctx->i++];
+    // ! only consumes current token if we did not insert an implicit multiplication
+
+    cleanup_if(err, pctx->i >= pctx->nb_toks, TCALC_ERR_MALFORMED_BINEXP);
+
+    tcalc_exprtree *right = NULL;
+    cleanup_on_err(err, tcalc_parsefunc_unary(pctx, &right));
+
+    tcalc_exprtree* temp = NULL;
+    if (tc_failed(err, tcalc_exprtree_node_alloc_binary(operator, left, right, &temp))) {
+      tcalc_exprtree_free(right);
+      goto cleanup;
+    }
+
+    left = temp;
+  }
+
+  *out = left;
+
+  return TCALC_ERR_OK;
+  cleanup:
+    *out = NULL;
+    tcalc_exprtree_free(left);
+    return err;
 }
 
 // unary -> ( "+" | "-" | "!" )* exponentiation
@@ -431,4 +458,25 @@ static tcalc_err tcalc_exprtree_node_alloc_value(const tcalc_token token, tcalc_
 static bool tcalc_pctx_is_curr_tok_in_optlist(const tcalc_pctx* pctx, const char** nt_ntstr_operators)
 {
   return pctx->i < pctx->nb_toks && tcalc_lbstr_in_ntntstrs(pctx->expr + pctx->toks[pctx->i].start, tcalc_token_len(pctx->toks[pctx->i]), nt_ntstr_operators);
+}
+
+static bool tcalc_pctx_should_insert_implicit_mult(const tcalc_pctx* pctx)
+{
+  if (!(pctx->i < pctx->nb_toks && pctx->i > 0)) return false;
+
+  const tcalc_token lastToken = pctx->toks[pctx->i - 1];
+  const tcalc_token currToken = pctx->toks[pctx->i];
+  return
+      (
+        lastToken.type == TCALC_TOK_NUM ||
+        lastToken.type == TCALC_TOK_GRPEND ||
+        (
+          lastToken.type == TCALC_TOK_ID &&
+          tcalc_ctx_hasvar(pctx->ctx, tcalc_token_startcp(pctx->expr, lastToken), tcalc_token_len(lastToken))
+        )
+      ) &&
+      (
+        currToken.type == TCALC_TOK_GRPSTRT ||
+        currToken.type == TCALC_TOK_ID
+      );
 }

@@ -2,7 +2,6 @@
 #include "tcalc_error.h"
 #include "tcalc_string.h"
 #include "tcalc_mem.h"
-#include "tcalc_context.h"
 #include "tcalc_mac.h"
 
 #include <stdbool.h>
@@ -28,7 +27,7 @@ static bool is_valid_tcalc_char(char ch);
 static tcalc_err tcalc_next_math_strtoken(const char* expr, size_t req_start, size_t* out_start, size_t* out_xend);
 static bool tcalc_are_groupsyms_balanced(const char* expr);
 static tcalc_err tcalc_tokenize_infix_strtokens(const char* expr, tcalc_slice** out, size_t* out_size, size_t* out_cap);
-static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(const char* expr, const tcalc_ctx* ctx, const tcalc_slice* str_tokens, const size_t nb_str_tokens, tcalc_token** out, size_t* out_size);
+static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(const char* expr, const tcalc_slice* str_tokens, const size_t nb_str_tokens, tcalc_token** out, size_t* out_size);
 static bool tcalc_is_identifier(const char* source, size_t len);
 
 const char* tcalc_token_type_str(tcalc_token_type token_type) {
@@ -51,25 +50,9 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
   return "unknown token type";
 }
 
+
 tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token** out, size_t* out_size) {
-  assert(expr != NULL);
   assert(out != NULL);
-  assert(out_size != NULL);
-
-  *out = NULL;
-  *out_size = 0;
-  tcalc_ctx* ctx = NULL;
-  tcalc_err err = tcalc_ctx_alloc_default(&ctx);
-  if (err) return err;
-
-  err = tcalc_tokenize_infix_ctx(expr, ctx, out, out_size);
-  tcalc_ctx_free(ctx);
-  return err;
-}
-
-tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc_token** out, size_t* out_size) {
-  assert(out != NULL);
-  assert(ctx != NULL);
   assert(out != NULL);
   assert(out_size != NULL);
 
@@ -79,7 +62,7 @@ tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc
 
   if (!tcalc_are_groupsyms_balanced(expr)) {
     tcalc_errstkaddf(FUNCDINFO, "Unbalanced grouping symbols");
-    return err;
+    return TCALC_ERR_UNBAL_GRPSYMS;
   }
 
   tcalc_slice* str_tokens = NULL;
@@ -89,7 +72,7 @@ tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc
 
   tcalc_token* infix_tokens = NULL;
   size_t nb_infix_tokens = 0;
-  err = tcalc_tokenize_infix_strtokens_assign_types(expr, ctx, str_tokens, nb_str_tokens, &infix_tokens, &nb_infix_tokens);
+  err = tcalc_tokenize_infix_strtokens_assign_types(expr, str_tokens, nb_str_tokens, &infix_tokens, &nb_infix_tokens);
   free(str_tokens);
 
   *out = infix_tokens;
@@ -111,7 +94,7 @@ tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const tcalc_ctx* ctx, tcalc
  * before they are processed.
  *
 */
-static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(const char* expr, const tcalc_ctx* ctx, const tcalc_slice* str_tokens, const size_t nb_str_tokens, tcalc_token** out, size_t* out_size) {
+static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(const char* expr, const tcalc_slice* str_tokens, const size_t nb_str_tokens, tcalc_token** out, size_t* out_size) {
   assert(!(str_tokens == NULL && nb_str_tokens != 0));
   assert(out != NULL);
   assert(out_size != NULL);
@@ -122,15 +105,9 @@ static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(const char* expr, c
   // TODO: Maybe this should just dynamically grow or something instead of
   // defaulting to twice the size. (Twice the size to handle
   // implicit multiplication case)
-  tcalc_token* infix_tokens = calloc(nb_str_tokens * 2, sizeof(*infix_tokens));
+  tcalc_token* infix_tokens = calloc(nb_str_tokens, sizeof(*infix_tokens));
   size_t nb_infix_tokens = 0;
   if (infix_tokens == NULL) { return TCALC_ERR_BAD_ALLOC; }
-
-  // arbitrary value. Since this is only used for implicit multiplication, just
-  // start it on some tcalc_token_type which won't trigger an implicit
-  // multiplication token.
-  enum tcalc_token_type last_token_type = TCALC_TOK_PSEP;
-  tcalc_slice last_slice = {0};
 
   for (size_t i = 0; i < nb_str_tokens; i++) {
     tcalc_token_type token_type;
@@ -185,37 +162,13 @@ static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(const char* expr, c
       return TCALC_ERR_INVALID_ARG;
     }
 
-
-    // there is no way to make this code block look good.
-    // detects if an implicit multiplication token should be inserted
-    if (
-      (
-        last_token_type == TCALC_TOK_NUM ||
-        last_token_type == TCALC_TOK_GRPEND ||
-        (
-          last_token_type == TCALC_TOK_ID &&
-          tcalc_ctx_hasvar(ctx, expr + last_slice.start, tcalc_slice_len(last_slice))
-        )
-      ) &&
-      (token_type == TCALC_TOK_GRPSTRT || token_type == TCALC_TOK_ID)
-    ) {
-
-      // Insert 0-length implicit multiplication token
-      infix_tokens[nb_infix_tokens++] = (struct tcalc_token){
-        .type = TCALC_TOK_BINOP,
-        .start = slice.start,
-        .xend = slice.start
-      };
-    }
-
     infix_tokens[nb_infix_tokens++] = (struct tcalc_token){
       .type = token_type,
       .start = slice.start,
       .xend = slice.xend
     };
-    last_token_type = token_type;
-    last_slice = slice;
   }
+  assert(nb_infix_tokens == nb_str_tokens);
 
   *out = infix_tokens;
   *out_size = nb_infix_tokens;

@@ -5,7 +5,6 @@
 #include "tcalc_string.h"
 #include <stddef.h>
 
-struct tcalc_ctx;
 
 /*
 Allowed TCalc Tokens:
@@ -89,7 +88,6 @@ inline static const char* tcalc_token_startcp(const char* str, tcalc_token tok) 
 inline static char* tcalc_token_startp(char* str, tcalc_token tok) { return str + tok.start; }
 inline static size_t tcalc_token_len(tcalc_token tok) { return tok.xend - tok.start; }
 
-tcalc_err tcalc_tokenize_infix_ctx(const char* expr, const struct tcalc_ctx* ctx, tcalc_token** out, size_t* out_size);
 tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token** out, size_t* out_size);
 
 #define TCALC_TOKEN_IMPLICIT_MULT_PRINTF_STR ("*")
