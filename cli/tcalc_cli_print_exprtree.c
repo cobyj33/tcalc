@@ -5,50 +5,145 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 
 #define TCALC_EXPRTREE_PRINT_MAX_DEPTH 20
 
-void tcalc_exprtree_print(const char* expr, tcalc_exprtree* node, int depth);
+static void tcalc_exprtree_fdump_preorder(
+  FILE* file, const char* expr, tcalc_exprtree* treeBuf, int32_t treeBufLen,
+  tcalc_token* tokenBuf, int32_t tokenBufLen, int32_t exprNodeInd, int depth
+);
 
-
-int tcalc_cli_print_exprtree(const char* expr) {
+int tcalc_cli_print_exprtree(const char* expr, int32_t exprLen) {
   tcalc_ctx* ctx;
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
-  TCALC_CLI_CHECK_ERR(err, "[%s] tcalc error: %s\n", __func__, tcalc_strerrcode(err));
+  TCALC_CLI_CHECK_ERR(err, "[%s] tcalc error while initializing tcalc_ctx: %s\n", __func__, tcalc_strerrcode(err));
 
-  tcalc_exprtree* tree;
-  err = tcalc_create_exprtree_infix(expr, ctx, &tree);
+  err = tcalc_lex_parse(
+    expr, exprLen, globalTokenBuffer, globalTokenBufferCapacity,
+    globalTreeNodeBuffer, globalTreeNodeBufferCapacity,
+    &globalTokenBufferLen, &globalTreeNodeBufferLen,
+    &globalTreeNodeBufferRootIndex
+  );
+  TCALC_CLI_CHECK_ERR(err, "[%s] tcalc error while lexing and parsing in tcalc_ctx: %s\n", __func__, tcalc_strerrcode(err));
+
+
   tcalc_ctx_free(ctx);
   TCALC_CLI_CHECK_ERR(err, "[%s] tcalc error: %s\n", __func__, tcalc_strerrcode(err));
 
-  tcalc_exprtree_print(expr, tree, 0);
-  tcalc_exprtree_free(tree);
+  tcalc_exprtree_fdump_preorder(
+    stdout, expr, globalTreeNodeBuffer, globalTreeNodeBufferLen, globalTokenBuffer,
+    globalTokenBufferLen, globalTreeNodeBufferRootIndex, 0
+  );
   return EXIT_SUCCESS;
 }
 
-void tcalc_exprtree_print(const char* expr, tcalc_exprtree* node, int depth) {
-  if (node == NULL) return;
+static tcalc_token tcalc_token_from_binary_token_ind(
+  tcalc_token* tokenBuf, int32_t tokenBufLen, int32_t binNodeTokenInd
+) {
+  if (binNodeTokenInd < 0)
+  {
+    assert(-binNodeTokenInd < tokenBufLen);
+    return (tcalc_token){
+      .type = TCALC_TOK_BINOP,
+      .start = tokenBuf[-binNodeTokenInd].start,
+      .xend = tokenBuf[-binNodeTokenInd].start,
+    };
+  }
+  assert(binNodeTokenInd < tokenBufLen);
+  return tokenBuf[binNodeTokenInd];
+}
 
+static void tcalc_exprtree_fdump_preorder(
+  FILE* file, const char* expr, tcalc_exprtree* treeBuf, int32_t treeBufLen,
+  tcalc_token* tokenBuf, int32_t tokenBufLen, int32_t exprNodeInd, int depth
+) {
   for (int i = 0; i < depth; i++)
     fputs("|___", stdout);
 
   if (depth < TCALC_EXPRTREE_PRINT_MAX_DEPTH) {
-    switch (node->type) {
-      case TCALC_EXPRTREE_NODE_TYPE_BINARY: {
-        printf("%.*s\n", TCALC_TOKEN_PRINTF_VARARG(expr, node->as.binary.token));
-        tcalc_exprtree_print(expr, node->as.binary.left, depth + 1);
-        tcalc_exprtree_print(expr, node->as.binary.right, depth + 1);
-      } break;
-      case TCALC_EXPRTREE_NODE_TYPE_UNARY: {
-        printf("%.*s\n", TCALC_TOKEN_PRINTF_VARARG(expr, node->as.unary.token));
-        tcalc_exprtree_print(expr, node->as.unary.child, depth + 1);
-      } break;
-      case TCALC_EXPRTREE_NODE_TYPE_VALUE: {
-        printf("%.*s\n", TCALC_TOKEN_PRINTF_VARARG(expr, node->as.value.token));
-      } break;
+    switch (treeBuf[exprNodeInd].type) {
+      case TCALC_EXPRTREE_NODE_TYPE_BINARY:
+      {
+        fprintf(
+          file, "%.*s\n",
+          TCALC_TOKEN_PRINTF_VARARG(
+            expr,
+            tcalc_token_from_binary_token_ind(
+              tokenBuf, tokenBufLen,
+              treeBuf[exprNodeInd].as.binary.tokenIndOImplMult
+            )
+          )
+        );
+
+        tcalc_exprtree_fdump_preorder(
+          file, expr, treeBuf, treeBufLen, tokenBuf,
+          tokenBufLen, treeBuf[exprNodeInd].as.binary.leftTreeInd, depth + 1
+        );
+
+        tcalc_exprtree_fdump_preorder(
+          file, expr, treeBuf, treeBufLen, tokenBuf,
+          tokenBufLen, treeBuf[exprNodeInd].as.binary.rightTreeInd, depth + 1
+        );
+      }
+      break;
+      case TCALC_EXPRTREE_NODE_TYPE_UNARY:
+      {
+        fprintf(
+          file, "%.*s\n",
+          TCALC_TOKEN_PRINTF_VARARG(
+            expr, tokenBuf[treeBuf[exprNodeInd].as.unary.tokenInd]
+          )
+        );
+
+        tcalc_exprtree_fdump_preorder(
+          file, expr, treeBuf, treeBufLen, tokenBuf,
+          tokenBufLen, treeBuf[exprNodeInd].as.unary.childTreeInd, depth + 1
+        );
+      }
+      break;
+      case TCALC_EXPRTREE_NODE_TYPE_VALUE:
+      {
+        fprintf(
+          file, "%.*s\n",
+          TCALC_TOKEN_PRINTF_VARARG(
+            expr, tokenBuf[treeBuf[exprNodeInd].as.value.tokenInd]
+          )
+        );
+      }
+      break;
+      case TCALC_EXPRTREE_NODE_TYPE_FUNC: {
+        fprintf(
+          file, "%.*s\n",
+          TCALC_TOKEN_PRINTF_VARARG(
+            expr, tokenBuf[treeBuf[exprNodeInd].as.value.tokenInd]
+          )
+        );
+
+        int32_t funcArgNodeInd = treeBuf[exprNodeInd].as.func.funcArgHeadInd;
+        while (funcArgNodeInd >= 0)
+        {
+          assert(treeBuf[funcArgNodeInd].type == TCALC_EXPRTREE_NODE_TYPE_FUNCARG);
+          tcalc_exprtree_fdump_preorder(
+            file, expr, treeBuf, treeBufLen, tokenBuf,
+            tokenBufLen, funcArgNodeInd, depth + 1
+          );
+          funcArgNodeInd = treeBuf[funcArgNodeInd].as.funcarg.nextArgInd;
+        }
+      }
+      break;
+      case TCALC_EXPRTREE_NODE_TYPE_FUNCARG:
+      {
+        tcalc_exprtree_fdump_preorder(
+          file, expr, treeBuf, treeBufLen, tokenBuf,
+          tokenBufLen, treeBuf[exprNodeInd].as.funcarg.exprInd, depth + 1
+        );
+      }
+      break;
     }
   } else {
     fputs("...\n", stdout);
   }
 }
+

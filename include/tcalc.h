@@ -5,12 +5,27 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #define TCALC_PI 3.14159265358979323846
 #define TCALC_E 2.7182818284590452354
 #define TCALC_LN10 2.30258509299404568402
 #define TCALC_RAD_TO_DEG (180.0 / TCALC_PI)
 #define TCALC_DEG_TO_RAD (TCALC_PI / 180.0)
+
+#define TCALC_MIN_UNSAFE(a, b) ((a) < (b) ? (a) : (b))
+#define TCALC_MAX_UNSAFE(a, b) ((a) > (b) ? (a) : (b))
+
+#define TCALC_STRLIT_LEN(strlit) (sizeof(strlit) - 1)
+#define TCALC_STRLIT_PTR_LEN(strlit) ((strlit)), TCALC_STRLIT_LEN(strlit)
+#define TCALC_BOOLSTR(boolexpr) ((boolexpr) ? "true" : "false")
+
+#define TCALC_KIBI(x) ((x)*1024)
+#define TCALC_MIBI(x) (TCALC_KIBI(x)*1024)
+#define TCALC_GIBI(x) (TCALC_MIBI(x)*1024)
+
+
+#define TCALC_MAX_FUNC_ARG_COUNT 255
 
 #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
   #define TCALC_FORMAT_ATTRIB(format_type, format_param_i, vararg_start_i) \
@@ -39,7 +54,7 @@
  *
  * The global error string is generally only set when actual lexical, syntactical, or semantical
  * errors are encountered. This is so code isn't cluttered with reporting error strings
- * for error code's like TCALC_ERR_BAD_ALLOC or TCALC_ERR_OUT_OF_BOUNDS, which generally
+ * for error code's like TCALC_ERR_NOMEM or TCALC_ERR_OUT_OF_BOUNDS, which generally
  * are more so exceptional than actual errors, as they are
  * largely independent of invalid input or computational failures.
 */
@@ -62,7 +77,7 @@ void tcalc_errstk_fdump(FILE* file);
 bool tcalc_errstkadd(const char* funcname, const char* errstr);
 bool tcalc_errstkaddf(const char* funcname, const char* format, ...) TCALC_FORMAT_ATTRIB(printf, 2, 3);
 
-size_t tcalc_errstkpeek(char* out, size_t dsize);
+int32_t tcalc_errstkpeek(char* out, int32_t dsize);
 
 /**
  * @brief A general error type for operations in tcalc.
@@ -86,7 +101,7 @@ size_t tcalc_errstkpeek(char* out, size_t dsize);
 typedef enum tcalc_err {
   TCALC_ERR_OK = 0, // important that this stays 0
   TCALC_ERR_OUT_OF_BOUNDS = -43110,
-  TCALC_ERR_BAD_ALLOC,
+  TCALC_ERR_NOMEM,
   TCALC_ERR_INVALID_ARG,
   TCALC_ERR_INVALID_OP,
   TCALC_ERR_OVERFLOW,
@@ -104,6 +119,8 @@ typedef enum tcalc_err {
   TCALC_ERR_MALFORMED_BINEXP,
   TCALC_ERR_MALFORMED_UNEXP,
   TCALC_ERR_MALFORMED_INPUT,
+  TCALC_ERR_MALFORMED_FUNC,
+  TCALC_ERR_FUNC_TOO_MANY_ARGS,
   TCALC_ERR_BAD_CAST,
   TCALC_ERR_UNPROCESSED_INPUT,
 
@@ -201,13 +218,9 @@ const char* tcalc_strerrcode(tcalc_err err);
  * argument. Freeing functions should never fail and therefore should never
  * return a tcalc_err value. This greatly simplifies code using any freeing
  * function since there is no null-checks that have to be used by other code
- * before using freeing functions, and the cleanup: label pattern can work
+ * before using freeing functions, and the `cleanup:` label pattern can work
  * from anywhere within the function after allocated or soon-to-be-allocated
  * variables have been defined.
- *
- * Most special types have specific alloc and free functions. For simplicity,
- * and at least as of now, all types which have specific alloc and free functions
- * should only be constructed using these functions.
 */
 
 #define TCALC_ALLOC_NR(x) (((x / 2) + 8) * 3)
@@ -273,7 +286,7 @@ void* tcalc_xrealloc(void*, size_t);
         const size_t new_capacity = grow_func_res < (size) ? (size) : grow_func_res; \
         void* realloced = realloc((arr), sizeof(*(arr)) * new_capacity); \
         if (realloced == NULL) { \
-          err = TCALC_ERR_BAD_ALLOC; \
+          err = TCALC_ERR_NOMEM; \
         } else { \
           (arr) = realloced; \
           (capacity) = new_capacity; \
@@ -658,28 +671,12 @@ tcalc_err tcalc_val_pow(tcalc_val a, tcalc_val b, double* out);
 tcalc_err tcalc_val_atan2(tcalc_val a, tcalc_val b, double* out);
 tcalc_err tcalc_val_atan2_deg(tcalc_val a, tcalc_val b, double* out);
 
-typedef struct tcalc_slice {
-  size_t start;
-  size_t xend;
-} tcalc_slice;
-
-
-static inline size_t tcalc_slice_len(tcalc_slice slice) {
-  return slice.xend - slice.start;
-}
-
-#define TCALC_STRLIT_LEN(strlit) (sizeof(strlit) - 1)
-#define TCALC_STRLIT_PTR_LEN(strlit) ((strlit)), TCALC_STRLIT_LEN(strlit)
-
-bool tcalc_streq_lblb(const char* s1, size_t l1, const char* s2, size_t l2);
-
 // Check if a null terminated string and a length-based string hold equivalent
 // information
-bool tcalc_streq_ntlb(const char* ntstr, const char* lbstr, size_t lbstr_len);
+bool tcalc_streq_ntlb(const char* ntstr, const char* lbstr, int32_t lbstr_len);
 
-bool tcalc_slice_ntstr_eq(const char* source, tcalc_slice slice, const char* ntstr);
-
-size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize);
+int32_t tcalc_strcpy_lblb(char *dst, int32_t dstCapacity, const char *src, int32_t srcLen);
+int32_t tcalc_strcpy_lblb_ntdst(char* dst, int32_t dstCapacity, const char* src, int32_t srcLen);
 
 bool tcalc_lpstrisdouble(const char*, size_t);
 enum tcalc_err tcalc_lpstrtodouble(const char*, size_t, double*);
@@ -742,12 +739,6 @@ typedef enum tcalc_token_type {
 
 const char* tcalc_token_type_str(tcalc_token_type token_type);
 
-// typedef struct tcalc_token {
-//   tcalc_token_type type;
-//   char* val;
-// } tcalc_token;
-
-
 // Data that a token can contain:
 // Type
 // Starting Offset
@@ -761,15 +752,21 @@ const char* tcalc_token_type_str(tcalc_token_type token_type);
 
 typedef struct tcalc_token {
   tcalc_token_type type;
-  size_t start;
-  size_t xend;
+  int32_t start;
+  int32_t xend;
 } tcalc_token;
 
 inline static const char* tcalc_token_startcp(const char* str, tcalc_token tok) { return str + tok.start; }
 inline static char* tcalc_token_startp(char* str, tcalc_token tok) { return str + tok.start; }
-inline static size_t tcalc_token_len(tcalc_token tok) { return tok.xend - tok.start; }
+inline static int32_t tcalc_token_len(tcalc_token tok) { return tok.xend - tok.start; }
 
-tcalc_err tcalc_tokenize_infix(const char* expr, tcalc_token** out, size_t* out_size);
+tcalc_err tcalc_tokenize_infix(
+  const char* expr,
+  int32_t exprLen,
+  tcalc_token* destBuffer,
+  int32_t destCapacity,
+  int32_t* outDestLength
+);
 
 #define TCALC_TOKEN_IMPLICIT_MULT_PRINTF_STR ("*")
 
@@ -801,24 +798,23 @@ typedef struct tcalc_exprtree_node tcalc_exprtree_node;
 typedef struct tcalc_exprtree_node tcalc_exprtree;
 
 // Valid Token Types:
-// TCALC_TOK_ID: identifier for a binary function
 // TCALC_TOK_BINOP: operator for a binary operator
 // TCALC_TOK_BINLOP: operator for a binary logical operator
 // TCALC_TOK_RELOP: operator for a binary relational operator
 // TCALC_TOK_EQOP: operator for a binary equality operator
 typedef struct tcalc_exprtree_binary_node {
-  struct tcalc_token token;
-  tcalc_exprtree_node* left;
-  tcalc_exprtree_node* right;
+  int32_t tokenIndOImplMult;
+  int32_t leftTreeInd;
+  int32_t rightTreeInd;
 } tcalc_exprtree_binary_node;
 
+
 // Valid Token Types:
-// TCALC_TOK_ID: identifier for a unary function
 // TCALC_TOK_UNOP: operator for a unary operator
 // TCALC_TOK_UNLOP: operator for a unary logical operator
 typedef struct tcalc_exprtree_unary_node {
-  struct tcalc_token token;
-  tcalc_exprtree_node* child;
+  int32_t tokenInd;
+  int32_t childTreeInd;
 } tcalc_exprtree_unary_node;
 
 
@@ -826,27 +822,27 @@ typedef struct tcalc_exprtree_unary_node {
 // TCALC_TOK_ID: identifier for a variable
 // TCALC_TOK_NUM: Numerical string
 typedef struct tcalc_exprtree_value_node {
-  struct tcalc_token token;
+  int32_t tokenInd;
 } tcalc_exprtree_value_node;
 
-
-#if 0
-// Currently Unused
-// Exists in source code to show that the size of tcalc_exprtree_func_node when
-// arbitrary sized functions are supported would be equal to the size of
-// tcalc_exprtree_binary_node, making the union of the two waste no memory
-typedef struct tcalc_exprtree_func_node {
-  struct tcalc_token* token;
-  struct tcalc_exprtree_node** children;
-  size_t nb_children;
+typedef struct tcalc_exprtree_func_node
+{
+  int32_t tokenInd;
+  int32_t funcArgHeadInd;
 } tcalc_exprtree_func_node;
-#endif
+
+typedef struct tcalc_exprtree_funcarg_node
+{
+  int32_t exprInd;
+  int32_t nextArgInd;
+} tcalc_exprtree_funcarg_node;
 
 enum tcalc_exprtree_node_type {
   TCALC_EXPRTREE_NODE_TYPE_BINARY,
   TCALC_EXPRTREE_NODE_TYPE_UNARY,
   TCALC_EXPRTREE_NODE_TYPE_VALUE,
-  // TCALC_EXPRTREE_NODE_TYPE_FUNC
+  TCALC_EXPRTREE_NODE_TYPE_FUNC,
+  TCALC_EXPRTREE_NODE_TYPE_FUNCARG
 };
 
 struct tcalc_exprtree_node {
@@ -854,29 +850,49 @@ struct tcalc_exprtree_node {
   union {
     tcalc_exprtree_binary_node binary;
     tcalc_exprtree_unary_node unary;
-    // tcalc_exprtree_func_node func;
     tcalc_exprtree_value_node value;
+    tcalc_exprtree_func_node func;
+    tcalc_exprtree_funcarg_node funcarg;
   } as;
 };
 
-/**
- * Free a tcalc expression tree **recursively**
- * This function can be called even if 'head' is NULL, any of the
- * children of 'head' are NULL, or the token of 'head' is NULL
-*/
-void tcalc_exprtree_free(tcalc_exprtree* head);
+tcalc_err tcalc_lex_parse(
+  const char* expr, int32_t exprLen, tcalc_token *tokenBuffer,
+  int32_t tokenBufferCapacity, tcalc_exprtree *treeBuffer,
+  int32_t treeBufferCapacity, int32_t *outTokenCount, int32_t *outTreeNodeCount,
+  int32_t *outExprRootInd
+);
 
-/**
- * Free a tcalc expression tree's children **recursively** and set each
- * child to NULL.
- *
- * defined as no-op if head == NULL
-*/
-void tcalc_exprtree_free_children(tcalc_exprtree* head);
+tcalc_err tcalc_create_exprtree_infix(
+  const char* expr, int32_t exprLen, tcalc_token *tokens,
+  int32_t tokensLen, tcalc_exprtree *destBuffer, int32_t destCapacity,
+  int32_t* outDestLength, int32_t* outExprRootInd
+);
 
-tcalc_err tcalc_create_exprtree_infix(const char* expr, const struct tcalc_ctx* ctx, tcalc_exprtree** out);
+// tcalc_err tcalc_create_exprtree_infix(const char* expr, const struct tcalc_ctx* ctx, tcalc_exprtree** out);
 
-tcalc_err tcalc_eval_exprtree(const char* expr, tcalc_exprtree* exprtree, const struct tcalc_ctx* ctx, struct tcalc_val* out);
+
+tcalc_err tcalc_eval_exprtree(
+  const char* expr, int32_t exprLen, tcalc_exprtree* exprtree,
+  int32_t exprTreeLen, int32_t exprNodeInd, tcalc_token *tokens,
+  int32_t tokensLen, const struct tcalc_ctx* ctx, struct tcalc_val* out
+);
+
+tcalc_err tcalc_eval(
+  const char* expr, int32_t exprLen,
+  tcalc_exprtree* treeNodesBuffer, int32_t treeNodesBufferCapacity,
+  tcalc_token* tokensBuffer, int32_t tokensBufferCapacity,
+  struct tcalc_val* out,
+  int32_t *outTreeNodesCount, int32_t *outTokensCount
+);
+
+tcalc_err tcalc_eval_wctx(
+  const char* expr, int32_t exprLen,
+  tcalc_exprtree* treeNodesBuffer, int32_t treeNodesBufferCapacity,
+  tcalc_token* tokensBuffer, int32_t tokensBufferCapacity,
+  const struct tcalc_ctx* ctx,
+  struct tcalc_val* out, int32_t *outTreeNodesCount, int32_t *outTokensCount
+);
 
 /**
  * Notes on precedence:
@@ -948,18 +964,6 @@ typedef struct tcalc_opdata {
 
 #define TCALC_IDDEF_MAX_STR_SIZE 16
 
-/**
- * Maybe the tcalc_ctx should not hold information about user-defined functions,
- * but only the actual definitions. Something else could handle resolving
- * user-defined variable definitions?
- *
- * We have to hold our expression as
-*/
-typedef struct tcalc_exprvardef {
-  char id[TCALC_IDDEF_MAX_STR_SIZE];
-  const char* expr;
-} tcalc_exprvardef;
-
 typedef struct tcalc_unopdef {
   char id[TCALC_OPDEF_MAX_STR_SIZE];
   int prec;
@@ -1012,6 +1016,25 @@ typedef struct tcalc_binfuncdef {
 } tcalc_binfuncdef;
 
 typedef struct tcalc_ctx {
+#if 0
+  tcalc_unfuncdef unfuncs[32];
+  int nb_unfuncs;
+  tcalc_binfunc binfuncs[4];
+  int nb_binfuncs;
+  tcalc_vardef vars[16];
+  int nb_vars;
+  tcalc_unopdef unops[8];
+  int nb_unops;
+  tcalc_binopdef binops[8];
+  int nb_binops;
+  tcalc_relopdef relops[8];
+  int nb_relops;
+  tcalc_unlopdef unlops[2];
+  int nb_unlops;
+  tcalc_binlopdef binlops[8];
+  int nb_binlops;
+#endif
+
   TCALC_VEC(tcalc_unfuncdef) unfuncs; // Defined Unary Functions
   TCALC_VEC(tcalc_binfuncdef) binfuncs; // Defined Binary Functions
   TCALC_VEC(tcalc_vardef) vars; // Defined Variables
@@ -1085,9 +1108,5 @@ tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, size_t nam
  * as it first seems
 */
 // tcalc_err tcalc_ctx_getopdata(const tcalc_ctx* ctx, const char* name, tcalc_opdata* out);
-
-
-tcalc_err tcalc_eval_wctx(const char* infix, const struct tcalc_ctx* ctx, struct tcalc_val* out);
-tcalc_err tcalc_eval(const char* infix, struct tcalc_val* out);
 
 #endif

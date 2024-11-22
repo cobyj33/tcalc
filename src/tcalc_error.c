@@ -26,7 +26,7 @@ const char* tcalc_strerrcode(tcalc_err err) {
   switch (err) {
     case TCALC_ERR_OK: return "ok";
     case TCALC_ERR_OUT_OF_BOUNDS: return "out of bounds";
-    case TCALC_ERR_BAD_ALLOC: return "bad alloc";
+    case TCALC_ERR_NOMEM: return "no available memory";
     case TCALC_ERR_INVALID_ARG: return "invalid argument";
     case TCALC_ERR_INVALID_OP: return "invalid opertion";
     case TCALC_ERR_OVERFLOW: return "overflow";
@@ -43,6 +43,8 @@ const char* tcalc_strerrcode(tcalc_err err) {
     case TCALC_ERR_MALFORMED_BINEXP: return "malformed binary expression";
     case TCALC_ERR_MALFORMED_UNEXP: return "malformed unary expression";
     case TCALC_ERR_MALFORMED_INPUT: return "malformed input";
+    case TCALC_ERR_MALFORMED_FUNC: return "malformed function";
+    case TCALC_ERR_FUNC_TOO_MANY_ARGS: return "too many arguments";
     case TCALC_ERR_BAD_CAST: return "bad cast";
     case TCALC_ERR_UNPROCESSED_INPUT: return "unprocessed input";
     case TCALC_ERR_UNIMPLEMENTED: return "unimplemented";
@@ -87,9 +89,12 @@ bool tcalc_errstkaddf(const char* funcname, const char* format, ...) {
   return tcalc_errstkadd(funcname, err);
 }
 
-size_t tcalc_errstkpeek(char* out, size_t dsize) {
+int32_t tcalc_errstkpeek(char* out, int32_t dsize) {
   if (errstksize == 0) return 0;
-  return tcalc_strlcpy(out, errstk[errstksize - 1], dsize);
+  return tcalc_strcpy_lblb_ntdst(
+    out, dsize,
+    errstk[errstksize - 1], (int32_t)strlen(errstk[errstksize - 1])
+  );
 }
 
 int tcalc_errstkpop() {

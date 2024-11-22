@@ -11,16 +11,25 @@
 #include <assert.h>
 
 // TODO: Maybe we shouldn't try to emulate strlcpy? It's quite bad
-size_t tcalc_strlcpy(char *dst, const char *src, size_t dsize)
+int32_t tcalc_strcpy_lblb(char *dest, int32_t destCapacity, const char *src, int32_t srcLen)
 {
-  strncpy(dst, src, dsize);
-  if (dsize > 0)
-    dst[dsize - 1] = '\0';
-  return strlen(src);
+  const int32_t copied = TCALC_MIN_UNSAFE(destCapacity, srcLen);
+  memcpy(dest, src, copied);
+  return copied;
+}
+
+int32_t tcalc_strcpy_lblb_ntdst(char* dst, int32_t dstCapacity, const char* src, int32_t srcLen)
+{
+  int32_t copied = tcalc_strcpy_lblb(dst, dstCapacity, src, srcLen);
+  if (copied < dstCapacity)
+    dst[copied + 1] = '\0';
+  else if (copied == dstCapacity && copied > 0)
+    dst[copied--] = '\0';
+  return copied;
 }
 
 bool tcalc_lpstrisdouble(const char* str, size_t len) {
-  double dummyout;
+  double dummyout = 0.0;
   return tcalc_lpstrtodouble(str, len, &dummyout) == TCALC_ERR_OK;
 }
 
@@ -92,15 +101,8 @@ bool tcalc_streq_lb(const char* s1, size_t l1, const char* s2, size_t l2) {
   return s1 == e1;
 }
 
-bool tcalc_streq_ntlb(const char* ntstr, const char* lbstr, size_t lbstr_len) {
-  const char* const lbstr_end = lbstr + lbstr_len;
-  while (*ntstr && lbstr != lbstr_end && *ntstr == *lbstr) { ntstr++; lbstr++; }
-  return *ntstr == '\0' && (lbstr == lbstr_end);
-}
-
-bool tcalc_slice_ntstr_eq(const char* source, tcalc_slice slice, const char* ntstr) {
-  assert(source != NULL);
-  assert(slice.xend >= slice.start);
-  assert(ntstr != NULL);
-  return tcalc_streq_ntlb(ntstr, source + slice.start, tcalc_slice_len(slice));
+bool tcalc_streq_ntlb(const char* ntstr, const char* lbstr, int32_t lbstr_len) {
+  int32_t i = 0;
+  while (ntstr[i] != '\0' && i < lbstr_len && ntstr[i] == lbstr[i]) i++;
+  return ntstr[i] == '\0' && (i == lbstr_len);
 }

@@ -12,10 +12,10 @@ const char* tcalc_valtype_str(enum tcalc_valtype type) {
 void tcalc_val_fput(FILE* file, const struct tcalc_val val) {
   switch (val.type) {
     case TCALC_VALTYPE_BOOL:
-      printf("%s", val.as.boolean ? "true" : "false");
+      fprintf(file, "%s", TCALC_BOOLSTR(val.as.boolean));
       break;
     case TCALC_VALTYPE_NUM:
-      printf("%f", val.as.num);
+      fprintf(file, "%f", val.as.num);
       break;
   }
 }

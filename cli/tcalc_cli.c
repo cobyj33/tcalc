@@ -8,13 +8,23 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <string.h>
+#include <limits.h>
+#include <inttypes.h>
+
+tcalc_token globalTokenBuffer[TCALC_KIBI(512)];
+int32_t globalTokenBufferCapacity = (int32_t)TCALC_ARRAY_SIZE(globalTokenBuffer);
+int32_t globalTokenBufferLen = 0;
+
+tcalc_exprtree globalTreeNodeBuffer[TCALC_KIBI(512)];
+int32_t globalTreeNodeBufferCapacity = (int32_t)TCALC_ARRAY_SIZE(globalTreeNodeBuffer);
+int32_t globalTreeNodeBufferLen = 0;
+int32_t globalTreeNodeBufferRootIndex = -1;
 
 
 const char* TCALC_HELP_MESSAGE = "tcalc usage: tcalc [-h] expression \n"
 "\n"
 "Optional arguments:\n"
 "    -h --help: Show this help message\n"
-"    --define: define a variable\n"
 "    --exprtree: Print the expression tree of the given expression\n"
 "    --tokens: Print the tokens of the given expression\n"
 "    --degrees: Set trigonometric functions to be defined with degrees\n"
@@ -40,7 +50,6 @@ int main(int argc, char** argv) {
 
   static struct option const longopts[] = {
     {"help", no_argument, NULL, 'h'},
-    {"define", required_argument, NULL, arg_define},
     {"exprtree", no_argument, NULL, arg_exprtree},
     {"tokens", no_argument, NULL, arg_tokens},
     {"degrees", no_argument, NULL, arg_degrees},
@@ -55,10 +64,6 @@ int main(int argc, char** argv) {
         fputs(TCALC_HELP_MESSAGE, stdout);
         return EXIT_SUCCESS;
       }
-      case arg_define: {
-        fputs("Attempted to define an argument!", stdout);
-        break;
-      }
       case arg_exprtree: action = TCALC_CLI_PRINT_EXPRTREE; break;
       case arg_tokens: action = TCALC_CLI_PRINT_TOKENS; break;
       case arg_degrees: eval_opts.use_rads = false; break;
@@ -72,15 +77,27 @@ int main(int argc, char** argv) {
 
   if (optind >= argc) return tcalc_repl();
   char* expression = argv[optind];
+  size_t expressionLenSizeT = strlen(expression);
+  if (expressionLenSizeT > INT32_MAX)
+  {
+    fprintf(
+      stderr,
+      "Attempted to parse a string far too large (Larger than %" PRId32 " bytes)",
+      INT32_MAX
+    );
+    return EXIT_FAILURE;
+  }
+
+  const int32_t expressionLen = (int32_t)expressionLenSizeT;
 
   switch (action) {
     case TCALC_CLI_PRINT_EXPRTREE:
-      return tcalc_cli_print_exprtree(expression);
+      return tcalc_cli_print_exprtree(expression, expressionLen);
     case TCALC_CLI_PRINT_TOKENS:
-      return tcalc_cli_infix_tokenizer(expression);
+      return tcalc_cli_infix_tokenizer(expression, expressionLen);
     case TCALC_CLI_EVALUATE:
     default:
-      return tcalc_cli_eval(expression, eval_opts);
+      return tcalc_cli_eval(expression, expressionLen, eval_opts);
   }
   return EXIT_SUCCESS;
 }

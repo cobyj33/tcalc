@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int tcalc_cli_eval(const char* expr, struct eval_opts eval_opts) {
+
+int tcalc_cli_eval(const char* expr, int32_t exprLen, struct eval_opts eval_opts) {
   tcalc_val ans;
   tcalc_ctx* ctx = NULL;
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
@@ -17,10 +18,15 @@ int tcalc_cli_eval(const char* expr, struct eval_opts eval_opts) {
     TCALC_CLI_CHECK_ERR(err, "[%s] TCalc error while switching to degree-trig functions: %s\n ", __func__, tcalc_strerrcode(err));
   }
 
-  err = tcalc_eval_wctx(expr, ctx, &ans);
+  int32_t treeNodeCount = 0, tokenCount = 0;
+  err = tcalc_eval_wctx(
+    expr, exprLen, globalTreeNodeBuffer, globalTreeNodeBufferCapacity,
+    globalTokenBuffer, globalTokenBufferCapacity, ctx, &ans,
+    &treeNodeCount, &tokenCount
+  );
+
   TCALC_CLI_CHECK_ERR(err, "[%s] TCalc error while evaluating expression: %s\n ", __func__, tcalc_strerrcode(err));
 
   tcalc_val_fputline(stdout, ans);
-
   return EXIT_SUCCESS;
 }

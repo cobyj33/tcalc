@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TCALC_REPL_INPUT_BUFFER_SIZE 4096
+#define TCALC_REPL_INPUT_BUFFER_SIZE TCALC_KIBI(128)
+char globalInputBuffer[TCALC_REPL_INPUT_BUFFER_SIZE];
 
 const char* repl_entrance_text = ""
 "tcalc REPL begun:\n"
@@ -27,7 +28,6 @@ const char* repl_help = ""
 
 int tcalc_repl() {
   fputs(repl_entrance_text, stdout);
-  char input_buffer[TCALC_REPL_INPUT_BUFFER_SIZE] = {'\0'};
   const char* quit_strings[3] = {"quit", "exit", "end"};
 
   tcalc_ctx* ctx = NULL;
@@ -37,9 +37,9 @@ int tcalc_repl() {
   err = tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LEN("ans"), TCALC_VAL_INIT_NUM(0.0));
   TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to set ans variable on tcalc ctx.. exiting: %s", __func__, tcalc_strerrcode(err))
 
-  while (!tcalc_str_list_has(input_buffer, quit_strings, TCALC_ARRAY_SIZE(quit_strings))) {
+  while (!tcalc_str_list_has(globalInputBuffer, quit_strings, TCALC_ARRAY_SIZE(quit_strings))) {
     fputs("> ", stdout);
-    char* input = fgets(input_buffer, TCALC_REPL_INPUT_BUFFER_SIZE, stdin);
+    char* input = fgets(globalInputBuffer, TCALC_REPL_INPUT_BUFFER_SIZE, stdin);
     if (input == NULL) {
       fprintf(stderr, "Error reading from stdin: Exiting\n");
       goto cleanup;
@@ -47,8 +47,16 @@ int tcalc_repl() {
 
 
     input[strcspn(input, "\r\n")] = '\0';
-    if (tcalc_str_list_has(input, quit_strings,  TCALC_ARRAY_SIZE(quit_strings)))
+
+    if (tcalc_str_list_has(input, quit_strings, TCALC_ARRAY_SIZE(quit_strings)))
       break;
+    const size_t inputLenSizeT = strlen(input);
+    if (inputLenSizeT > INT32_MAX)
+    {
+      fprintf(stderr, "Error reading from stdin: Input Too Long\n");
+      continue;
+    }
+    int32_t inputLen = (int32_t)inputLenSizeT;
 
     if (strcmp(input, "help") == 0) {
       fputs(repl_help, stdout);
@@ -75,8 +83,14 @@ int tcalc_repl() {
       continue;
     }
 
-    tcalc_val ans;
-    tcalc_err err = tcalc_eval_wctx(input, ctx, &ans);
+    int32_t treeNodeCount = 0, tokenCount = 0;
+    tcalc_val ans = { 0 };
+    tcalc_err err = tcalc_eval_wctx(
+      input, inputLen, globalTreeNodeBuffer, globalTreeNodeBufferCapacity,
+      globalTokenBuffer, globalTokenBufferCapacity, ctx, &ans,
+      &treeNodeCount, &tokenCount
+    );
+
     if (err) {
       fprintf(stderr, "tcalc error: %s\n", tcalc_strerrcode(err));
       tcalc_errstk_fdump(stderr);

@@ -3,15 +3,36 @@
 #include "tcalc.h"
 
 #include <stddef.h>
+#include <string.h>
 #define TCALC_EVAL_ASSERT_DELTA 0.0001
 
+static tcalc_err tcalc_eval_gb(const char* expr, int32_t exprLen, tcalc_val* out)
+{
+  int32_t dummyTreeNodeCount, dummyTokenCount;
+  return tcalc_eval(
+    expr,
+    exprLen,
+    globalTreeNodeBuffer,
+    globalTreeNodeBufferCapacity,
+    globalTokenBuffer,
+    globalTokenBufferCapacity,
+    out,
+    &dummyTreeNodeCount,
+    &dummyTokenCount
+  );
+}
+
+
 void TestTCalcEvalSuccesses(CuTest *tc) {
+  tcalc_token tokenBuffer[TCALC_KIBI(2)];
+  tcalc_exprtree treeNodeBuffer[TCALC_KIBI(2)];
+
   #define MAKE_DOUBLE_SUCCESS_TEST(tc, expr, val) \
     { \
       tcalc_err err = TCALC_ERR_OK; \
       tcalc_val res = TCALC_VAL_INIT_NUM(0.0); \
       \
-      err = tcalc_eval(expr, &res); \
+      err = tcalc_eval_gb(expr, (int32_t)strlen(expr), &res); \
       CuAssert_Line(tc, __FILE__, __LINE__, "Checking numerical expression '" expr "' evaluation for errors", err == TCALC_ERR_OK); \
       CuAssert_Line(tc, __FILE__, __LINE__, "Checking numerical expression '" expr "' returns as a double", res.type == TCALC_VALTYPE_NUM); \
       CuAssertDblEquals_LineMsg(tc, __FILE__, __LINE__, "Checking numerical expression '" expr "' evaluated to expected number", val, res.as.num, TCALC_EVAL_ASSERT_DELTA); \
@@ -22,8 +43,7 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
       tcalc_err err = TCALC_ERR_OK; \
       tcalc_val res = TCALC_VAL_INIT_BOOL(0); \
       \
-      err = tcalc_eval(expr, &res); \
-      \
+      err = tcalc_eval_gb(expr, (int32_t)strlen(expr), &res); \
       CuAssert_Line(tc, __FILE__, __LINE__, "Checking boolean expression '" expr "' evaluation for errors", err == TCALC_ERR_OK); \
       CuAssert_Line(tc, __FILE__, __LINE__, "Checking boolean expression '" expr "' returns as a boolean", res.type == TCALC_VALTYPE_BOOL); \
       CuAssertIntEquals_LineMsg(tc, __FILE__, __LINE__, "Checking boolean xpression '" expr "' returns as expected boolean", !!val, !!res.as.boolean); \
@@ -106,41 +126,43 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
 }
 
 void TestTCalcEvalFailures(CuTest *tc) {
+  tcalc_token tokenBuffer[TCALC_KIBI(2)];
+  tcalc_exprtree treeNodeBuffer[TCALC_KIBI(2)];
   tcalc_val res = TCALC_VAL_INIT_NUM(0.0);
 
-  CuAssertTrue(tc, tcalc_eval("1 / 0", &res) == TCALC_ERR_DIV_BY_ZERO);
-  CuAssertTrue(tc, tcalc_eval("1 / -0", &res) == TCALC_ERR_DIV_BY_ZERO);
-  CuAssertTrue(tc, tcalc_eval("0 / -0.0", &res) == TCALC_ERR_DIV_BY_ZERO);
-  CuAssertTrue(tc, tcalc_eval("0 / 0.0", &res) == TCALC_ERR_DIV_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("1 / 0"), &res) == TCALC_ERR_DIV_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("1 / -0"), &res) == TCALC_ERR_DIV_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("0 / -0.0"), &res) == TCALC_ERR_DIV_BY_ZERO);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("0 / 0.0"), &res) == TCALC_ERR_DIV_BY_ZERO);
 
-  CuAssertTrue(tc, tcalc_eval("unknownid", &res) == TCALC_ERR_UNKNOWN_ID);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("unknownid"), &res) == TCALC_ERR_UNKNOWN_ID);
 
 
-  CuAssertTrue(tc, tcalc_eval("", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("\n", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("a b c 10d e+", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("53.3.4", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN(""), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("\n"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("a b c 10d e+"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("53.3.4"), &res) != TCALC_ERR_OK);
   // TODO: Fix this case: CuAssertTrue(tc, tcalc_eval("53e4", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval(".53.3", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval(".", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("          ", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("          ", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("pi(2)", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("e(pi)", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("e(pi)(2(4))", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN(".53.3"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("."), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN(""), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("          "), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("          "), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("pi(2)"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("e(pi)"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("e(pi)(2(4))"), &res) != TCALC_ERR_OK);
 
-  CuAssertTrue(tc, tcalc_eval("== 3", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval(" ^^^^3--", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval(" ^^^^3--", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("+", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("-", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("==", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("=", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("!", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("/", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval("(", &res) != TCALC_ERR_OK);
-  CuAssertTrue(tc, tcalc_eval(")", &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("== 3"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN(" ^^^^3--"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN(" ^^^^3--"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("+"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("-"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("=="), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("="), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("!"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("/"), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("("), &res) != TCALC_ERR_OK);
+  CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN(")"), &res) != TCALC_ERR_OK);
 }
 
 CuSuite* TCalcEvalGetSuite() {

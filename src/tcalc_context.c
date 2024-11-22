@@ -5,11 +5,13 @@
 #include <string.h>
 #include <assert.h>
 
+// TODO: Many weird strcpy casts from size_t to int32_t
+
 tcalc_err tcalc_ctx_alloc_empty(tcalc_ctx** out) {
   // use of calloc is important here! We have to null all of the TCALC_VEC
   // structs inside the ctx.
   tcalc_ctx* ctx = (tcalc_ctx*)calloc(1, sizeof(tcalc_ctx));
-  if (ctx == NULL) return TCALC_ERR_BAD_ALLOC;
+  if (ctx == NULL) return TCALC_ERR_NOMEM;
 
   *out = ctx;
   return TCALC_ERR_OK;
@@ -178,7 +180,7 @@ tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, const char* name, size_t name_len, tc
   }
 
   tcalc_vardef def = { 0 };
-  tcalc_strlcpy(def.id, name, TCALC_IDDEF_MAX_STR_SIZE);
+  tcalc_strcpy_lblb_ntdst(def.id, TCALC_IDDEF_MAX_STR_SIZE, name, (int32_t)name_len);
   def.val = val;
 
   ret_on_macerr(err, TCALC_VEC_PUSH(ctx->vars, def, err));
@@ -195,7 +197,7 @@ tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, const char* name, size_t name_len,
   }
 
   tcalc_unfuncdef def = { 0 };
-  tcalc_strlcpy(def.id, name, TCALC_IDDEF_MAX_STR_SIZE);
+  tcalc_strcpy_lblb_ntdst(def.id, TCALC_IDDEF_MAX_STR_SIZE, name, (int32_t)name_len);
   def.func = func;
   ret_on_macerr(err, TCALC_VEC_PUSH(ctx->unfuncs, def, err));
   return TCALC_ERR_OK;
@@ -211,7 +213,7 @@ tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, size_t name_len
   }
 
   tcalc_binfuncdef def = { 0 };
-  tcalc_strlcpy(def.id, name, TCALC_IDDEF_MAX_STR_SIZE);
+  tcalc_strcpy_lblb_ntdst(def.id, TCALC_IDDEF_MAX_STR_SIZE, name, (int32_t)name_len);
   def.func = func;
   ret_on_macerr(err, TCALC_VEC_PUSH(ctx->binfuncs, def, err));
   return TCALC_ERR_OK;
@@ -228,7 +230,7 @@ tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, size_t name_len
     } \
   } \
   deftype def = { 0 }; \
-  tcalc_strlcpy(def.id, opid, TCALC_OPDEF_MAX_STR_SIZE); \
+  tcalc_strcpy_lblb_ntdst(def.id, TCALC_IDDEF_MAX_STR_SIZE, opid, (int32_t)name_len); \
   def.prec = prec_; \
   def.assoc = assoc_; \
   def.func = funcptr; \

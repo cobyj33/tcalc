@@ -6,25 +6,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-int tcalc_cli_infix_tokenizer(const char* expr) {
-  tcalc_token* tokens = NULL;
-  size_t nb_tokens = 0;
-
-  tcalc_err err = tcalc_tokenize_infix(expr, &tokens, &nb_tokens);
+int tcalc_cli_infix_tokenizer(const char* expr, int32_t exprLen) {
+  tcalc_err err = tcalc_tokenize_infix(expr, exprLen, globalTokenBuffer, globalTokenBufferCapacity, &globalTokenBufferLen);
   TCALC_CLI_CHECK_ERR(err, "[%s] tcalc error: %s\n ", __func__, tcalc_strerrcode(err));
 
-  for (size_t i = 0; i < nb_tokens; i++) {
-    printf("{type: %s, value: '%.*s'}, ", tcalc_token_type_str(tokens[i].type), TCALC_TOKEN_PRINTF_VARARG(expr, tokens[i]));
+  for (int32_t i = 0; i < globalTokenBufferLen; i++) {
+    fprintf(
+      stdout,
+      "{ type: %s, value: '%.*s' }, ",
+      tcalc_token_type_str(globalTokenBuffer[i].type),
+      TCALC_TOKEN_PRINTF_VARARG(expr, globalTokenBuffer[i])
+    );
   }
-  printf("%s", "\n\n");
+  fputc('\n', stdout);
+  fputs("--------------------------------", stdout);
+  fputc('\n', stdout);
 
-  for (size_t i = 0; i < nb_tokens; i++) {
-    printf("'%.*s'%s", TCALC_TOKEN_PRINTF_VARARG(expr, tokens[i]), i == nb_tokens - 1 ? "" : ", ");
+  for (int32_t i = 0; i < globalTokenBufferLen; i++) {
+    fprintf(
+      stdout,
+      "'%.*s'%s",
+      TCALC_TOKEN_PRINTF_VARARG(expr, globalTokenBuffer[i]),
+      i == globalTokenBufferLen - 1 ? "" : ", "
+    );
   }
-  printf("%c", '\n');
+  fputc('\n', stdout);
 
-  free(tokens);
   return EXIT_SUCCESS;
 }
 
