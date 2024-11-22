@@ -4,7 +4,7 @@ project(tcalc VERSION 0.0 LANGUAGES C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-option(TCALC_BUILD_TESTS "Build tcalc tests" OFF)
+option(TCALC_BUILD_TESTS "Build tcalc tests" ON)
 
 message("+--------------------------------------------+")
 message("|-TCALC Configuration:------------------------")
