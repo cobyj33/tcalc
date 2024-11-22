@@ -6,39 +6,39 @@
 
 void TestTCalcStrToDouble(CuTest* tc) {
   double out;
-  tcalc_err err = tcalc_strtodouble("2.34", &out);
+  tcalc_err err = tcalc_lpstrtodouble(TCALC_STRLIT_PTR_LEN("2.34"), &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 2.34, TCALC_DBL_ASSERT_DELTA);
 
-  err = tcalc_strtodouble("234.", &out);
+  err = tcalc_lpstrtodouble(TCALC_STRLIT_PTR_LEN("234."), &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 234.0, TCALC_DBL_ASSERT_DELTA);
 
-  err = tcalc_strtodouble(".549", &out);
+  err = tcalc_lpstrtodouble(TCALC_STRLIT_PTR_LEN(".549"), &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 0.549, TCALC_DBL_ASSERT_DELTA);
 
-  err = tcalc_strtodouble(".034", &out);
+  err = tcalc_lpstrtodouble(TCALC_STRLIT_PTR_LEN(".034"), &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 34.0, TCALC_DBL_ASSERT_DELTA);
 
-  err = tcalc_strtodouble("2349.", &out);
+  err = tcalc_lpstrtodouble(TCALC_STRLIT_PTR_LEN("2349."), &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 2349.0, TCALC_DBL_ASSERT_DELTA);
 
-  err = tcalc_strtodouble("0234.", &out);
+  err = tcalc_lpstrtodouble(TCALC_STRLIT_PTR_LEN("0234."), &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, 234.0, TCALC_DBL_ASSERT_DELTA);
 
-  err = tcalc_strtodouble("-23434", &out);
+  err = tcalc_lpstrtodouble(TCALC_STRLIT_PTR_LEN("-23434"), &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, -23434, TCALC_DBL_ASSERT_DELTA);
 
-  err = tcalc_strtodouble("-234.", &out);
+  err = tcalc_lpstrtodouble(TCALC_STRLIT_PTR_LEN("-234."), &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, -234, TCALC_DBL_ASSERT_DELTA);
 
-  err = tcalc_strtodouble("-.249", &out);
+  err = tcalc_lpstrtodouble(TCALC_STRLIT_PTR_LEN("-.249"), &out);
   CuAssertTrue(tc, err == TCALC_ERR_OK);
   CuAssertDblEquals(tc, out, -0.249, TCALC_DBL_ASSERT_DELTA);
 }

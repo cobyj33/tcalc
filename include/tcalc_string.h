@@ -5,42 +5,18 @@
 #include <stddef.h>
 #include <tcalc_error.h>
 
-typedef struct tcalc_strv {
-  char* str;
-  size_t len;
-} tcalc_strv;
-
-typedef struct tcalc_dstr {
-  size_t len;
-  size_t cap;
-  char str[];
-} tcalc_dstr;
-
 typedef struct tcalc_slice {
   size_t start;
   size_t xend;
 } tcalc_slice;
-
-typedef struct tcalc_strslice {
-  char* str;
-  size_t start;
-  size_t xend;
-} tcalc_strslice;
 
 
 static inline size_t tcalc_slice_len(tcalc_slice slice) {
   return slice.xend - slice.start;
 }
 
-inline struct tcalc_strv tcalc_dstr_to_strv(struct tcalc_dstr dstr) {
-  return (struct tcalc_strv){ .str = dstr.str, .len = dstr.len };
-}
-
 #define TCALC_STRLIT_LEN(strlit) (sizeof(strlit) - 1)
-
-// Needs to be a macro instead of an inline struct, since we have to calculate
-// the literal string length with sizeof()
-#define TCALC_STRLIT_TO_CONST_STRV(strlit) ((const struct tcalc_strv){ .str = (strlit), .len = TCALC_STRLIT_LEN(strlit) })
+#define TCALC_STRLIT_PTR_LEN(strlit) ((strlit)), TCALC_STRLIT_LEN(strlit)
 
 bool tcalc_streq_lb(const char* s1, size_t l1, const char* s2, size_t l2);
 
@@ -84,9 +60,6 @@ enum tcalc_err tcalc_strdup(const char *src, char** out);
  * Note that the combined string will be allocated and assigned to *out.
 */
 enum tcalc_err tcalc_strcombine(const char *first, const char *second, char** out);
-
-bool tcalc_strisint(const char*);
-enum tcalc_err tcalc_strtoint(const char*, int*);
 
 bool tcalc_strisdouble(const char*);
 enum tcalc_err tcalc_strtodouble(const char*, double*);

@@ -30,61 +30,61 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
   cleanup_on_err(err, tcalc_ctx_addtrigrad(ctx));
 
   // Default Unary Functions:
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "log", TCALC_STRLIT_LEN("log"), tcalc_val_log));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "ln", TCALC_STRLIT_LEN("ln"), tcalc_val_ln));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "exp", TCALC_STRLIT_LEN("exp"), tcalc_val_exp));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "sqrt", TCALC_STRLIT_LEN("sqrt"), tcalc_val_sqrt));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "cbrt", TCALC_STRLIT_LEN("cbrt"), tcalc_val_cbrt));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "ceil", TCALC_STRLIT_LEN("ceil"), tcalc_val_ceil));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "floor", TCALC_STRLIT_LEN("floor"), tcalc_val_floor));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "round", TCALC_STRLIT_LEN("round"), tcalc_val_round));
-  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, "abs", TCALC_STRLIT_LEN("abs"), tcalc_val_abs));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("log"), tcalc_val_log));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("ln"), tcalc_val_ln));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("exp"), tcalc_val_exp));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("sqrt"), tcalc_val_sqrt));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("cbrt"), tcalc_val_cbrt));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("ceil"), tcalc_val_ceil));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("floor"), tcalc_val_floor));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("round"), tcalc_val_round));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("abs"), tcalc_val_abs));
 
   // Default Binary Functions:
-  cleanup_on_err(err, tcalc_ctx_addbinfunc(ctx, "pow", TCALC_STRLIT_LEN("pow"), tcalc_val_pow));
+  cleanup_on_err(err, tcalc_ctx_addbinfunc(ctx, TCALC_STRLIT_PTR_LEN("pow"), tcalc_val_pow));
 
   // Default Variables:
-  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "pi", TCALC_STRLIT_LEN("pi"), TCALC_VAL_INIT_NUM(TCALC_PI)));
-  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "e", TCALC_STRLIT_LEN("e"), TCALC_VAL_INIT_NUM(TCALC_E)));
+  cleanup_on_err(err, tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LEN("pi"), TCALC_VAL_INIT_NUM(TCALC_PI)));
+  cleanup_on_err(err, tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LEN("e"), TCALC_VAL_INIT_NUM(TCALC_E)));
 
   // Default Logical Variables:
-  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "true", TCALC_STRLIT_LEN("true"), TCALC_VAL_INIT_BOOL(1)));
-  cleanup_on_err(err, tcalc_ctx_addvar(ctx, "false", TCALC_STRLIT_LEN("false"), TCALC_VAL_INIT_BOOL(0)));
+  cleanup_on_err(err, tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LEN("true"), TCALC_VAL_INIT_BOOL(1)));
+  cleanup_on_err(err, tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LEN("false"), TCALC_VAL_INIT_BOOL(0)));
 
   // Default Logical Unary Operators:
-  cleanup_on_err(err, tcalc_ctx_addunlop(ctx, "!", TCALC_STRLIT_LEN("!"), 10, TCALC_RIGHT_ASSOC, tcalc_val_not));
+  cleanup_on_err(err, tcalc_ctx_addunlop(ctx, TCALC_STRLIT_PTR_LEN("!"), 10, TCALC_RIGHT_ASSOC, tcalc_val_not));
 
   // Default Unary Operators:
-  cleanup_on_err(err, tcalc_ctx_addunop(ctx, "+", TCALC_STRLIT_LEN("+"), 10, TCALC_RIGHT_ASSOC, tcalc_val_unary_plus));
-  cleanup_on_err(err, tcalc_ctx_addunop(ctx, "-", TCALC_STRLIT_LEN("-"), 10, TCALC_RIGHT_ASSOC, tcalc_val_unary_minus));
+  cleanup_on_err(err, tcalc_ctx_addunop(ctx, TCALC_STRLIT_PTR_LEN("+"), 10, TCALC_RIGHT_ASSOC, tcalc_val_unary_plus));
+  cleanup_on_err(err, tcalc_ctx_addunop(ctx, TCALC_STRLIT_PTR_LEN("-"), 10, TCALC_RIGHT_ASSOC, tcalc_val_unary_minus));
 
   // Default Binary Operators:
-  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "**", TCALC_STRLIT_LEN("**"), 10, TCALC_RIGHT_ASSOC, tcalc_val_pow));
-  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "^", TCALC_STRLIT_LEN("^"), 10, TCALC_RIGHT_ASSOC, tcalc_val_pow));
-  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "", TCALC_STRLIT_LEN(""), 9, TCALC_LEFT_ASSOC, tcalc_val_multiply)); // implicit multiplication (0-length binary operation)
-  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "*", TCALC_STRLIT_LEN("*"), 9, TCALC_LEFT_ASSOC, tcalc_val_multiply));
-  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "/", TCALC_STRLIT_LEN("/"), 9, TCALC_LEFT_ASSOC, tcalc_val_divide));
-  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "%", TCALC_STRLIT_LEN("%"), 9, TCALC_LEFT_ASSOC, tcalc_val_mod));
-  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "+", TCALC_STRLIT_LEN("+"), 8, TCALC_LEFT_ASSOC, tcalc_val_add));
-  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, "-", TCALC_STRLIT_LEN("-"), 8, TCALC_LEFT_ASSOC, tcalc_val_subtract));
+  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, TCALC_STRLIT_PTR_LEN("**"), 10, TCALC_RIGHT_ASSOC, tcalc_val_pow));
+  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, TCALC_STRLIT_PTR_LEN("^"), 10, TCALC_RIGHT_ASSOC, tcalc_val_pow));
+  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, TCALC_STRLIT_PTR_LEN(""), 9, TCALC_LEFT_ASSOC, tcalc_val_multiply)); // implicit multiplication (0-length binary operation)
+  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, TCALC_STRLIT_PTR_LEN("*"), 9, TCALC_LEFT_ASSOC, tcalc_val_multiply));
+  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, TCALC_STRLIT_PTR_LEN("/"), 9, TCALC_LEFT_ASSOC, tcalc_val_divide));
+  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, TCALC_STRLIT_PTR_LEN("%"), 9, TCALC_LEFT_ASSOC, tcalc_val_mod));
+  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, TCALC_STRLIT_PTR_LEN("+"), 8, TCALC_LEFT_ASSOC, tcalc_val_add));
+  cleanup_on_err(err, tcalc_ctx_addbinop(ctx, TCALC_STRLIT_PTR_LEN("-"), 8, TCALC_LEFT_ASSOC, tcalc_val_subtract));
 
   // Default Relational Binary Operators:
-  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, "<", TCALC_STRLIT_LEN("<"), 6, TCALC_LEFT_ASSOC, tcalc_val_lt));
-  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, "<=", TCALC_STRLIT_LEN("<="), 6, TCALC_LEFT_ASSOC, tcalc_val_lteq));
-  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, ">", TCALC_STRLIT_LEN(">"), 6, TCALC_LEFT_ASSOC, tcalc_val_gt));
-  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, ">=", TCALC_STRLIT_LEN(">="), 6, TCALC_LEFT_ASSOC, tcalc_val_gteq));
-  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, "=", TCALC_STRLIT_LEN("="), 5, TCALC_RIGHT_ASSOC, tcalc_val_equals));
-  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, "==", TCALC_STRLIT_LEN("=="), 5, TCALC_RIGHT_ASSOC, tcalc_val_equals));
-  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, "!=", TCALC_STRLIT_LEN("!="), 5, TCALC_RIGHT_ASSOC, tcalc_val_nequals));
+  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, TCALC_STRLIT_PTR_LEN("<"), 6, TCALC_LEFT_ASSOC, tcalc_val_lt));
+  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, TCALC_STRLIT_PTR_LEN("<="), 6, TCALC_LEFT_ASSOC, tcalc_val_lteq));
+  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, TCALC_STRLIT_PTR_LEN(">"), 6, TCALC_LEFT_ASSOC, tcalc_val_gt));
+  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, TCALC_STRLIT_PTR_LEN(">="), 6, TCALC_LEFT_ASSOC, tcalc_val_gteq));
+  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, TCALC_STRLIT_PTR_LEN("="), 5, TCALC_RIGHT_ASSOC, tcalc_val_equals));
+  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, TCALC_STRLIT_PTR_LEN("=="), 5, TCALC_RIGHT_ASSOC, tcalc_val_equals));
+  cleanup_on_err(err, tcalc_ctx_addrelop(ctx, TCALC_STRLIT_PTR_LEN("!="), 5, TCALC_RIGHT_ASSOC, tcalc_val_nequals));
 
 
 
   // Default Logical Binary Operators:
-  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, "=", TCALC_STRLIT_LEN("="), 5, TCALC_RIGHT_ASSOC, tcalc_val_equals_l));
-  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, "==", TCALC_STRLIT_LEN("=="), 5, TCALC_RIGHT_ASSOC, tcalc_val_equals_l));
-  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, "!=", TCALC_STRLIT_LEN("!="), 5, TCALC_RIGHT_ASSOC, tcalc_val_nequals_l));
-  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, "&&", TCALC_STRLIT_LEN("&&"), 4, TCALC_RIGHT_ASSOC, tcalc_val_and));
-  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, "||", TCALC_STRLIT_LEN("||"), 3, TCALC_RIGHT_ASSOC, tcalc_val_or));
+  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, TCALC_STRLIT_PTR_LEN("="), 5, TCALC_RIGHT_ASSOC, tcalc_val_equals_l));
+  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, TCALC_STRLIT_PTR_LEN("=="), 5, TCALC_RIGHT_ASSOC, tcalc_val_equals_l));
+  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, TCALC_STRLIT_PTR_LEN("!="), 5, TCALC_RIGHT_ASSOC, tcalc_val_nequals_l));
+  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, TCALC_STRLIT_PTR_LEN("&&"), 4, TCALC_RIGHT_ASSOC, tcalc_val_and));
+  cleanup_on_err(err, tcalc_ctx_addbinlop(ctx, TCALC_STRLIT_PTR_LEN("||"), 3, TCALC_RIGHT_ASSOC, tcalc_val_or));
 
   *out = ctx;
   return err;
@@ -96,67 +96,67 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
 
 tcalc_err tcalc_ctx_addtrigrad(tcalc_ctx* ctx) {
   tcalc_err err = TCALC_ERR_OK;
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sin", TCALC_STRLIT_LEN("sin"), tcalc_val_sin));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cos", TCALC_STRLIT_LEN("cos"), tcalc_val_cos));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tan", TCALC_STRLIT_LEN("tan"), tcalc_val_tan));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sec", TCALC_STRLIT_LEN("sec"), tcalc_val_sec));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "csc", TCALC_STRLIT_LEN("csc"), tcalc_val_csc));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cot", TCALC_STRLIT_LEN("cot"), tcalc_val_cot));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asin", TCALC_STRLIT_LEN("asin"), tcalc_val_asin));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsin", TCALC_STRLIT_LEN("arcsin"), tcalc_val_asin));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acos", TCALC_STRLIT_LEN("acos"), tcalc_val_acos));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccos", TCALC_STRLIT_LEN("arccos"), tcalc_val_acos));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "atan", TCALC_STRLIT_LEN("atan"), tcalc_val_atan));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arctan", TCALC_STRLIT_LEN("arctan"), tcalc_val_atan));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asec", TCALC_STRLIT_LEN("asec"), tcalc_val_asec));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsec", TCALC_STRLIT_LEN("arcsec"), tcalc_val_asec));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acsc", TCALC_STRLIT_LEN("acsc"), tcalc_val_acsc));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccsc", TCALC_STRLIT_LEN("arccsc"), tcalc_val_acsc));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acot", TCALC_STRLIT_LEN("acot"), tcalc_val_acot));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccot", TCALC_STRLIT_LEN("arccot"), tcalc_val_acot));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sinh", TCALC_STRLIT_LEN("sinh"), tcalc_val_sinh));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cosh", TCALC_STRLIT_LEN("cosh"), tcalc_val_cosh));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tanh", TCALC_STRLIT_LEN("tanh"), tcalc_val_tanh));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asinh", TCALC_STRLIT_LEN("asinh"), tcalc_val_asinh));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsinh", TCALC_STRLIT_LEN("arcsinh"), tcalc_val_asinh));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acosh", TCALC_STRLIT_LEN("acosh"), tcalc_val_acosh));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccosh", TCALC_STRLIT_LEN("arccosh"), tcalc_val_acosh));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "atanh", TCALC_STRLIT_LEN("atanh"), tcalc_val_atanh));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arctanh", TCALC_STRLIT_LEN("arctanh"), tcalc_val_atanh));
-  ret_on_err(err, tcalc_ctx_addbinfunc(ctx, "atan2", TCALC_STRLIT_LEN("atan2"), tcalc_val_atan2));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("sin"), tcalc_val_sin));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("cos"), tcalc_val_cos));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("tan"), tcalc_val_tan));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("sec"), tcalc_val_sec));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("csc"), tcalc_val_csc));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("cot"), tcalc_val_cot));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("asin"), tcalc_val_asin));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arcsin"), tcalc_val_asin));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("acos"), tcalc_val_acos));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arccos"), tcalc_val_acos));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("atan"), tcalc_val_atan));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arctan"), tcalc_val_atan));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("asec"), tcalc_val_asec));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arcsec"), tcalc_val_asec));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("acsc"), tcalc_val_acsc));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arccsc"), tcalc_val_acsc));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("acot"), tcalc_val_acot));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arccot"), tcalc_val_acot));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("sinh"), tcalc_val_sinh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("cosh"), tcalc_val_cosh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("tanh"), tcalc_val_tanh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("asinh"), tcalc_val_asinh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arcsinh"), tcalc_val_asinh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("acosh"), tcalc_val_acosh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arccosh"), tcalc_val_acosh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("atanh"), tcalc_val_atanh));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arctanh"), tcalc_val_atanh));
+  ret_on_err(err, tcalc_ctx_addbinfunc(ctx, TCALC_STRLIT_PTR_LEN("atan2"), tcalc_val_atan2));
   return err;
 }
 
 tcalc_err tcalc_ctx_addtrigdeg(tcalc_ctx* ctx) {
   tcalc_err err = TCALC_ERR_OK;
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sin", TCALC_STRLIT_LEN("sin"), tcalc_val_sin_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cos", TCALC_STRLIT_LEN("cos"), tcalc_val_cos_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tan", TCALC_STRLIT_LEN("tan"), tcalc_val_tan_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sec", TCALC_STRLIT_LEN("sec"), tcalc_val_sec_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "csc", TCALC_STRLIT_LEN("csc"), tcalc_val_csc_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cot", TCALC_STRLIT_LEN("cot"), tcalc_val_cot_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asin", TCALC_STRLIT_LEN("asin"), tcalc_val_asin_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsin", TCALC_STRLIT_LEN("arcsin"), tcalc_val_asin_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acos", TCALC_STRLIT_LEN("acos"), tcalc_val_acos_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccos", TCALC_STRLIT_LEN("arccos"), tcalc_val_acos_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "atan", TCALC_STRLIT_LEN("atan"), tcalc_val_atan_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arctan", TCALC_STRLIT_LEN("arctan"), tcalc_val_atan_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asec", TCALC_STRLIT_LEN("asec"), tcalc_val_asec_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsec", TCALC_STRLIT_LEN("arcsec"), tcalc_val_asec_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acsc", TCALC_STRLIT_LEN("acsc"), tcalc_val_acsc_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccsc", TCALC_STRLIT_LEN("arccsc"), tcalc_val_acsc_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acot", TCALC_STRLIT_LEN("acot"), tcalc_val_acot_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccot", TCALC_STRLIT_LEN("arccot"), tcalc_val_acot_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "sinh", TCALC_STRLIT_LEN("sinh"), tcalc_val_sinh_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "cosh", TCALC_STRLIT_LEN("cosh"), tcalc_val_cosh_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "tanh", TCALC_STRLIT_LEN("tanh"), tcalc_val_tanh_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "asinh", TCALC_STRLIT_LEN("asinh"), tcalc_val_asinh_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arcsinh", TCALC_STRLIT_LEN("arcsinh"), tcalc_val_asinh_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "acosh", TCALC_STRLIT_LEN("acosh"), tcalc_val_acosh_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arccosh", TCALC_STRLIT_LEN("arccosh"), tcalc_val_acosh_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "atanh", TCALC_STRLIT_LEN("atanh"), tcalc_val_atanh_deg));
-  ret_on_err(err, tcalc_ctx_addunfunc(ctx, "arctanh", TCALC_STRLIT_LEN("arctanh"), tcalc_val_atanh_deg));
-  ret_on_err(err, tcalc_ctx_addbinfunc(ctx, "atan2", TCALC_STRLIT_LEN("atan2"), tcalc_val_atan2_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("sin"), tcalc_val_sin_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("cos"), tcalc_val_cos_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("tan"), tcalc_val_tan_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("sec"), tcalc_val_sec_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("csc"), tcalc_val_csc_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("cot"), tcalc_val_cot_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("asin"), tcalc_val_asin_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arcsin"), tcalc_val_asin_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("acos"), tcalc_val_acos_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arccos"), tcalc_val_acos_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("atan"), tcalc_val_atan_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arctan"), tcalc_val_atan_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("asec"), tcalc_val_asec_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arcsec"), tcalc_val_asec_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("acsc"), tcalc_val_acsc_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arccsc"), tcalc_val_acsc_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("acot"), tcalc_val_acot_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arccot"), tcalc_val_acot_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("sinh"), tcalc_val_sinh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("cosh"), tcalc_val_cosh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("tanh"), tcalc_val_tanh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("asinh"), tcalc_val_asinh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arcsinh"), tcalc_val_asinh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("acosh"), tcalc_val_acosh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arccosh"), tcalc_val_acosh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("atanh"), tcalc_val_atanh_deg));
+  ret_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LEN("arctanh"), tcalc_val_atanh_deg));
+  ret_on_err(err, tcalc_ctx_addbinfunc(ctx, TCALC_STRLIT_PTR_LEN("atan2"), tcalc_val_atan2_deg));
   return err;
 }
 

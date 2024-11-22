@@ -175,67 +175,6 @@ bool has_in_strarr(const char** list, size_t list_len, const char* search) {
   return find_in_strarr(list, list_len, search, &dummy) == TCALC_ERR_OK;
 }
 
-bool tcalc_strisint(const char* str) {
-  int dummyout;
-  return tcalc_strtoint(str, &dummyout) == TCALC_ERR_OK;
-}
-
-
-bool tcalc_strisdouble(const char* str) {
-  double dummyout;
-  return tcalc_strtodouble(str, &dummyout) == TCALC_ERR_OK;
-}
-
-tcalc_err tcalc_strtodouble(const char* str, double* out)
-{
-  *out = 0.0;
-
-  if (str == NULL)
-    return TCALC_ERR_INVALID_ARG;
-  if (str[0] == '\0')
-    return TCALC_ERR_INVALID_ARG;
-
-
-  if (str[0] == '-' || str[0] == '+')  {
-    if (str[1] == '.') {
-      if (!isdigit(str[2]))
-        return TCALC_ERR_INVALID_ARG;
-    }
-    else if (!isdigit(str[1])) {
-      return TCALC_ERR_INVALID_ARG;
-    }
-  }
-
-  int foundDecimal = 0;
-  double decimalMultiplier = 0.1;
-  double sign = str[0] == '-' ? -1.0 : 1.0;
-
-  for (int i = str[0] == '-' || str[0] == '+' ? 1 : 0; str[i] != '\0'; i++) {
-    if (str[i] == '.') {
-      if (foundDecimal) return TCALC_ERR_INVALID_ARG;
-      foundDecimal = 1;
-    } else if (isdigit(str[i])) {
-      if (*out >= (DBL_MAX - 9) / 10) {
-        return sign == -1 ? TCALC_ERR_UNDERFLOW : TCALC_ERR_OVERFLOW;
-      }
-
-      if (foundDecimal) {
-        *out = *out + (str[i] - '0') * decimalMultiplier;
-        decimalMultiplier /= 10.0;
-      }
-      else {
-        *out = *out * 10.0 + (str[i] - '0');
-      }
-
-    } else {
-      return TCALC_ERR_INVALID_ARG;
-    }
-  }
-
-  *out *= sign;
-  return TCALC_ERR_OK;
-}
-
 bool tcalc_lpstrisdouble(const char* str, size_t len) {
   double dummyout;
   return tcalc_lpstrtodouble(str, len, &dummyout) == TCALC_ERR_OK;
@@ -289,36 +228,6 @@ tcalc_err tcalc_lpstrtodouble(const char* str, size_t len, double* out) {
   return TCALC_ERR_OK;
 }
 
-tcalc_err tcalc_strtoint(const char* str, int* out)
-{
-  *out = 0;
-  if (str == NULL)
-    return TCALC_ERR_INVALID_ARG;
-  if (str[0] == '\0')
-    return TCALC_ERR_INVALID_ARG;
-
-  if (str[0] == '-' || str[0] == '+') { // handles edge case of the str only being "-"
-    if (!isdigit(str[1])) {
-      return TCALC_ERR_INVALID_ARG;
-    }
-  }
-
-  int sign = str[0] == '-' ? -1 : 1;
-
-  for (int i = str[0] == '-' || str[0] == '+' ? 1 : 0; str[i] != '\0'; i++) {
-    if (!isdigit(str[i]))
-      return TCALC_ERR_INVALID_ARG;
-    if (*out >= (INT_MAX - 9) / 10)
-      return sign == -1 ? TCALC_ERR_UNDERFLOW : TCALC_ERR_OVERFLOW;
-
-    *out *= 10;
-    *out += str[i] - '0';
-  }
-
-  *out *= sign;
-  return TCALC_ERR_OK;
-}
-
 bool tcalc_streq(const char* a, const char* b) {
   size_t i = 0;
   for (; a[i] != '\0' && b[i] != '\0'; i++) {
@@ -337,10 +246,8 @@ bool tcalc_str_list_has(const char* input, const char** list, size_t count) {
 
 bool tcalc_strhaspre(const char* prefix, const char* str) {
   size_t i = 0;
-  for (; str[i] != '\0' && prefix[i] != '\0'; i++) {
-    if (prefix[i] != str[i]) break;
-  }
-
+  while (str[i] != '\0' && prefix[i] != '\0' && prefix[i] == str[i])
+    i++;
   return prefix[i] == '\0';
 }
 
