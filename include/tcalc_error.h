@@ -33,42 +33,13 @@
 
 
 void tcalc_errstkclear();
-unsigned int tcalc_errstksize();
-unsigned int tcalc_errstkpop();
+int tcalc_errstksize();
+int tcalc_errstkpop();
 
 bool tcalc_errstkadd(const char* funcname, const char* errstr);
 bool tcalc_errstkaddf(const char* funcname, const char* format, ...) TCALC_FORMAT_ATTRIB(printf, 2, 3);
 
 size_t tcalc_errstkpeek(char* out, size_t dsize);
-
-
-#if 0
-/**
- * Get the globally set tcalc error
- *
- * The buffer "out" should have a size at least equal to the macro TCALC_ERROR_MAX_SIZE
-*/
-void tcalc_getfullerror(char* out);
-
-/**
- * Errors don't have to be set by every error or exceptional encounter in tcalc,
- * and setting error strings should not replace returning error codes.
- *
- * If the input string is longer than TCALC_ERROR_MAX_SIZE,
- * it will be truncated to TCALC_ERROR_MAX_SIZE.
-*/
-void tcalc_setfullerror(const char* error);
-
-/**
- * Formatted version of tcalc_setfullerror
- *
- * Formatting is exactly the same as standard stdio functions like printf
- *
- * If the expanded formatted string is longer than TCALC_ERROR_MAX_SIZE,
- * it will be truncated to TCALC_ERROR_MAX_SIZE.
-*/
-void tcalc_setfullerrorf(const char* format, ...);
-#endif
 
 /**
  * @brief A general error type for operations in tcalc.

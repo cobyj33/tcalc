@@ -15,14 +15,6 @@
 #include <assert.h>
 
 
-bool tcalc_exprtree_is_vardef(tcalc_exprtree* expr) {
-  if (expr == NULL) return false;
-
-  // if (expr->token.type == TCALC_TOK_RELOP) {}
-  return true;
-}
-
-
 /**
  * Detailed explanation of how an expression tree is evaluated
  *

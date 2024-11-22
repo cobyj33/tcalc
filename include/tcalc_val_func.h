@@ -4,21 +4,6 @@
 #include "tcalc_error.h"
 #include "tcalc_val.h"
 
-// Note how each tcalc_val function does not return a tcalc_val through
-// its out parameter, but instead returns a C-type corresponding to the
-// necessary return type for that function.
-
-// Do note that the 'out' parameter can still connect directly to a
-// member of a tcalc_val struct, which would be the most useful way
-// to use these functions. For example:
-//
-//   struct tcalc_val a = TCALC_VAL_INIT_NUM(500);
-//   struct tcalc_val b = TCALC_VAL_INIT_NUM(300);
-//   struct tcalc_val out = { .type = TCALC_VALTYPE_NUM };
-//   tcalc_err err = tcalc_val_and(a, b, &(out.as.num));
-//   if (err) return err;
-//   ..
-
 typedef tcalc_err (*tcalc_val_unfunc)(tcalc_val, double*);
 typedef tcalc_err (*tcalc_val_binfunc)(tcalc_val, tcalc_val, double*);
 typedef tcalc_err (*tcalc_val_relfunc)(tcalc_val, tcalc_val, bool*);

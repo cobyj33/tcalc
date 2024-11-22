@@ -83,7 +83,6 @@ typedef struct tcalc_token {
   size_t xend;
 } tcalc_token;
 
-
 inline static const char* tcalc_token_startcp(const char* str, tcalc_token tok) { return str + tok.start; }
 inline static char* tcalc_token_startp(char* str, tcalc_token tok) { return str + tok.start; }
 inline static size_t tcalc_token_len(tcalc_token tok) { return tok.xend - tok.start; }

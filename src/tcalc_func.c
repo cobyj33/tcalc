@@ -8,6 +8,8 @@
 #include <errno.h>
 #include <float.h>
 
+// TODO: Handling overflow and underflow?
+
 /**
  * Logical Functions
 */
@@ -95,32 +97,22 @@ tcalc_err tcalc_unary_minus(double a, double* out) {
 }
 
 tcalc_err tcalc_add(double a, double b, double* out) {
-  // if (DBL_MAX - b <= a) return TCALC_ERR_OVERFLOW;
-
   *out = a + b;
   return TCALC_ERR_OK;
 }
 
 tcalc_err tcalc_subtract(double a, double b, double* out) {
-  // if (DBL_MIN + b <= a) return TCALC_ERR_OVERFLOW;
   *out = a - b;
   return TCALC_ERR_OK;
 }
 
 tcalc_err tcalc_multiply(double a, double b, double* out) {
-  // if (b < 0) { // b is negative
-  //   if (a <= DBL_MAX / b) return TCALC_ERR_OVERFLOW;
-  // } else { // b > 0
-  //   if (a >= DBL_MAX / b) return TCALC_ERR_OVERFLOW;
-  // }
-
   *out = a * b;
   return TCALC_ERR_OK;
 }
 
 tcalc_err tcalc_divide(double a, double b, double* out) {
   if (tcalc_equals(b, 0)) return TCALC_ERR_DIV_BY_ZERO;
-  // TODO: Possibly more overflow and underflow?
 
   *out =  a / b;
   return TCALC_ERR_OK;

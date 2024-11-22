@@ -4,7 +4,7 @@
 #include "tcalc_error.h"
 
 #include <stddef.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 /**
  * Notes about memory:
@@ -22,10 +22,8 @@
  * should only be constructed using these functions.
 */
 
-// #define alloc_nr(x) (((x)+16)*3/2)
-#define alloc_nr(x) (((x / 2) + 8) * 3)
-
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#define TCALC_ALLOC_NR(x) (((x / 2) + 8) * 3)
+#define TCALC_ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 /**
  * Extended malloc function which aborts the program on malloc failure
@@ -80,7 +78,7 @@ void* tcalc_xrealloc(void*, size_t);
 */
 #define TCALC_DARR_GROW(arr, size, capacity, err) do { \
     if ((size) > (capacity)) { \
-      const size_t grow_func_res = alloc_nr(capacity); \
+      const size_t grow_func_res = TCALC_ALLOC_NR(capacity); \
       if (grow_func_res < (size)) { \
         err = TCALC_ERR_OVERFLOW; \
       } else { \
@@ -179,5 +177,36 @@ void* tcalc_xrealloc(void*, size_t);
     free(arr); \
     (arr) = NULL; \
   } while (0)
+
+#define TCALC_VEC(type) struct { \
+    type* arr; \
+    size_t len; \
+    size_t cap; \
+  }
+
+#define TCALC_VEC_INIT { .arr = NULL, .len = 0, .cap = 0 }
+#define TCALC_VEC_FREE(vec) do { \
+    free((vec).arr); \
+    (vec).arr = NULL; \
+    (vec).len = 0; \
+    (vec).cap = 0; \
+  } while (0)
+
+
+#define TCALC_VEC_PUSH(vec, item, err) TCALC_DARR_PUSH(vec.arr, vec.len, vec.cap, item, err)
+#define TCALC_VEC_INSERT(vec, item, index, err) TCALC_DARR_INSERT(vec.arr, vec.len, vec.cap, item, index, err)
+#define TCALC_VEC_GROW(vec, res_size, err) TCALC_DARR_GROW(vec.arr, res_size, vec.cap, err)
+#define TCALC_VEC_FOREACH(vec, iname) for (size_t iname = 0; iname < vec.len; iname++)
+
+#define TCALC_VEC_FREE_F(vec, freefn) do { \
+  TCALC_ARR_FREE_F(vec.arr, vec.len, freefn); \
+  TCALC_VEC_FREE(vec); \
+} while (0)
+
+#define TCALC_VEC_FREE_FV(vec, freefnv) do { \
+  TCALC_ARR_FREE_F(vec.arr, vec.len, freefnv); \
+  TCALC_VEC_FREE(vec); \
+} while (0)
+
 
 #endif

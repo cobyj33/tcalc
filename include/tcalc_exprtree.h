@@ -87,12 +87,6 @@ void tcalc_exprtree_free(tcalc_exprtree* head);
 */
 void tcalc_exprtree_free_children(tcalc_exprtree* head);
 
-/**
- * Vardef form:
- *  <variable> "=" expression
-*/
-bool tcalc_exprtree_is_vardef(tcalc_exprtree* expr);
-
 tcalc_err tcalc_create_exprtree_infix(const char* expr, const struct tcalc_ctx* ctx, tcalc_exprtree** out);
 
 tcalc_err tcalc_eval_exprtree(const char* expr, tcalc_exprtree* exprtree, const struct tcalc_ctx* ctx, struct tcalc_val* out);

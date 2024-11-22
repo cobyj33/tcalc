@@ -416,7 +416,7 @@ static bool tcalc_pctx_isnexttype(const tcalc_pctx* pctx, tcalc_token_type type)
 }
 
 static bool tcalc_lbstr_in_ntntstrs(const char* s, size_t strl, const char** ntntstrs) {
-  for (unsigned int i = 0; ntntstrs[i] != NULL; i++) {
+  for (int i = 0; ntntstrs[i] != NULL; i++) {
     if (tcalc_streq_ntlb(ntntstrs[i], s, strl))
       return true;
   }

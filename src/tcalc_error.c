@@ -10,7 +10,7 @@
 #define TCALC_ERROR_MAX_SIZE 256
 #define TCALC_ERRSTK_MAX_SIZE 16
 
-unsigned int errstksize = 0;
+int errstksize = 0;
 char errstk[TCALC_ERRSTK_MAX_SIZE][TCALC_ERROR_MAX_SIZE] = {'\0'};
 
 const char* tcalc_strerrcode(tcalc_err err) {
@@ -44,7 +44,7 @@ const char* tcalc_strerrcode(tcalc_err err) {
   return "unknown tcalc error";
 }
 
-unsigned int tcalc_errstksize() {
+int tcalc_errstksize() {
   return errstksize;
 }
 
@@ -83,29 +83,9 @@ size_t tcalc_errstkpeek(char* out, size_t dsize) {
   return tcalc_strlcpy(out, errstk[errstksize - 1], dsize);
 }
 
-unsigned int tcalc_errstkpop() {
+int tcalc_errstkpop() {
   if (errstksize == 0) return 0;
   errstksize--;
   return errstksize;
 }
-
-#if 0
-void tcalc_getfullerror(char* out) {
-  strcpy(out, tcalc_error_string);
-}
-
-void tcalc_setfullerror(const char* error) {
-  tcalc_strlcpy(tcalc_error_string, error, TCALC_ERROR_MAX_SIZE);
-}
-
-void tcalc_setfullerrorf(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  vsnprintf(tcalc_error_string, TCALC_ERROR_MAX_SIZE, format, args);
-  tcalc_error_string[TCALC_ERROR_MAX_SIZE - 1] = '\0';
-  va_end(args);
-}
-#endif
-
-
 

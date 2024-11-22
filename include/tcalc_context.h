@@ -3,7 +3,7 @@
 
 #include "tcalc_error.h"
 #include "tcalc_func.h"
-#include "tcalc_vec.h"
+#include "tcalc_mem.h"
 #include "tcalc_val_func.h"
 
 #include <stdbool.h>

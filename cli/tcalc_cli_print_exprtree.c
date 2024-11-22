@@ -12,7 +12,7 @@
 
 #define TCALC_EXPRTREE_PRINT_MAX_DEPTH 20
 
-void tcalc_exprtree_print(const char* expr, tcalc_exprtree* node, unsigned int depth);
+void tcalc_exprtree_print(const char* expr, tcalc_exprtree* node, int depth);
 
 
 int tcalc_cli_print_exprtree(const char* expr) {
@@ -30,10 +30,10 @@ int tcalc_cli_print_exprtree(const char* expr) {
   return EXIT_SUCCESS;
 }
 
-void tcalc_exprtree_print(const char* expr, tcalc_exprtree* node, unsigned int depth) {
+void tcalc_exprtree_print(const char* expr, tcalc_exprtree* node, int depth) {
   if (node == NULL) return;
 
-  for (unsigned int i = 0; i < depth; i++)
+  for (int i = 0; i < depth; i++)
     fputs("|___", stdout);
 
   if (depth < TCALC_EXPRTREE_PRINT_MAX_DEPTH) {

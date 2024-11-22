@@ -5,8 +5,6 @@
 #include "tcalc_error.h"
 #include "tcalc_val.h"
 
-#include <malloc.h>
-
 
 
 tcalc_err tcalc_eval(const char* infix, tcalc_val* out) {
