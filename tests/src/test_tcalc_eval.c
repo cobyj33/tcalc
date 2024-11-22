@@ -1,9 +1,6 @@
 #include "tcalc_tests.h"
 
-#include "tcalc_string.h"
-#include "tcalc_eval.h"
-#include "tcalc_error.h"
-#include "tcalc_val.h"
+#include "tcalc.h"
 
 #include <stddef.h>
 #define TCALC_EVAL_ASSERT_DELTA 0.0001

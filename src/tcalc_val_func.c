@@ -1,9 +1,4 @@
-#include "tcalc_val_func.h"
-
-#include "tcalc_val.h"
-#include "tcalc_func.h"
-#include "tcalc_error.h"
-#include "tcalc_constants.h"
+#include "tcalc.h"
 
 #include <stdbool.h>
 #include <math.h>

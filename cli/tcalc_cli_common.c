@@ -1,8 +1,7 @@
 #include "tcalc_cli_common.h"
 
 #include <stdio.h>
-#include "tcalc_error.h"
-#include "tcalc_val.h"
+#include "tcalc.h"
 
 void tcalc_errstk_printall() {
   while (tcalc_errstksize() > 0) {

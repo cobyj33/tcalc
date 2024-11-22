@@ -1,7 +1,5 @@
 #include "tcalc_tests.h"
-#include "tcalc_error.h"
-#include "tcalc_string.h"
-#include "tcalc_mem.h"
+#include "tcalc.h"
 #include <stdlib.h>
 
 void TestTCalcStrToDouble(CuTest* tc) {

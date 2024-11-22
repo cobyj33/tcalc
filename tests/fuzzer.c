@@ -1,5 +1,4 @@
-#include "tcalc_val.h"
-#include "tcalc_eval.h"
+#include "tcalc.h"
 #include <stdint.h>
 #include <stddef.h>
 

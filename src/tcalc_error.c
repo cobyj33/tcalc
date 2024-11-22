@@ -1,11 +1,20 @@
-
-#include "tcalc_error.h"
-#include "tcalc_string.h"
+#include "tcalc.h"
 
 #include <stdbool.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+void tcalc_die(const char *err, ...) {
+	char msg[4096];
+	va_list params;
+	va_start(params, err);
+	vsnprintf(msg, sizeof(msg), err, params);
+	fprintf(stderr, "%s\n", msg);
+	va_end(params);
+	exit(1);
+}
 
 #define TCALC_ERROR_MAX_SIZE 256
 #define TCALC_ERRSTK_MAX_SIZE 16

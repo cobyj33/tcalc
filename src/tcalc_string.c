@@ -1,9 +1,5 @@
 
-
-#include "tcalc_string.h"
-
-#include "tcalc_error.h"
-#include "tcalc_mem.h"
+#include "tcalc.h"
 
 #include <stdbool.h>
 #include <stddef.h>

@@ -1,11 +1,4 @@
-#include "tcalc_exprtree.h"
-
-#include "tcalc_context.h"
-#include "tcalc_string.h"
-#include "tcalc_func.h"
-#include "tcalc_mem.h"
-#include "tcalc_tokens.h"
-
+#include "tcalc.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>

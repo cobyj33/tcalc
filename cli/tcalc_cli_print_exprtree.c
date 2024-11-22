@@ -1,10 +1,7 @@
 #include "tcalc_cli_progs.h"
 #include "tcalc_cli_common.h"
 
-#include "tcalc_error.h"
-#include "tcalc_context.h"
-#include "tcalc_exprtree.h"
-#include "tcalc_tokens.h"
+#include "tcalc.h"
 
 #include <stdio.h>
 #include <stdlib.h>

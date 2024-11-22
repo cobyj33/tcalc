@@ -1,6 +1,4 @@
-
-#include "tcalc_mem.h"
-#include "tcalc_exit.h"
+#include "tcalc.h"
 #include <stdlib.h>
 
 void* tcalc_xmalloc(size_t size) {

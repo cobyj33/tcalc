@@ -1,4 +1,4 @@
-#include "tcalc_val.h"
+#include "tcalc.h"
 
 const char* tcalc_valtype_str(enum tcalc_valtype type) {
   switch (type) {
