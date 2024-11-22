@@ -55,95 +55,109 @@ static tcalc_token tcalc_token_from_binary_token_ind(
   return tokenBuf[binNodeTokenInd];
 }
 
+static void tcalc_exprtree_fdump_preorder_indent(int depth)
+{
+  for (int i = 0; i < depth && i < TCALC_EXPRTREE_PRINT_MAX_DEPTH; i++)
+    fputs("|___", stdout);
+}
+
 static void tcalc_exprtree_fdump_preorder(
   FILE* file, const char* expr, tcalc_exprtree* treeBuf, int32_t treeBufLen,
   tcalc_token* tokenBuf, int32_t tokenBufLen, int32_t exprNodeInd, int depth
 ) {
-  for (int i = 0; i < depth; i++)
-    fputs("|___", stdout);
-
-  if (depth < TCALC_EXPRTREE_PRINT_MAX_DEPTH) {
-    switch (treeBuf[exprNodeInd].type) {
-      case TCALC_EXPRTREE_NODE_TYPE_BINARY:
-      {
-        fprintf(
-          file, "%.*s\n",
-          TCALC_TOKEN_PRINTF_VARARG(
-            expr,
-            tcalc_token_from_binary_token_ind(
-              tokenBuf, tokenBufLen,
-              treeBuf[exprNodeInd].as.binary.tokenIndOImplMult
-            )
-          )
-        );
-
-        tcalc_exprtree_fdump_preorder(
-          file, expr, treeBuf, treeBufLen, tokenBuf,
-          tokenBufLen, treeBuf[exprNodeInd].as.binary.leftTreeInd, depth + 1
-        );
-
-        tcalc_exprtree_fdump_preorder(
-          file, expr, treeBuf, treeBufLen, tokenBuf,
-          tokenBufLen, treeBuf[exprNodeInd].as.binary.rightTreeInd, depth + 1
-        );
-      }
-      break;
-      case TCALC_EXPRTREE_NODE_TYPE_UNARY:
-      {
-        fprintf(
-          file, "%.*s\n",
-          TCALC_TOKEN_PRINTF_VARARG(
-            expr, tokenBuf[treeBuf[exprNodeInd].as.unary.tokenInd]
-          )
-        );
-
-        tcalc_exprtree_fdump_preorder(
-          file, expr, treeBuf, treeBufLen, tokenBuf,
-          tokenBufLen, treeBuf[exprNodeInd].as.unary.childTreeInd, depth + 1
-        );
-      }
-      break;
-      case TCALC_EXPRTREE_NODE_TYPE_VALUE:
-      {
-        fprintf(
-          file, "%.*s\n",
-          TCALC_TOKEN_PRINTF_VARARG(
-            expr, tokenBuf[treeBuf[exprNodeInd].as.value.tokenInd]
-          )
-        );
-      }
-      break;
-      case TCALC_EXPRTREE_NODE_TYPE_FUNC: {
-        fprintf(
-          file, "%.*s\n",
-          TCALC_TOKEN_PRINTF_VARARG(
-            expr, tokenBuf[treeBuf[exprNodeInd].as.value.tokenInd]
-          )
-        );
-
-        int32_t funcArgNodeInd = treeBuf[exprNodeInd].as.func.funcArgHeadInd;
-        while (funcArgNodeInd >= 0)
-        {
-          assert(treeBuf[funcArgNodeInd].type == TCALC_EXPRTREE_NODE_TYPE_FUNCARG);
-          tcalc_exprtree_fdump_preorder(
-            file, expr, treeBuf, treeBufLen, tokenBuf,
-            tokenBufLen, funcArgNodeInd, depth + 1
-          );
-          funcArgNodeInd = treeBuf[funcArgNodeInd].as.funcarg.nextArgInd;
-        }
-      }
-      break;
-      case TCALC_EXPRTREE_NODE_TYPE_FUNCARG:
-      {
-        tcalc_exprtree_fdump_preorder(
-          file, expr, treeBuf, treeBufLen, tokenBuf,
-          tokenBufLen, treeBuf[exprNodeInd].as.funcarg.exprInd, depth + 1
-        );
-      }
-      break;
-    }
-  } else {
+  if (depth >= TCALC_EXPRTREE_PRINT_MAX_DEPTH)
+  {
+    tcalc_exprtree_fdump_preorder_indent(depth);
     fputs("...\n", stdout);
+    return;
+  }
+
+  switch (treeBuf[exprNodeInd].type) {
+    case TCALC_EXPRTREE_NODE_TYPE_BINARY:
+    {
+      tcalc_exprtree_fdump_preorder_indent(depth);
+
+      fprintf(
+        file, "%.*s\n",
+        TCALC_TOKEN_PRINTF_VARARG(
+          expr,
+          tcalc_token_from_binary_token_ind(
+            tokenBuf, tokenBufLen,
+            treeBuf[exprNodeInd].as.binary.tokenIndOImplMult
+          )
+        )
+      );
+
+      tcalc_exprtree_fdump_preorder(
+        file, expr, treeBuf, treeBufLen, tokenBuf,
+        tokenBufLen, treeBuf[exprNodeInd].as.binary.leftTreeInd, depth + 1
+      );
+
+      tcalc_exprtree_fdump_preorder(
+        file, expr, treeBuf, treeBufLen, tokenBuf,
+        tokenBufLen, treeBuf[exprNodeInd].as.binary.rightTreeInd, depth + 1
+      );
+    }
+    break;
+    case TCALC_EXPRTREE_NODE_TYPE_UNARY:
+    {
+      tcalc_exprtree_fdump_preorder_indent(depth);
+
+      fprintf(
+        file, "%.*s\n",
+        TCALC_TOKEN_PRINTF_VARARG(
+          expr, tokenBuf[treeBuf[exprNodeInd].as.unary.tokenInd]
+        )
+      );
+
+      tcalc_exprtree_fdump_preorder(
+        file, expr, treeBuf, treeBufLen, tokenBuf,
+        tokenBufLen, treeBuf[exprNodeInd].as.unary.childTreeInd, depth + 1
+      );
+    }
+    break;
+    case TCALC_EXPRTREE_NODE_TYPE_VALUE:
+    {
+      tcalc_exprtree_fdump_preorder_indent(depth);
+
+      fprintf(
+        file, "%.*s\n",
+        TCALC_TOKEN_PRINTF_VARARG(
+          expr, tokenBuf[treeBuf[exprNodeInd].as.value.tokenInd]
+        )
+      );
+    }
+    break;
+    case TCALC_EXPRTREE_NODE_TYPE_FUNC: {
+      tcalc_exprtree_fdump_preorder_indent(depth);
+
+      fprintf(
+        file, "%.*s\n",
+        TCALC_TOKEN_PRINTF_VARARG(
+          expr, tokenBuf[treeBuf[exprNodeInd].as.value.tokenInd]
+        )
+      );
+
+      int32_t funcArgNodeInd = treeBuf[exprNodeInd].as.func.funcArgHeadInd;
+      while (funcArgNodeInd >= 0)
+      {
+        assert(treeBuf[funcArgNodeInd].type == TCALC_EXPRTREE_NODE_TYPE_FUNCARG);
+        tcalc_exprtree_fdump_preorder(
+          file, expr, treeBuf, treeBufLen, tokenBuf,
+          tokenBufLen, funcArgNodeInd, depth + 1
+        );
+        funcArgNodeInd = treeBuf[funcArgNodeInd].as.funcarg.nextArgInd;
+      }
+    }
+    break;
+    case TCALC_EXPRTREE_NODE_TYPE_FUNCARG:
+    {
+      tcalc_exprtree_fdump_preorder(
+        file, expr, treeBuf, treeBufLen, tokenBuf,
+        tokenBufLen, treeBuf[exprNodeInd].as.funcarg.exprInd, depth
+      );
+    }
+    break;
   }
 }
 
