@@ -20,8 +20,7 @@ int tcalc_cli_eval(const char* expr, struct eval_opts eval_opts) {
   err = tcalc_eval_wctx(expr, ctx, &ans);
   TCALC_CLI_CHECK_ERR(err, "[%s] TCalc error while evaluating expression: %s\n ", __func__, tcalc_strerrcode(err));
 
-  tcalc_val_fput(ans, stdout);
-  fputc('\n', stdout);
+  tcalc_val_fputline(stdout, ans);
 
   return EXIT_SUCCESS;
 }

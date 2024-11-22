@@ -1,8 +1,10 @@
 #ifndef TCALC_CLI_PROGS_H
 #define TCALC_CLI_PROGS_H
 
+#include <stdbool.h>
+
 struct eval_opts {
-  int use_rads;
+  bool use_rads;
 };
 
 int tcalc_repl();

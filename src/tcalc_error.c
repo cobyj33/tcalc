@@ -98,3 +98,11 @@ int tcalc_errstkpop() {
   return errstksize;
 }
 
+void tcalc_errstk_fdump(FILE* file) {
+  while (tcalc_errstksize() > 0) {
+    char err[512];
+    tcalc_errstkpeek(err, 512);
+    fprintf(file, "%s\n", err);
+    tcalc_errstkpop();
+  }
+}

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define TCALC_PI 3.14159265358979323846
 #define TCALC_E 2.7182818284590452354
@@ -54,6 +55,9 @@ void tcalc_die(const char* err, ...);
 void tcalc_errstkclear();
 int tcalc_errstksize();
 int tcalc_errstkpop();
+
+void tcalc_errstk_fdump(FILE* file);
+
 
 bool tcalc_errstkadd(const char* funcname, const char* errstr);
 bool tcalc_errstkaddf(const char* funcname, const char* format, ...) TCALC_FORMAT_ATTRIB(printf, 2, 3);
@@ -430,6 +434,9 @@ typedef struct tcalc_val {
       .boolean = (_boolean_expr_) \
     } \
   }
+
+void tcalc_val_fput(FILE* file, const struct tcalc_val val);
+void tcalc_val_fputline(FILE* file, const struct tcalc_val val);
 
 typedef tcalc_err (*tcalc_unfunc)(double, double*);
 typedef tcalc_err (*tcalc_binfunc)(double, double, double*);
@@ -939,7 +946,7 @@ typedef struct tcalc_opdata {
 // would be wasting bytes as padding instead
 #define TCALC_OPDEF_MAX_STR_SIZE 8
 
-#define TCALC_IDDEF_MAX_STR_SIZE 64
+#define TCALC_IDDEF_MAX_STR_SIZE 16
 
 /**
  * Maybe the tcalc_ctx should not hold information about user-defined functions,
@@ -1004,20 +1011,6 @@ typedef struct tcalc_binfuncdef {
   tcalc_val_binfunc func;
 } tcalc_binfuncdef;
 
-/**
- * Some conditions to a tcalc context:
- *
- * Unary function identifiers must only contain alphabetical characters
- * Binary function identifiers must only contain alphabetical characters
- * Variable identifiers must only contain aphabetical characters
- *
- * Symbols and identifiers must NOT be the same across the tcalc_ctx
- * - The only exception to the above rule is that unary operators and binary
- *   operators can have the same symbol identifiers. This should be taken with
- *   salt though, as the tokenizer will disambiguate itself which + or -
- *   are unary and which + or - are binary. If I had created math I wouldn't
- *   have created it like this. -_-
-*/
 typedef struct tcalc_ctx {
   TCALC_VEC(tcalc_unfuncdef) unfuncs; // Defined Unary Functions
   TCALC_VEC(tcalc_binfuncdef) binfuncs; // Defined Binary Functions

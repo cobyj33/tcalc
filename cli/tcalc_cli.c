@@ -36,7 +36,7 @@ enum tcalc_cli_action {
 
 int main(int argc, char** argv) {
   enum tcalc_cli_action action = TCALC_CLI_EVALUATE;
-  struct eval_opts eval_opts = { .use_rads = 1 };
+  struct eval_opts eval_opts = { .use_rads = true };
 
   static struct option const longopts[] = {
     {"help", no_argument, NULL, 'h'},
@@ -61,8 +61,8 @@ int main(int argc, char** argv) {
       }
       case arg_exprtree: action = TCALC_CLI_PRINT_EXPRTREE; break;
       case arg_tokens: action = TCALC_CLI_PRINT_TOKENS; break;
-      case arg_degrees: eval_opts.use_rads = 0; break;
-      case arg_radians: eval_opts.use_rads = 1; break;
+      case arg_degrees: eval_opts.use_rads = false; break;
+      case arg_radians: eval_opts.use_rads = true; break;
       default: {
         fputs(TCALC_HELP_MESSAGE, stderr);
         return EXIT_FAILURE;
@@ -74,10 +74,13 @@ int main(int argc, char** argv) {
   char* expression = argv[optind];
 
   switch (action) {
-    case TCALC_CLI_PRINT_EXPRTREE: return tcalc_cli_print_exprtree(expression);
-    case TCALC_CLI_PRINT_TOKENS: return tcalc_cli_infix_tokenizer(expression);
+    case TCALC_CLI_PRINT_EXPRTREE:
+      return tcalc_cli_print_exprtree(expression);
+    case TCALC_CLI_PRINT_TOKENS:
+      return tcalc_cli_infix_tokenizer(expression);
     case TCALC_CLI_EVALUATE:
-    default: return tcalc_cli_eval(expression, eval_opts);
+    default:
+      return tcalc_cli_eval(expression, eval_opts);
   }
   return EXIT_SUCCESS;
 }

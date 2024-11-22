@@ -26,7 +26,6 @@ ${CMAKE_SOURCE_DIR}/src/tcalc_val_func.c
 )
 
 set(TCALC_CLI_SRC_FILES
-${CMAKE_SOURCE_DIR}/cli/tcalc_cli_common.c
 ${CMAKE_SOURCE_DIR}/cli/tcalc_cli_eval.c
 ${CMAKE_SOURCE_DIR}/cli/tcalc_cli_infix_tokenizer.c
 ${CMAKE_SOURCE_DIR}/cli/tcalc_cli_print_exprtree.c

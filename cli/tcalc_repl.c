@@ -59,8 +59,7 @@ int tcalc_repl() {
         const tcalc_vardef var = ctx->vars.arr[i];
         fputs(var.id, stdout);
         fputs(" = ", stdout);
-        tcalc_val_fput(var.val, stdout);
-        fputc('\n', stdout);
+        tcalc_val_fputline(stdout, var.val);
       }
       continue;
     }
@@ -80,10 +79,9 @@ int tcalc_repl() {
     tcalc_err err = tcalc_eval_wctx(input, ctx, &ans);
     if (err) {
       fprintf(stderr, "tcalc error: %s\n", tcalc_strerrcode(err));
-      tcalc_errstk_printall();
+      tcalc_errstk_fdump(stderr);
     } else {
-      tcalc_val_fput(ans, stdout);
-      fputc('\n', stdout);
+      tcalc_val_fputline(stdout, ans);
     }
 
     fputs("\n", stdout);
