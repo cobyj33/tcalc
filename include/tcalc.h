@@ -712,7 +712,6 @@ typedef enum tcalc_token_type {
   TCALC_TOK_ID, // identifier ([a-zA-Z_][a-zA-Z0-9_]*)
   TCALC_TOK_GRPSTRT, // starting token for a pair of grouping symbols ("(")
   TCALC_TOK_GRPEND, // ending token for a pair of grouping symbols (")")
-  TCALC_TOK_EOF // end of file
 } tcalc_token_type;
 
 const char* tcalc_token_type_str(tcalc_token_type token_type);

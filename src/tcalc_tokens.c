@@ -58,7 +58,6 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
     case TCALC_TOK_PSEP: return "parameter separator";
     case TCALC_TOK_GRPSTRT: return "group start";
     case TCALC_TOK_GRPEND: return "group end";
-    case TCALC_TOK_EOF: return "group end";
   }
 
   assert(0 && "unreachable");
