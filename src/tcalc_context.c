@@ -35,9 +35,12 @@ tcalc_err tcalc_ctx_alloc_default(tcalc_ctx** out) {
   cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LENI32("floor"), tcalc_val_floor));
   cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LENI32("round"), tcalc_val_round));
   cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LENI32("abs"), tcalc_val_abs));
+  cleanup_on_err(err, tcalc_ctx_addunfunc(ctx, TCALC_STRLIT_PTR_LENI32("trunc"), tcalc_val_trunc));
 
   // Default Binary Functions:
   cleanup_on_err(err, tcalc_ctx_addbinfunc(ctx, TCALC_STRLIT_PTR_LENI32("pow"), tcalc_val_pow));
+  cleanup_on_err(err, tcalc_ctx_addbinfunc(ctx, TCALC_STRLIT_PTR_LENI32("min"), tcalc_val_min));
+  cleanup_on_err(err, tcalc_ctx_addbinfunc(ctx, TCALC_STRLIT_PTR_LENI32("max"), tcalc_val_max));
 
   // Default Variables:
   cleanup_on_err(err, tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LENI32("pi"), TCALC_VAL_INIT_NUM(TCALC_PI)));

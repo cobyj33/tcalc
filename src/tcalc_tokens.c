@@ -65,6 +65,16 @@ const char* tcalc_token_type_str(tcalc_token_type token_type) {
   return "unknown token type";
 }
 
+bool tcalc_token_type_is_op(tcalc_token_type token_type)
+{
+  return token_type == TCALC_TOK_UNOP ||
+    token_type == TCALC_TOK_BINOP ||
+    token_type == TCALC_TOK_RELOP ||
+    token_type == TCALC_TOK_UNLOP ||
+    token_type == TCALC_TOK_BINLOP ||
+    token_type == TCALC_TOK_EQOP;
+}
+
 
 tcalc_err tcalc_tokenize_infix(
   const char* expr,
@@ -106,12 +116,12 @@ static tcalc_err tcalc_tokenize_infix_strtokens_assign_types(
     if (tcalc_token_ntstr_eq(expr, tokens[i], "+") ||
         tcalc_token_ntstr_eq(expr, tokens[i], "-")) {
       // + and - are unary if they are the first token in an expression,
-      // or are precedded by a '(', unary operator, or binary operator
+      // or are precedded by a '(', ',', or some operator token
 
       if (i == 0 ||
           tokens[i - 1].type == TCALC_TOK_GRPSTRT ||
-          tokens[i - 1].type == TCALC_TOK_BINOP ||
-          tokens[i - 1].type == TCALC_TOK_UNOP) {
+          tokens[i - 1].type == TCALC_TOK_PSEP ||
+          tcalc_token_type_is_op(tokens[i - 1].type)) {
         tokens[i].type = TCALC_TOK_UNOP;
       } else {
         tokens[i].type = TCALC_TOK_BINOP;

@@ -123,6 +123,18 @@ tcalc_err tcalc_pow(double a, double b, double* out) {
   return TCALC_ERR_OK;
 }
 
+tcalc_err tcalc_max(double a, double b, double* out)
+{
+  *out = tcalc_gt(a, b) ? a : b;
+  return TCALC_ERR_OK;
+}
+
+tcalc_err tcalc_min(double a, double b, double* out)
+{
+  *out = tcalc_lt(a, b) ? a : b;
+  return TCALC_ERR_OK;
+}
+
 tcalc_err tcalc_ceil(double a, double* out) {
   *out = ceil(a);
   return TCALC_ERR_OK;
@@ -135,6 +147,12 @@ tcalc_err tcalc_floor(double a, double* out) {
 
 tcalc_err tcalc_round(double a, double* out) {
   *out = round(a);
+  return TCALC_ERR_OK;
+}
+
+tcalc_err tcalc_trunc(double a, double* out)
+{
+  *out = trunc(a);
   return TCALC_ERR_OK;
 }
 

@@ -480,6 +480,7 @@ tcalc_err tcalc_ceil(double a, double* out);
 tcalc_err tcalc_floor(double a, double* out);
 tcalc_err tcalc_round(double a, double* out);
 tcalc_err tcalc_abs(double a, double* out);
+tcalc_err tcalc_trunc(double a, double* out);
 
 
 
@@ -551,6 +552,9 @@ tcalc_err tcalc_mod(double a, double b, double* out);
 
 tcalc_err tcalc_pow(double a, double b, double* out);
 
+tcalc_err tcalc_max(double a, double b, double* out);
+tcalc_err tcalc_min(double a, double b, double* out);
+
 
 typedef tcalc_err (*tcalc_val_unfunc)(tcalc_val, double*);
 typedef tcalc_err (*tcalc_val_binfunc)(tcalc_val, tcalc_val, double*);
@@ -593,6 +597,7 @@ tcalc_err tcalc_val_ceil(tcalc_val a, double* out);
 tcalc_err tcalc_val_floor(tcalc_val a, double* out);
 tcalc_err tcalc_val_round(tcalc_val a, double* out);
 tcalc_err tcalc_val_abs(tcalc_val a, double* out);
+tcalc_err tcalc_val_trunc(tcalc_val a, double* out);
 
 
 tcalc_err tcalc_val_sin(tcalc_val a, double* out);
@@ -657,6 +662,9 @@ tcalc_err tcalc_val_multiply(tcalc_val a, tcalc_val b, double* out);
 tcalc_err tcalc_val_divide(tcalc_val a, tcalc_val b, double* out);
 tcalc_err tcalc_val_mod(tcalc_val a, tcalc_val b, double* out);
 
+tcalc_err tcalc_val_min(tcalc_val a, tcalc_val b, double* out);
+tcalc_err tcalc_val_max(tcalc_val a, tcalc_val b, double* out);
+
 tcalc_err tcalc_val_pow(tcalc_val a, tcalc_val b, double* out);
 tcalc_err tcalc_val_atan2(tcalc_val a, tcalc_val b, double* out);
 tcalc_err tcalc_val_atan2_deg(tcalc_val a, tcalc_val b, double* out);
@@ -708,6 +716,7 @@ typedef enum tcalc_token_type {
 } tcalc_token_type;
 
 const char* tcalc_token_type_str(tcalc_token_type token_type);
+bool tcalc_token_type_is_op(tcalc_token_type token_type);
 
 // Data that a token can contain:
 // Type
