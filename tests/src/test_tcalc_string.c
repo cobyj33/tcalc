@@ -41,22 +41,8 @@ void TestTCalcStrToDouble(CuTest* tc) {
   CuAssertDblEquals(tc, out, -0.249, TCALC_DBL_ASSERT_DELTA);
 }
 
-void TestTCalcStrHasPrefix(CuTest* tc) {
-  CuAssertTrue(tc, tcalc_strhaspre("**", "**5+3"));
-  CuAssertTrue(tc, tcalc_strhaspre("pre", "prefix"));
-  CuAssertTrue(tc, tcalc_strhaspre("", ""));
-  CuAssertTrue(tc, tcalc_strhaspre("", "trivial"));
-
-
-  CuAssertTrue(tc, !tcalc_strhaspre("**", "*"));
-  CuAssertTrue(tc, !tcalc_strhaspre("prefix", "pre"));
-  CuAssertTrue(tc, !tcalc_strhaspre("!()", "!(trivial"));
-  CuAssertTrue(tc, !tcalc_strhaspre("trivial", ""));
-}
-
 CuSuite* TCalcStringSuite() {
   CuSuite* suite = CuSuiteNew();
   SUITE_ADD_TEST(suite, TestTCalcStrToDouble);
-  SUITE_ADD_TEST(suite, TestTCalcStrHasPrefix);
   return suite;
 }

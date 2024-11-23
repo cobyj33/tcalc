@@ -8,25 +8,18 @@
 
 static tcalc_err tcalc_eval_gb(const char* expr, int32_t exprLen, tcalc_val* out)
 {
-  int32_t dummyTreeNodeCount, dummyTokenCount;
+  int32_t dummyTreeNodeCount = 0, dummyTokenCount = 0, dummyTreeRootInd = -1;
   return tcalc_eval(
-    expr,
-    exprLen,
-    globalTreeNodeBuffer,
-    globalTreeNodeBufferCapacity,
-    globalTokenBuffer,
-    globalTokenBufferCapacity,
-    out,
-    &dummyTreeNodeCount,
-    &dummyTokenCount
+    expr, exprLen,
+    globalTokenBuffer, globalTokenBufferCapacity,
+    globalTreeNodeBuffer, globalTreeNodeBufferCapacity,
+    out, &dummyTokenCount, &dummyTreeNodeCount,
+    &dummyTreeRootInd
   );
 }
 
 
 void TestTCalcEvalSuccesses(CuTest *tc) {
-  tcalc_token tokenBuffer[TCALC_KIBI(2)];
-  tcalc_exprtree treeNodeBuffer[TCALC_KIBI(2)];
-
   #define MAKE_DOUBLE_SUCCESS_TEST(tc, expr, val) \
     { \
       tcalc_err err = TCALC_ERR_OK; \
@@ -126,8 +119,6 @@ void TestTCalcEvalSuccesses(CuTest *tc) {
 }
 
 void TestTCalcEvalFailures(CuTest *tc) {
-  tcalc_token tokenBuffer[TCALC_KIBI(2)];
-  tcalc_exprtree treeNodeBuffer[TCALC_KIBI(2)];
   tcalc_val res = TCALC_VAL_INIT_NUM(0.0);
 
   CuAssertTrue(tc, tcalc_eval_gb(TCALC_STRLIT_PTR_LEN("1 / 0"), &res) == TCALC_ERR_DIV_BY_ZERO);

@@ -19,8 +19,8 @@ void tcalc_die(const char *err, ...) {
 #define TCALC_ERROR_MAX_SIZE 256
 #define TCALC_ERRSTK_MAX_SIZE 16
 
-int errstksize = 0;
-char errstk[TCALC_ERRSTK_MAX_SIZE][TCALC_ERROR_MAX_SIZE] = {'\0'};
+static int errstksize = 0;
+static char errstk[TCALC_ERRSTK_MAX_SIZE][TCALC_ERROR_MAX_SIZE] = { 0 };
 
 const char* tcalc_strerrcode(tcalc_err err) {
   switch (err) {

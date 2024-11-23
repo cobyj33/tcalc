@@ -43,10 +43,6 @@ bool tcalc_matcond(bool a, bool b) {
   return !a || b;
 }
 
-/**
- * We can't just say if they are directly equal as ```a == b```, since
- * a truthy value in C simply means that the value is not 0.
-*/
 bool tcalc_equals_l(bool a, bool b) {
   return (a && b) || (!a && !b);
 }
@@ -184,7 +180,7 @@ TCALC_TRIG_DEG_UFUNCDEF(tcalc_tan, tcalc_tan_deg)
 
 tcalc_err tcalc_sec(double a, double* out) {
   tcalc_err err = TCALC_ERR_OK;
-  double reciprocal_res;
+  double reciprocal_res = 0.0;
   if ((err == tcalc_cos(a, &reciprocal_res)) != TCALC_ERR_OK) return err;
   err = tcalc_divide(1.0, reciprocal_res, out);
   if (err == TCALC_ERR_DIV_BY_ZERO) return TCALC_ERR_NOT_IN_DOMAIN;
@@ -194,7 +190,7 @@ TCALC_TRIG_DEG_UFUNCDEF(tcalc_sec, tcalc_sec_deg)
 
 tcalc_err tcalc_csc(double a, double* out) {
   tcalc_err err = TCALC_ERR_OK;
-  double reciprocal_res;
+  double reciprocal_res = 0.0;
   if ((err == tcalc_sin(a, &reciprocal_res)) != TCALC_ERR_OK) return err;
   err = tcalc_divide(1.0, reciprocal_res, out);
   if (err == TCALC_ERR_DIV_BY_ZERO) return TCALC_ERR_NOT_IN_DOMAIN;
@@ -204,7 +200,7 @@ TCALC_TRIG_DEG_UFUNCDEF(tcalc_csc, tcalc_csc_deg)
 
 tcalc_err tcalc_cot(double a, double* out) {
   tcalc_err err = TCALC_ERR_OK;
-  double reciprocal_res;
+  double reciprocal_res = 0.0;
   if ((err == tcalc_tan(a, &reciprocal_res)) != TCALC_ERR_OK) return err;
   err = tcalc_divide(1.0, reciprocal_res, out);
   if (err == TCALC_ERR_DIV_BY_ZERO) return TCALC_ERR_NOT_IN_DOMAIN;

@@ -15,9 +15,9 @@
  * , - parameter separator
  * abcdefghijklmnopqrstuvwxyz - function and variable names
 */
-const char* TCALC_ALLOWED_CHARS = ",()[]+-*/^%!=<>&|0123456789. abcdefghijklmnopqrstuvwxyz";
-const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%!=<>";
-const char* TCALC_MULTI_TOKENS[] = {"**", "==", "<=", ">=", "!=", "&&", "||", NULL}; // make sure this remains null terminated
+static const char* TCALC_ALLOWED_CHARS = ",()[]+-*/^%!=<>&|0123456789. abcdefghijklmnopqrstuvwxyz";
+static const char* TCALC_SINGLE_TOKENS = ",()[]+-*/^%!=<>";
+static const char* TCALC_MULTI_TOKENS[] = {"**", "==", "<=", ">=", "!=", "&&", "||", NULL}; // make sure this remains null terminated
 
 static bool is_valid_tcalc_char(char ch);
 
@@ -31,8 +31,6 @@ static tcalc_err tcalc_next_math_strtoken(
   const char* expr, int32_t exprLen, int32_t req_start,
   int32_t* out_start, int32_t* out_xend
 );
-
-static bool tcalc_are_groupsyms_balanced(const char* expr, int32_t exprLen);
 
 static tcalc_err tcalc_tokenize_infix_strtokens(
   const char* expr, int32_t exprLen, tcalc_token* destBuffer,
@@ -76,18 +74,12 @@ tcalc_err tcalc_tokenize_infix(
   int32_t* outDestLength
 ) {
   *outDestLength = 0;
+  int32_t destLength = 0;
   tcalc_err err = TCALC_ERR_OK;
-
-  if (!tcalc_are_groupsyms_balanced(expr, exprLen)) {
-    tcalc_errstkaddf(__func__, "Unbalanced grouping symbols");
-    return TCALC_ERR_UNBAL_GRPSYMS;
-  }
-
-  ret_on_err(
-    err,
-    tcalc_tokenize_infix_strtokens(expr, exprLen, destBuffer, destCapacity, outDestLength)
-  );
-  err = tcalc_tokenize_infix_strtokens_assign_types(expr, exprLen, destBuffer, *outDestLength);
+  err = tcalc_tokenize_infix_strtokens(expr, exprLen, destBuffer, destCapacity, &destLength);
+  if (err) return err;
+  err = tcalc_tokenize_infix_strtokens_assign_types(expr, exprLen, destBuffer, destLength);
+  *outDestLength = destLength;
   return err;
 }
 
@@ -266,13 +258,18 @@ static tcalc_err tcalc_next_math_strtoken(
   if (start >= exprLen)
     return TCALC_ERR_STOP_ITER;
 
+  // Note that this doesn't catch all possible strings. For example, '&' is
+  // an invalid token by itself, but will pass this point.
   if (!is_valid_tcalc_char(expr[start]))
     return TCALC_ERR_INVALID_ARG;
 
   *out_start = start;
 
   for (int s = 0; TCALC_MULTI_TOKENS[s] != NULL; s++) {
-    if (tcalc_strhaspre(TCALC_MULTI_TOKENS[s], expr + start)) {
+    if (tcalc_strhaspre(
+        TCALC_MULTI_TOKENS[s], (int32_t)strlen(TCALC_MULTI_TOKENS[s]),
+        expr + start, exprLen - start)
+    ) {
       *out_xend = start + (int32_t)strlen(TCALC_MULTI_TOKENS[s]);
       return TCALC_ERR_OK;
     }
@@ -286,16 +283,16 @@ static tcalc_err tcalc_next_math_strtoken(
 	}
 
 
-	if (isdigit(expr[start]) || expr[start] == '.') { // number checking.
+	if (tcalc_is_digit(expr[start]) || expr[start] == '.') { // number checking.
     // lone decimal point
-		if (expr[start] == '.'  && (start + 1 >= exprLen || !isdigit(expr[start + 1]))) {
+		if (expr[start] == '.'  && (start + 1 >= exprLen || !tcalc_is_digit(expr[start + 1]))) {
       return TCALC_ERR_INVALID_ARG;
 		}
 
 		bool foundDecimal = false;
     int32_t xend = start;
 
-		while (xend < exprLen && (isdigit(expr[xend]) || expr[xend] == '.')) {
+		while (xend < exprLen && (tcalc_is_digit(expr[xend]) || expr[xend] == '.')) {
 			if (expr[xend] == '.') {
 				if (foundDecimal) return TCALC_ERR_INVALID_ARG;
         foundDecimal = true;
@@ -308,16 +305,15 @@ static tcalc_err tcalc_next_math_strtoken(
     return TCALC_ERR_OK;
 	}
 
-  if (islower(expr[start])) { // identifier checking
+  if (tcalc_is_lower(expr[start])) { // identifier checking
     int32_t xend = start;
-    while (xend < exprLen && islower(expr[xend]))
+    while (xend < exprLen && tcalc_is_lower(expr[xend]))
       xend++;
     *out_xend = xend;
     return TCALC_ERR_OK;
   }
 
-  assert(0 && "unreachable");
-	return TCALC_ERR_STOP_ITER; // this SHOULD be unreachable
+	return TCALC_ERR_UNKNOWN_TOKEN;
 }
 
 static bool is_valid_tcalc_char(char ch) {
@@ -327,26 +323,11 @@ static bool is_valid_tcalc_char(char ch) {
   return TCALC_ALLOWED_CHARS[i] != '\0';
 }
 
-/**
- * There's probably a better way to implement this but whatever
-*/
-static bool tcalc_are_groupsyms_balanced(const char* expr, int32_t exprLen) {
-  int nb_parens = 0;
-
-  for (int32_t i = 0; i < exprLen && nb_parens >= 0; i++) {
-    nb_parens += expr[i] == '(';
-    nb_parens -= expr[i] == ')';
-  }
-
-  return nb_parens == 0;
-}
-
 static bool tcalc_is_identifier(
   const char* source, int32_t sourceStart, int32_t sourceXEnd, int32_t checkLen
-)
-{
+) {
   int32_t i = sourceStart;
-  while (i < sourceXEnd && i < sourceStart + checkLen && islower(source[i]))
+  while (i < sourceXEnd && i < sourceStart + checkLen && tcalc_is_lower(source[i]))
     i++;
   return i == sourceStart + checkLen;
 }

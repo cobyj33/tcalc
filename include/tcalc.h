@@ -18,6 +18,7 @@
 
 #define TCALC_STRLIT_LEN(strlit) (sizeof(strlit) - 1)
 #define TCALC_STRLIT_PTR_LEN(strlit) ((strlit)), TCALC_STRLIT_LEN(strlit)
+#define TCALC_STRLIT_PTR_LENI32(strlit) ((strlit)), (int32_t)TCALC_STRLIT_LEN(strlit)
 #define TCALC_BOOLSTR(boolexpr) ((boolexpr) ? "true" : "false")
 
 #define TCALC_KIBI(x) ((x)*1024)
@@ -65,11 +66,11 @@
  * @param err a printf-formatted string which will be printed to stderr
  * @param ... printf-style varargs
 */
-void tcalc_die(const char* err, ...);
+void tcalc_die(const char* err, ...) TCALC_FORMAT_ATTRIB(printf, 1, 2);
 
-void tcalc_errstkclear();
-int tcalc_errstksize();
-int tcalc_errstkpop();
+void tcalc_errstkclear(void);
+int tcalc_errstksize(void);
+int tcalc_errstkpop(void);
 
 void tcalc_errstk_fdump(FILE* file);
 
@@ -79,27 +80,8 @@ bool tcalc_errstkaddf(const char* funcname, const char* format, ...) TCALC_FORMA
 
 int32_t tcalc_errstkpeek(char* out, int32_t dsize);
 
-/**
- * @brief A general error type for operations in tcalc.
- *
- * A note on some error types:
- *
- * TCALC_ERR_NOT_FOUND - This should be returned from getter functions when a
- * value is not found. This shouldn't be returned from "contains" or "has" type
- * functions when they don't find anything, as a "contains" or "has" function
- * not finding a value is not an error, but a valid return type of false.
- *
- * TCALC_ERR_UNKNOWN - This should only be returned when there is no other way
- * for the programmer to know what error happened, such as a code block which
- * was supposed to be unreachable.
- *
- *
- *
- * When adding new errors, make sure to adjust returned strings in
- * tcalc_strerrcode
-*/
 typedef enum tcalc_err {
-  TCALC_ERR_OK = 0, // important that this stays 0
+  TCALC_ERR_OK = 0,
   TCALC_ERR_OUT_OF_BOUNDS = -43110,
   TCALC_ERR_NOMEM,
   TCALC_ERR_INVALID_ARG,
@@ -150,7 +132,15 @@ typedef enum tcalc_err {
 #define ret_on_macerr(err, mac) do { mac; if (err) return err; } while (0)
 
 
-#define reterr_on_true(err, expr, err_on_true) if (expr) { (err) = (err_on_true); return (err); }
+#define reterr_on_true(err, expr, err_on_true) \
+  do \
+  { \
+    if (expr) \
+    { \
+      (err) = (err_on_true); \
+      return (err); \
+   } \
+  } while (0)
 
 /**
  * tcalc has a general pattern of a cleanup: label at the bottom of functions
@@ -236,7 +226,7 @@ const char* tcalc_strerrcode(tcalc_err err);
  * @param size the size in bytes that the allocated memory block should be
  * @returns A guaranteed non-NULL pointer to the allocated memory block
 */
-void* tcalc_xmalloc(size_t);
+void* tcalc_xmalloc(size_t size);
 
 /**
  * Extended calloc function which aborts the program on malloc failure
@@ -250,7 +240,7 @@ void* tcalc_xmalloc(size_t);
  * @returns A guaranteed non-NULL pointer to the allocated memory block of the
  * size memsize * nmemb. All of the bytes in the function will be initialized to 0.
 */
-void* tcalc_xcalloc(size_t, size_t);
+void* tcalc_xcalloc(size_t nmemb, size_t memsize);
 /**
  * Extended realloc function which aborts the program on malloc failure
  *
@@ -263,7 +253,7 @@ void* tcalc_xcalloc(size_t, size_t);
  * @param size the size in bytes that the new memory block should be
  * @returns A guaranteed non-NULL pointer to the allocated memory block
 */
-void* tcalc_xrealloc(void*, size_t);
+void* tcalc_xrealloc(void* ptr, size_t size);
 
 /**
  * arr: The pointer to the array to perform possible growth on
@@ -671,6 +661,7 @@ tcalc_err tcalc_val_pow(tcalc_val a, tcalc_val b, double* out);
 tcalc_err tcalc_val_atan2(tcalc_val a, tcalc_val b, double* out);
 tcalc_err tcalc_val_atan2_deg(tcalc_val a, tcalc_val b, double* out);
 
+bool tcalc_streq_lblb(const char* s1, size_t l1, const char* s2, size_t l2);
 // Check if a null terminated string and a length-based string hold equivalent
 // information
 bool tcalc_streq_ntlb(const char* ntstr, const char* lbstr, int32_t lbstr_len);
@@ -683,43 +674,22 @@ enum tcalc_err tcalc_lpstrtodouble(const char*, size_t, double*);
 
 bool tcalc_str_list_has(const char* input, const char** list, size_t count);
 
-bool tcalc_strhaspre(const char* prefix, const char* str);
+bool tcalc_strhaspre(const char* prefix, int32_t prefixLen, const char* str, int32_t strLen);
+
+static inline bool tcalc_is_lower(char ch)
+{
+  return ch >= 'a' && ch <= 'z';
+}
+
+static inline bool tcalc_is_digit(char ch)
+{
+  return ch >= '0' && ch <= '9';
+}
 
 /*
-Allowed TCalc Tokens:
-All Alphanumeric Characters
-"+-/%*^" operators
-"()" Parentheses
-"." decimal point
-" " whitespace (will be ignored)
-
-Tokens will be separated based on:
-- strings of unsigned integers
-- strings of unsigned decimal numbers
-- strings of lowercase letters
-- operators
-- grouping symbols
-
-Whitespace will not be included in the actual token output, but can affect what
-tokens are interpreted as separate. For example:
-
-Strings of characters will be disambiguated by the actual parser for the tokens.
-The way that the characters are disambiguated will be up to the parser, as a string
-of characters could simultaneously represent
-
-Since names of functions and variables will definitely be disambiguous if multiplication
-is allowed to be represented through placing variables next to each other (xy),
-all strings of alphanumeric characters and "." characters will remain untouched.
-
-I thought it best to give equality it's own operator type to simplify parsing.
-Note that this also applies to !=
-
-Valid Examples:
-
-"(54+23) * 34"
-["(", "54", "+", "23", ")", "*", "34"]
-
-"2^(3+3.5)/3"
+I thought it best to give equality its own token type to simplify parsing,
+as, semantically, '==' and '!=' are both relational binary operators
+((num, num) -> bool) and logical binary operators ((bool, bool) -> bool)
 */
 
 typedef enum tcalc_token_type {
@@ -857,15 +827,16 @@ struct tcalc_exprtree_node {
 };
 
 tcalc_err tcalc_lex_parse(
-  const char* expr, int32_t exprLen, tcalc_token *tokenBuffer,
-  int32_t tokenBufferCapacity, tcalc_exprtree *treeBuffer,
-  int32_t treeBufferCapacity, int32_t *outTokenCount, int32_t *outTreeNodeCount,
-  int32_t *outExprRootInd
+  const char* expr, int32_t exprLen,
+  tcalc_token *tokenBuffer, int32_t tokenBufferCapacity,
+  tcalc_exprtree *treeBuffer, int32_t treeBufferCapacity,
+  int32_t *outTokenCount, int32_t *outTreeNodeCount, int32_t *outExprRootInd
 );
 
 tcalc_err tcalc_create_exprtree_infix(
-  const char* expr, int32_t exprLen, tcalc_token *tokens,
-  int32_t tokensLen, tcalc_exprtree *destBuffer, int32_t destCapacity,
+  const char* expr, int32_t exprLen,
+  tcalc_token *tokens, int32_t tokensLen,
+  tcalc_exprtree *destBuffer, int32_t destCapacity,
   int32_t* outDestLength, int32_t* outExprRootInd
 );
 
@@ -880,18 +851,21 @@ tcalc_err tcalc_eval_exprtree(
 
 tcalc_err tcalc_eval(
   const char* expr, int32_t exprLen,
-  tcalc_exprtree* treeNodesBuffer, int32_t treeNodesBufferCapacity,
   tcalc_token* tokensBuffer, int32_t tokensBufferCapacity,
+  tcalc_exprtree* treeNodesBuffer, int32_t treeNodesBufferCapacity,
   struct tcalc_val* out,
-  int32_t *outTreeNodesCount, int32_t *outTokensCount
+  int32_t *outTokensCount, int32_t *outTreeNodesCount,
+  int32_t *outExprRootInd
 );
 
 tcalc_err tcalc_eval_wctx(
   const char* expr, int32_t exprLen,
-  tcalc_exprtree* treeNodesBuffer, int32_t treeNodesBufferCapacity,
   tcalc_token* tokensBuffer, int32_t tokensBufferCapacity,
+  tcalc_exprtree* treeNodesBuffer, int32_t treeNodesBufferCapacity,
   const struct tcalc_ctx* ctx,
-  struct tcalc_val* out, int32_t *outTreeNodesCount, int32_t *outTokensCount
+  struct tcalc_val* out,
+  int32_t *outTokensCount, int32_t *outTreeNodesCount,
+  int32_t *outExprRootInd
 );
 
 /**
@@ -1053,33 +1027,33 @@ tcalc_err tcalc_ctx_addtrigdeg(tcalc_ctx* ctx);
 
 void tcalc_ctx_free(tcalc_ctx* ctx);
 
-tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, const char* name, size_t name_len, struct tcalc_val val);
-tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_val_unfunc func);
-tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_val_binfunc func);
-tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_unfunc func);
-tcalc_err tcalc_ctx_addbinop(tcalc_ctx* ctx, const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_binfunc func);
-tcalc_err tcalc_ctx_addrelop(tcalc_ctx* ctx,const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_relfunc func);
-tcalc_err tcalc_ctx_addunlop(tcalc_ctx* ctx,const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_unlfunc func);
-tcalc_err tcalc_ctx_addbinlop(tcalc_ctx* ctx, const char* name, size_t name_len, int prec, tcalc_assoc assoc, tcalc_val_binlfunc func);
+tcalc_err tcalc_ctx_addvar(tcalc_ctx* ctx, const char* name, int32_t nameLen, struct tcalc_val val);
+tcalc_err tcalc_ctx_addunfunc(tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_val_unfunc func);
+tcalc_err tcalc_ctx_addbinfunc(tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_val_binfunc func);
+tcalc_err tcalc_ctx_addunop(tcalc_ctx* ctx, const char* name, int32_t nameLen, int prec, tcalc_assoc assoc, tcalc_val_unfunc func);
+tcalc_err tcalc_ctx_addbinop(tcalc_ctx* ctx, const char* name, int32_t nameLen, int prec, tcalc_assoc assoc, tcalc_val_binfunc func);
+tcalc_err tcalc_ctx_addrelop(tcalc_ctx* ctx,const char* name, int32_t nameLen, int prec, tcalc_assoc assoc, tcalc_val_relfunc func);
+tcalc_err tcalc_ctx_addunlop(tcalc_ctx* ctx,const char* name, int32_t nameLen, int prec, tcalc_assoc assoc, tcalc_val_unlfunc func);
+tcalc_err tcalc_ctx_addbinlop(tcalc_ctx* ctx, const char* name, int32_t nameLen, int prec, tcalc_assoc assoc, tcalc_val_binlfunc func);
 
 /**
  * Note that tcalc_ctx_hasid does not apply to operations, but only
  * functions and variables
 */
-bool tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-bool tcalc_ctx_hasid(const tcalc_ctx* ctx, const char* name, size_t name_len);
-bool tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasop(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
+bool tcalc_ctx_hasid(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
+bool tcalc_ctx_hasfunc(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
 
-bool tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-bool tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-bool tcalc_ctx_hasrelop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-bool tcalc_ctx_hasunlop(const tcalc_ctx* ctx, const char* name, size_t name_len);
-bool tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasunop(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
+bool tcalc_ctx_hasbinop(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
+bool tcalc_ctx_hasrelop(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
+bool tcalc_ctx_hasunlop(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
+bool tcalc_ctx_hasbinlop(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
 
-bool tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
-bool tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasbinfunc(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
+bool tcalc_ctx_hasunfunc(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
 
-bool tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name, size_t name_len);
+bool tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name, int32_t nameLen);
 
 /**
  * Note that out must be NON-NULL
@@ -1089,17 +1063,17 @@ bool tcalc_ctx_hasvar(const tcalc_ctx* ctx, const char* name, size_t name_len);
  * tcalc_ctx_has_x functions (if tcalc_ctx_has_x returns true, tcalc_ctx_get_x
  * will not return an error)
 */
-tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_vardef* out);
+tcalc_err tcalc_ctx_getvar(const tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_vardef* out);
 
 
-tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_unfuncdef* out);
-tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_binfuncdef* out);
+tcalc_err tcalc_ctx_getunfunc(const tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_unfuncdef* out);
+tcalc_err tcalc_ctx_getbinfunc(const tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_binfuncdef* out);
 
-tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_unopdef* out);
-tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_binopdef* out);
-tcalc_err tcalc_ctx_getrelop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_relopdef* out);
-tcalc_err tcalc_ctx_getunlop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_unlopdef* out);
-tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, size_t name_len, tcalc_binlopdef* out);
+tcalc_err tcalc_ctx_getunop(const tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_unopdef* out);
+tcalc_err tcalc_ctx_getbinop(const tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_binopdef* out);
+tcalc_err tcalc_ctx_getrelop(const tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_relopdef* out);
+tcalc_err tcalc_ctx_getunlop(const tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_unlopdef* out);
+tcalc_err tcalc_ctx_getbinlop(const tcalc_ctx* ctx, const char* name, int32_t nameLen, tcalc_binlopdef* out);
 
 /**
  * Note that since a variable symbol can be defined as multiple different operator

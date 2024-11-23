@@ -15,6 +15,6 @@ void* tcalc_xcalloc(size_t nmemb, size_t memsize) {
 
 void* tcalc_xrealloc(void* ptr, size_t newsize) {
   void* newptr = realloc(ptr, newsize);
-  if (newptr == NULL) tcalc_die("[tcalc_realloc] bad realloc: %d bytes", newsize);
+  if (newptr == NULL) tcalc_die("[tcalc_realloc] bad realloc: %zu bytes", newsize);
   return newptr;
 }

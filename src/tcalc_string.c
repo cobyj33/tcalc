@@ -14,7 +14,7 @@
 int32_t tcalc_strcpy_lblb(char *dest, int32_t destCapacity, const char *src, int32_t srcLen)
 {
   const int32_t copied = TCALC_MIN_UNSAFE(destCapacity, srcLen);
-  memcpy(dest, src, copied);
+  memcpy(dest, src, (size_t)copied);
   return copied;
 }
 
@@ -43,25 +43,25 @@ tcalc_err tcalc_lpstrtodouble(const char* str, size_t len, double* out) {
 
   if (str[0] == '-' || str[0] == '+')  {
     if (str[1] == '.') {
-      if (!isdigit(str[2]))
+      if (!tcalc_is_digit(str[2]))
         return TCALC_ERR_INVALID_ARG;
     }
-    else if (!isdigit(str[1])) {
+    else if (!tcalc_is_digit(str[1])) {
       return TCALC_ERR_INVALID_ARG;
     }
   }
 
-  int foundDecimal = 0;
+  bool foundDecimal = false;
   double decimalMultiplier = 0.1;
   double sign = str[0] == '-' ? -1.0 : 1.0;
 
   for (size_t i = (str[0] == '-' || str[0] == '+'); i < len; i++) {
     if (str[i] == '.') {
       if (foundDecimal) return TCALC_ERR_INVALID_ARG;
-      foundDecimal = 1;
-    } else if (isdigit(str[i])) {
-      if (*out >= (DBL_MAX - 9) / 10) {
-        return sign == -1 ? TCALC_ERR_UNDERFLOW : TCALC_ERR_OVERFLOW;
+      foundDecimal = true;
+    } else if (tcalc_is_digit(str[i])) {
+      if (!foundDecimal && *out >= (DBL_MAX - 9) / 10) {
+        return TCALC_ERR_OVERFLOW;
       }
 
       if (foundDecimal) {
@@ -87,15 +87,16 @@ bool tcalc_str_list_has(const char* input, const char** list, size_t count) {
   return i < count;
 }
 
-bool tcalc_strhaspre(const char* prefix, const char* str) {
-  size_t i = 0;
-  while (str[i] != '\0' && prefix[i] != '\0' && prefix[i] == str[i])
+bool tcalc_strhaspre(const char* prefix, int32_t prefixLen, const char* str, int32_t strLen) {
+  int32_t i = 0;
+  if (prefixLen > strLen) return false;
+  while (i < prefixLen && i < strLen && prefix[i] == str[i])
     i++;
-  return prefix[i] == '\0';
+  return i == prefixLen;
 }
 
-bool tcalc_streq_lb(const char* s1, size_t l1, const char* s2, size_t l2) {
-  if (l1 != l2) return 0;
+bool tcalc_streq_lblb(const char* s1, size_t l1, const char* s2, size_t l2) {
+  if (l1 != l2) return false;
   const char* const e1 = s1 + l1;
   while (s1 != e1 && *s1 == *s2) { s1++; s2++; }
   return s1 == e1;

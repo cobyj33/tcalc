@@ -18,11 +18,13 @@ int tcalc_cli_eval(const char* expr, int32_t exprLen, struct eval_opts eval_opts
     TCALC_CLI_CHECK_ERR(err, "[%s] TCalc error while switching to degree-trig functions: %s\n ", __func__, tcalc_strerrcode(err));
   }
 
-  int32_t treeNodeCount = 0, tokenCount = 0;
+  int32_t treeNodeCount = 0, tokenCount = 0, treeRootInd = -1;
   err = tcalc_eval_wctx(
-    expr, exprLen, globalTreeNodeBuffer, globalTreeNodeBufferCapacity,
-    globalTokenBuffer, globalTokenBufferCapacity, ctx, &ans,
-    &treeNodeCount, &tokenCount
+    expr, exprLen,
+    globalTokenBuffer, globalTokenBufferCapacity,
+    globalTreeNodeBuffer, globalTreeNodeBufferCapacity,
+    ctx, &ans, &tokenCount, &treeNodeCount,
+    &treeRootInd
   );
 
   TCALC_CLI_CHECK_ERR(err, "[%s] TCalc error while evaluating expression: %s\n ", __func__, tcalc_strerrcode(err));

@@ -36,6 +36,8 @@ tcalc_err tcalc_eval_exprtree(
 
   tcalc_err err = TCALC_ERR_OK;
 
+  assert(exprNodeInd >= 0);
+  assert(exprNodeInd < treeArrayLen);
   switch (treeArray[exprNodeInd].type) {
     case TCALC_EXPRTREE_NODE_TYPE_BINARY: {
       const tcalc_exprtree_binary_node binnode = treeArray[exprNodeInd].as.binary;
@@ -58,7 +60,7 @@ tcalc_err tcalc_eval_exprtree(
       if (binnode.tokenIndOImplMult < 0)
       {
         tcalc_binopdef binary_op_def;
-        ret_on_err(err, tcalc_ctx_getbinop(ctx, TCALC_STRLIT_PTR_LEN(""), &binary_op_def));
+        ret_on_err(err, tcalc_ctx_getbinop(ctx, TCALC_STRLIT_PTR_LENI32(""), &binary_op_def));
         out->type = TCALC_VALTYPE_NUM;
         return binary_op_def.func(operand1, operand2, &(out->as.num));
       }

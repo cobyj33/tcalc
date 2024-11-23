@@ -34,7 +34,7 @@ int tcalc_repl() {
   tcalc_err err = tcalc_ctx_alloc_default(&ctx);
   TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to allocate ctx for REPL... exiting: %s", __func__, tcalc_strerrcode(err))
 
-  err = tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LEN("ans"), TCALC_VAL_INIT_NUM(0.0));
+  err = tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LENI32("ans"), TCALC_VAL_INIT_NUM(0.0));
   TCALC_CLI_CLEANUP_ERR(err, "[%s] Failed to set ans variable on tcalc ctx.. exiting: %s", __func__, tcalc_strerrcode(err))
 
   while (!tcalc_str_list_has(globalInputBuffer, quit_strings, TCALC_ARRAY_SIZE(quit_strings))) {
@@ -83,12 +83,14 @@ int tcalc_repl() {
       continue;
     }
 
-    int32_t treeNodeCount = 0, tokenCount = 0;
+    int32_t treeNodeCount = 0, tokenCount = 0, treeExprRootInd = 0;
     tcalc_val ans = { 0 };
     tcalc_err err = tcalc_eval_wctx(
-      input, inputLen, globalTreeNodeBuffer, globalTreeNodeBufferCapacity,
-      globalTokenBuffer, globalTokenBufferCapacity, ctx, &ans,
-      &treeNodeCount, &tokenCount
+      input, inputLen,
+      globalTokenBuffer, globalTokenBufferCapacity,
+      globalTreeNodeBuffer, globalTreeNodeBufferCapacity,
+      ctx, &ans, &tokenCount, &treeNodeCount,
+      &treeExprRootInd
     );
 
     if (err) {
@@ -98,8 +100,8 @@ int tcalc_repl() {
       tcalc_val_fputline(stdout, ans);
     }
 
-    fputs("\n", stdout);
-    cleanup_on_err(err, tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LEN("ans"), ans));
+    fputc('\n', stdout);
+    cleanup_on_err(err, tcalc_ctx_addvar(ctx, TCALC_STRLIT_PTR_LENI32("ans"), ans));
   }
 
   return EXIT_SUCCESS;

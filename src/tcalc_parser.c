@@ -109,6 +109,7 @@ tcalc_err tcalc_create_exprtree_infix(
   *outExprRootInd = -1;
   *outDestLength = -1;
   tcalc_err err = TCALC_ERR_OK;
+  int32_t exprRootInd = -1;
 
   tcalc_pctx pctx = {
     .expr = expr,
@@ -120,7 +121,7 @@ tcalc_err tcalc_create_exprtree_infix(
     .treeLen = 0
   };
 
-  err = tcalc_parsefunc_expression(&pctx, outExprRootInd);
+  err = tcalc_parsefunc_expression(&pctx, &exprRootInd);
 
   if (err == TCALC_ERR_OK && pctx.i < pctx.toksLen)
   {
@@ -135,6 +136,7 @@ tcalc_err tcalc_create_exprtree_infix(
   }
 
   *outDestLength = pctx.treeLen;
+  *outExprRootInd = exprRootInd;
   return err;
 }
 
@@ -294,8 +296,7 @@ static tcalc_err tcalc_parsefunc_unary(tcalc_pctx* pctx, int32_t *outTreeInd) {
     cleanup_on_err(err, tcalc_pctx_alloc_node(pctx, &unaryNodeInd));
     pctx->tree[unaryNodeInd] = (tcalc_exprtree){
       .type = TCALC_EXPRTREE_NODE_TYPE_UNARY,
-      .as = { .unary = { .tokenInd = operatorInd, .childTreeInd = -1 }
-      }
+      .as = { .unary = { .tokenInd = operatorInd, .childTreeInd = -1 } }
     };
 
     if (unaryTailInd >= 0) {
@@ -438,7 +439,6 @@ static tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, int32_t *outTreeInd) {
 
   *outTreeInd = -1;
   const int32_t savedTreeLen = pctx->treeLen;
-
   tcalc_err err = TCALC_ERR_OK;
 
   int32_t funcTreeInd = -1;
@@ -451,9 +451,9 @@ static tcalc_err tcalc_parsefunc_func(tcalc_pctx* pctx, int32_t *outTreeInd) {
 
   cleanup_if(err, !tcalc_pctx_iscurrtype(pctx, TCALC_TOK_GRPSTRT), TCALC_ERR_UNCALLED_FUNC);
   pctx->i++; // consume opening parentheses
+  cleanup_if(err, pctx->i >= pctx->toksLen, TCALC_ERR_UNCLOSED_FUNC);
 
   int argCount = 0;
-
   if (!tcalc_pctx_iscurrtype(pctx, TCALC_TOK_GRPEND))
   {
     cleanup_on_err(err, tcalc_pctx_alloc_node(pctx, &(pctx->tree[funcTreeInd].as.func.funcArgHeadInd)));
